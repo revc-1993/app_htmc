@@ -35,6 +35,7 @@ return new class extends Migration
             // DEVUELTO
             $table->string('returned_document_number')->nullable();
             $table->string('management_status')->default("Pendiente de revisión");  // Considerar posibilidad de FK a tabla ESTADOS
+            $table->softDeletes();
             $table->timestamps();
         });
     }
