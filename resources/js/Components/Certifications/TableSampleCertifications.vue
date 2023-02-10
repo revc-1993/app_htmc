@@ -39,7 +39,7 @@ const itemsPaginated = computed(() =>
     )
 );
 const numPages = Math.ceil(Object.keys(items.value).length / perPage.value);
-const currentPageHuman = computed(() => currentPage.value + 1).value;
+const currentPageHuman = computed(() => currentPage.value + 1);
 const pagesList = computed(() => {
     const pagesList = [];
     for (let i = 0; i < numPages; i++) {
@@ -152,7 +152,7 @@ const closeModal = (isconfirm) => {
             </span>
         </div>
 
-        <table class="table-auto w-full">
+        <table>
             <thead>
                 <tr>
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
@@ -163,7 +163,8 @@ const closeModal = (isconfirm) => {
                     <!-- <th>City</th>
                 <th>Progress</th>
                 <th>Created</th> -->
-                    <th>Estado</th>
+                    <th class="text-center">Estado</th>
+                    <th>Usuario</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -174,7 +175,7 @@ const closeModal = (isconfirm) => {
                     </td>
                 </tr> -->
                 <tr
-                    v-for="certification in certifications"
+                    v-for="certification in itemsPaginated"
                     :key="certification.id"
                     class="border-b border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-center"
                 >
@@ -195,9 +196,10 @@ const closeModal = (isconfirm) => {
                     <td data-label="Area Requirente">
                         {{ certification.requesting_area }}
                     </td>
-                    <td class="py-3 px-6">
+                    <td data-label="Estado" class="py-3 px-6 text-center">
                         <SpanState :state="certification.management_status" />
                     </td>
+                    <td data-label="Usuario">{{ certification.user }}</td>
                     <td class="before:hidden lg:w-1 whitespace-nowrap">
                         <BaseButtons
                             type="justify-start lg:justify-end"
@@ -242,7 +244,7 @@ const closeModal = (isconfirm) => {
                     />
                 </BaseButtons>
                 <small
-                    >Página {{ currentPage + 1 > 0 ? currentPage + 1 : 0 }} de
+                    >Página {{ currentPageHuman > 0 ? currentPage + 1 : 0 }} de
                     {{ numPages }}</small
                 >
             </BaseLevel>

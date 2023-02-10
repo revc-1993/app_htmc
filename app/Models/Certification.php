@@ -16,4 +16,9 @@ class Certification extends Model
         'amount',
         'reception_date',
     ];
+
+    public function scopePending($query)
+    {
+        $query->where('management_status', '<>', 'Observado');
+    }
 }

@@ -168,6 +168,25 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'contract_object' => 'Objeto contrato',
+        'requesting_area' => 'Area requirente',
+        'reception_date' => 'Fecha recepcion',
+        'amount' => 'Monto',
+        // ANALISTA FINANCIERA
+        'assignment_date' => 'Fecha asignacion',
+        'japc_reassignment_date' => 'Fecha Reasignacion JAPC',
+        'budget_line' => 'Item presupuestario',
+        'process_id' => 'Id Proceso',
+        'certification_number' => 'Numero certificacion',
+        'amount_to_commit' => 'Monto comprometido',
+        'obligation_type' => 'Tipo obligacion',
+        'process_type' => 'Tipo proceso',
+        'comments' => 'Observaciones',
+        'user' => 'Usuario',
+        // DEVUELTO
+        'returned_document_number' => 'Numero documento devuelto',
+        'management_status' => 'Estado proceso',
+    ],
 
 ];
