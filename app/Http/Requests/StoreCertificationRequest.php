@@ -13,7 +13,7 @@ class StoreCertificationRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,12 @@ class StoreCertificationRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'contract_object' => ['required', 'unique:certifications', 'string', 'min:10', 'max:255'],
+            'requesting_area' => ['required', 'max:255'],   // Posiblemente FK
+            'reception_date' => ['required', 'date'],
+            'amount' => ['required', 'numeric', 'min:1'],
+            'customer_id' => ['required'],
+            // 'certification_number' => ['alpha_dash', 'min:10', 'unique:certifications'],
         ];
     }
 }

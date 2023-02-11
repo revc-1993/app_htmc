@@ -7,6 +7,9 @@ import SectionMain from "@/components/SectionMain.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
 import TableSampleCertifications from "@/components/certifications/TableSampleCertifications.vue";
 import { TYPE, useToast } from "vue-toastification";
+import { createToaster } from "@meforma/vue-toaster";
+import { parse } from "@vue/compiler-dom";
+
 // --------------------------------------------
 const props = defineProps({
     certifications: Object,
@@ -16,25 +19,25 @@ const props = defineProps({
 // MOSTRAR MENSAJES DE ALERTA
 // --------------------------------------------
 const getMessage = (operation) => {
-    // showAlert.value = false;
+    const operations = parseInt(operation);
     const messages = {
         1: "ingresado",
         3: "actualizado",
         4: "eliminado",
     };
-    const message =
-        "Registro " + (messages[operation] || "leído") + " correctamente.";
-
     const colors = {
-        1: TYPE.SUCCESS,
-        3: TYPE.WARNING,
-        4: TYPE.ERROR,
+        1: "success-class",
+        3: "warning-class",
+        4: "danger-class",
     };
-    const toast = useToast();
 
-    toast(message, {
-        timeout: 5000,
-        type: colors[operation] || TYPE.INFO,
+    const toast = useToast();
+    toast("Registro " + (messages[operation] || "leído") + " correctamente.", {
+        timeout: 2500,
+        // type: colors[operation] || TYPE.INFO,
+        toastClassName: ["height-class", colors[operation] || "blue-class"],
+        bodyClassName: "custom-class",
+        hideProgressBar: true,
     });
 };
 </script>
@@ -43,14 +46,6 @@ const getMessage = (operation) => {
     <LayoutAuthenticated>
         <Head title="Certificaciones" />
         <SectionMain>
-            <!-- <NotificationBar
-                v-if="showAlert"
-                :icon="mdiCheckBold"
-                :color="color"
-            >
-                <b>Transacción completa.</b> {{ message }}
-            </NotificationBar> -->
-
             <SectionTitleLineWithButton
                 :icon="mdiCardBulleted"
                 title="Certificaciones"
@@ -65,3 +60,26 @@ const getMessage = (operation) => {
         </SectionMain>
     </LayoutAuthenticated>
 </template>
+
+<style>
+.Vue-Toastification__toast--default.height-class {
+    height: 0.75rem; /* 12px */
+}
+.Vue-Toastification__toast--default.danger-class {
+    background-color: rgb(220 38 38);
+}
+.Vue-Toastification__toast--default.warning-class {
+    background-color: rgb(202 138 4);
+}
+.Vue-Toastification__toast--default.success-class {
+    background-color: rgb(5 150 105);
+}
+.Vue-Toastification__toast--default.blue-class {
+    background-color: rgb(37 99 235);
+}
+
+.Vue-Toastification__toast-body.custom-class {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem; /* 20px */
+}
+</style>

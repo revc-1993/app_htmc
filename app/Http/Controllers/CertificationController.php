@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Certification;
+use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\CertificationRequest;
 
 class CertificationController extends Controller
@@ -36,10 +37,10 @@ class CertificationController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \App\Http\Requests\CertificationRequest  $request
+     * @param  \App\Http\Requests\StoreCertificationRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(CertificationRequest $request)
+    public function store(StoreCertificationRequest $request)
     {
         // Certification::create($request->validated());
 

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from "vue";
-import { router, useForm } from "@inertiajs/vue3";
+import { router, useForm, usePage } from "@inertiajs/vue3";
 import {
     mdiFormatListBulletedType,
     mdiTag,
@@ -66,8 +66,41 @@ const button =
 const disabled = props.operation === "2";
 
 // ---------------------------------------------------------
+// SELECTS
+// ---------------------------------------------------------
+let selectOptions = {
+    requestingArea: [
+        { id: 1, label: "Despacho" },
+        { id: 2, label: "Financiero" },
+        { id: 3, label: "Tesorería" },
+    ],
+    budgetLine: [
+        { id: 1, label: "530073 - Item 1" },
+        { id: 2, label: "730010 - Item 2" },
+        { id: 3, label: "400000 - Item 3" },
+    ],
+    obligationType: [
+        { id: 1, label: "Obligación 1" },
+        { id: 2, label: "Obligación 2" },
+        { id: 3, label: "Obligación 3" },
+    ],
+    processType: [
+        { id: 1, label: "Proceso 1" },
+        { id: 2, label: "Proceso 2" },
+        { id: 3, label: "Proceso 3" },
+    ],
+};
+
+// ---------------------------------------------------------
 // FORM
 // ---------------------------------------------------------
+const idOptionSelect = (arrayOptions, value) => {
+    if (value && typeof value !== "undefined")
+        // return arrayOptions.filter((option) => option.label == value);
+        return arrayOptions.find((option) => option.label == value).id || "";
+    else return "";
+};
+
 const form = useForm(
     props.operation === "1"
         ? {
@@ -84,14 +117,17 @@ const form = useForm(
               obligation_type: "",
               process_type: "",
               comments: "",
-              user: "",
+              customer_id: usePage().props.auth.user.id,
               returned_document_number: "",
               management_status: "",
           }
         : {
               contract_object: props.certification.contract_object,
               requesting_area: {
-                  id: props.certification.id,
+                  id: idOptionSelect(
+                      selectOptions.requestingArea,
+                      props.certification.requesting_area
+                  ),
                   label: props.certification.requesting_area,
               },
               amount: props.certification.amount,
@@ -100,54 +136,36 @@ const form = useForm(
               japc_reassignment_date:
                   props.certification.japc_reassignment_date,
               budget_line: {
-                  id: props.certification.id,
+                  id: idOptionSelect(
+                      selectOptions.budgetLine,
+                      props.certification.budget_line
+                  ),
                   label: props.certification.budget_line,
               },
               process_id: props.certification.process_id,
               certification_number: props.certification.certification_number,
               amount_to_commit: props.certification.amount_to_commit,
               obligation_type: {
-                  id: props.certification.id,
+                  id: idOptionSelect(
+                      selectOptions.obligationType,
+                      props.certification.obligation_type
+                  ),
                   label: props.certification.obligation_type,
               },
               process_type: {
-                  id: props.certification.id,
+                  id: idOptionSelect(
+                      selectOptions.processType,
+                      props.certification.process_type
+                  ),
                   label: props.certification.process_type,
               },
               comments: props.certification.comments,
-              user: "",
+              customer_id: usePage().props.auth.user.id,
               returned_document_number:
                   props.certification.returned_document_number,
               management_status: "",
           }
 );
-
-// ---------------------------------------------------------
-// SELECTS
-// ---------------------------------------------------------
-const selectOptions = {
-    requestingArea: [
-        { id: 1, label: "Despacho" },
-        { id: 2, label: "Financiero" },
-        { id: 3, label: "Tesorería" },
-    ],
-    budgetLine: [
-        { id: 1, label: "530073 - Item 1" },
-        { id: 2, label: "730010 - Item 2" },
-        { id: 3, label: "400000 - Item 3" },
-    ],
-    obligationType: [
-        { id: 1, label: "Obligación 1" },
-        { id: 2, label: "Obligación 2" },
-        { id: 3, label: "Obligación 3" },
-    ],
-    proccessType: [
-        { id: 1, label: "Proceso 1" },
-        { id: 2, label: "Proceso 2" },
-        { id: 3, label: "Proceso 3" },
-    ],
-};
-// const selected = operation === '1' ? "" :
 
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
@@ -156,6 +174,7 @@ const create = () => {
     form.transform((data) => ({
         ...data,
         requesting_area: form.requesting_area.label,
+        customer_id: usePage().props.auth.user.id,
     })).post(route("certifications.store"), {
         preserveScroll: false,
         onBefore: () => {
@@ -236,9 +255,7 @@ const destroy = () => {
                     :icon="mdiCardAccountDetails"
                     autocomplete="contract_object"
                     type="text"
-                    :placeholder="
-                        disabled ? '' : 'Detalle el objeto de contrato'
-                    "
+                    placeholder="Detalle el objeto de contrato"
                     :has-errors="form.errors.contract_object != null"
                     :disabled="disabled"
                 />
@@ -273,7 +290,7 @@ const destroy = () => {
                         :icon="mdiCalendarRange"
                         autocomplete="reception_date"
                         type="date"
-                        :placeholder="disabled ? '' : '1000,00'"
+                        placeholder="1000,00"
                         :has-errors="form.errors.reception_date != null"
                         :disabled="disabled"
                     />
@@ -291,7 +308,7 @@ const destroy = () => {
                         autocomplete="amount"
                         type="text"
                         inputmode="decimal"
-                        :placeholder="disabled ? '' : '1000,00'"
+                        placeholder="1000,00"
                         :has-errors="form.errors.amount != null"
                         :disabled="disabled"
                     />
@@ -311,7 +328,7 @@ const destroy = () => {
                         :icon="mdiNumeric"
                         autocomplete="certification_number"
                         type="text"
-                        :placeholder="disabled ? '' : 'IE-RER-CM-43'"
+                        placeholder="IE-RER-CM-43"
                         :has-errors="form.errors.certification_number != null"
                         :disabled="disabled"
                     />
@@ -380,7 +397,7 @@ const destroy = () => {
                         :icon="mdiCurrencyUsd"
                         autocomplete="amount_to_commit"
                         type="number"
-                        :placeholder="disabled ? '' : '1001,00'"
+                        placeholder="1001,00"
                         :has-errors="form.errors.amount_to_commit != null"
                         :disabled="disabled"
                     />
@@ -416,7 +433,7 @@ const destroy = () => {
                         id="process_type"
                         :icon="mdiFormatListBulletedType"
                         autocomplete="process_type"
-                        :options="selectOptions.proccessType"
+                        :options="selectOptions.processType"
                         :has-errors="form.errors.process_type != null"
                         :disabled="disabled"
                     />
@@ -425,11 +442,7 @@ const destroy = () => {
             <FormField
                 label="Observaciones"
                 label-for="comments"
-                :help="
-                    disabled
-                        ? ''
-                        : 'Indique las principales observaciones. Máximo 255 caracteres.'
-                "
+                help="Máximo 255 caracteres."
                 :errors="form.errors.comments"
             >
                 <FormControl
@@ -438,6 +451,7 @@ const destroy = () => {
                     id="comments"
                     :icon="mdiTag"
                     autocomplete="comments"
+                    placeholder="Indique las principales observaciones."
                     :has-errors="form.errors.comments != null"
                     :disabled="disabled"
                 />

@@ -19,17 +19,12 @@ import CardBox from "@/components/CardBox.vue";
 const props = defineProps({
     checkable: Boolean,
     certifications: Object,
-    modelValue: {
-        type: [String, Number, Boolean],
-        default: null,
-    },
 });
 
 // ---------------------------------------------------------
 // PAGINACIÓN
 // ---------------------------------------------------------
 const items = computed(() => props.certifications);
-const nItems = items.value.length;
 const perPage = ref(5);
 const currentPage = ref(0);
 const itemsPaginated = computed(() =>
@@ -93,7 +88,6 @@ const operation = ref("");
 // --------------------------------------------
 const openModal = (action, certifications = "") => {
     // console.log(certifications);
-    isModalActive.value = false;
     if (action !== "1") certification = certifications;
     operation.value = action;
     isModalActive.value = true;
@@ -146,7 +140,7 @@ const closeModal = (isconfirm) => {
             </span>
         </div>
 
-        <table class="relative overflow-x-auto text-center">
+        <table class="table text-center">
             <thead>
                 <tr>
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
