@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\User;
 use App\Models\Certification;
 
 class DatabaseSeeder extends Seeder
@@ -15,7 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'Ronny Vera',
             'email' => 'ronny.verac.1993@gmail.com',
             'department' => 'Financiero',
@@ -24,8 +25,6 @@ class DatabaseSeeder extends Seeder
             'admin_since' => now(),
         ]);
 
-        Certification::factory(20)->create();
-        // \App\Models\User::factory(10)->create();
-
+        Certification::factory(20)->create(['customer_id' => $user->id]);
     }
 }

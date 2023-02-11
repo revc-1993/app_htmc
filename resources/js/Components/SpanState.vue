@@ -28,9 +28,10 @@ const colorState = computed(() => {
 </script>
 
 <template>
-    <span class="py-1 px-3 rounded-full border text-sm" :class="colorState">{{
-        state
-    }}</span>
+    <span class="py-1 px-3 rounded-full border text-sm" :class="colorState">
+        <span class="h-2.5 w-2.5 text-xl">•</span>
+        {{ state }}</span
+    >
 
     <!-- <PillTag
         :color="colorState"

@@ -52,4 +52,14 @@ class User extends Authenticatable
     protected $dates = [
         'admin_since' => 'datetime',
     ];
+
+    /**
+     * Get all of the Certifications for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function certifications()
+    {
+        return $this->hasMany(Certification::class, 'customer_id', 'id');
+    }
 }

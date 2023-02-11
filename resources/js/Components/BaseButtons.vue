@@ -7,7 +7,7 @@ export default defineComponent({
         noWrap: Boolean,
         type: {
             type: String,
-            default: "justify-end",
+            default: "justify-start",
         },
         classAddon: {
             type: String,

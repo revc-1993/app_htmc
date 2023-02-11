@@ -31,12 +31,13 @@ return new class extends Migration
             $table->string('obligation_type')->nullable();
             $table->string('process_type')->nullable();
             $table->string('comments')->nullable();
-            $table->string('user')->nullable();  // Considerar posibilidad de FK a tabla USERS
-            // DEVUELTO
+            $table->unsignedBigInteger('customer_id')->nullable();  // Considerar posibilidad de FK a tabla USERS
             $table->string('returned_document_number')->nullable();
             $table->string('management_status')->default("Pendiente de revisión");  // Considerar posibilidad de FK a tabla ESTADOS
             $table->softDeletes();
             $table->timestamps();
+            // Relaciones
+            $table->foreign('customer_id')->references('id')->on('users');
         });
     }
 

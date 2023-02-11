@@ -75,13 +75,8 @@ const checked = (isChecked, certification) => {
 // --------------------------------------------
 // EMIT DE ALERTA
 // --------------------------------------------
-const emit = defineEmits(["update:modelValue", "alert"]);
-const value = computed({
-    get: () => props.modelValue,
-    set: (value) => emit("update:modelValue", value),
-});
+const emit = defineEmits(["alert"]);
 const alerts = (mode, operation) => {
-    value.value = true;
     emit(mode, operation);
 };
 const alert = (operation) => alerts("alert", operation);
@@ -98,7 +93,6 @@ const operation = ref("");
 // --------------------------------------------
 const openModal = (action, certifications = "") => {
     // console.log(certifications);
-    value.value = false;
     isModalActive.value = false;
     if (action !== "1") certification = certifications;
     operation.value = action;
@@ -152,7 +146,7 @@ const closeModal = (isconfirm) => {
             </span>
         </div>
 
-        <table>
+        <table class="relative overflow-x-auto text-center">
             <thead>
                 <tr>
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
@@ -160,10 +154,7 @@ const closeModal = (isconfirm) => {
                     <th>N.</th>
                     <th>Objeto de contrato</th>
                     <th>Area requirente</th>
-                    <!-- <th>City</th>
-                <th>Progress</th>
-                <th>Created</th> -->
-                    <th class="text-center">Estado</th>
+                    <th>Estado</th>
                     <th>Usuario</th>
                     <th>Acciones</th>
                 </tr>
@@ -177,7 +168,7 @@ const closeModal = (isconfirm) => {
                 <tr
                     v-for="certification in itemsPaginated"
                     :key="certification.id"
-                    class="border-b border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-center"
+                    class="border-b border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                     <TableCheckboxCell
                         v-if="checkable"
@@ -196,10 +187,12 @@ const closeModal = (isconfirm) => {
                     <td data-label="Area Requirente">
                         {{ certification.requesting_area }}
                     </td>
-                    <td data-label="Estado" class="py-3 px-6 text-center">
+                    <td data-label="Estado" class="py-3 px-6">
                         <SpanState :state="certification.management_status" />
                     </td>
-                    <td data-label="Usuario">{{ certification.user }}</td>
+                    <td data-label="Usuario">
+                        {{ certification.name }}
+                    </td>
                     <td class="before:hidden lg:w-1 whitespace-nowrap">
                         <BaseButtons
                             type="justify-start lg:justify-end"

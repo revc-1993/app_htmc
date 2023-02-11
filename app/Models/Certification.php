@@ -15,7 +15,20 @@ class Certification extends Model
         'requesting_area',   // Posiblemente FK
         'amount',
         'reception_date',
+        'customer_id',
     ];
+
+    /**
+     * Get the User that owns the Certification
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
+    }
+
+
 
     public function scopePending($query)
     {

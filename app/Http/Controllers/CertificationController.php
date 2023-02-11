@@ -16,7 +16,10 @@ class CertificationController extends Controller
     public function index()
     {
         return Inertia::render('Certifications/Index', [
-            'certifications' => Certification::pending()->orderBy("id", "desc")->get(),
+            'certifications' => Certification::pending()
+                ->join('users', 'users.id', '=', 'certifications.customer_id')
+                ->select('certifications.*', 'users.name')
+                ->orderBy("id", "desc")->get(),
         ]);
     }
 

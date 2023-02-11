@@ -6,9 +6,8 @@ import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionMain from "@/components/SectionMain.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
 import TableSampleCertifications from "@/components/certifications/TableSampleCertifications.vue";
-import NotificationBar from "@/components/NotificationBar.vue";
+import { TYPE, useToast } from "vue-toastification";
 // --------------------------------------------
-
 const props = defineProps({
     certifications: Object,
 });
@@ -16,31 +15,27 @@ const props = defineProps({
 // --------------------------------------------
 // MOSTRAR MENSAJES DE ALERTA
 // --------------------------------------------
-const showAlert = ref(false);
-const message = ref("");
-const color = ref("");
-
 const getMessage = (operation) => {
     // showAlert.value = false;
-    let messages = `Registro ${
-        operation === "1"
-            ? "ingresado "
-            : operation === "3"
-            ? "actualizado "
-            : operation === "4"
-            ? "eliminado "
-            : "leído "
-    } satisfactoriamente`;
-    message.value = messages;
-    color.value =
-        operation === "1"
-            ? "success"
-            : operation === "3"
-            ? "info"
-            : operation === "4"
-            ? "danger"
-            : "info";
-    // showAlert.value = true;
+    const messages = {
+        1: "ingresado",
+        3: "actualizado",
+        4: "eliminado",
+    };
+    const message =
+        "Registro " + (messages[operation] || "leído") + " correctamente.";
+
+    const colors = {
+        1: TYPE.SUCCESS,
+        3: TYPE.WARNING,
+        4: TYPE.ERROR,
+    };
+    const toast = useToast();
+
+    toast(message, {
+        timeout: 5000,
+        type: colors[operation] || TYPE.INFO,
+    });
 };
 </script>
 
@@ -48,13 +43,13 @@ const getMessage = (operation) => {
     <LayoutAuthenticated>
         <Head title="Certificaciones" />
         <SectionMain>
-            <NotificationBar
+            <!-- <NotificationBar
                 v-if="showAlert"
                 :icon="mdiCheckBold"
                 :color="color"
             >
                 <b>Transacción completa.</b> {{ message }}
-            </NotificationBar>
+            </NotificationBar> -->
 
             <SectionTitleLineWithButton
                 :icon="mdiCardBulleted"
@@ -64,7 +59,6 @@ const getMessage = (operation) => {
             </SectionTitleLineWithButton>
 
             <TableSampleCertifications
-                v-model="showAlert"
                 :certifications="certifications"
                 @alert="getMessage"
             />

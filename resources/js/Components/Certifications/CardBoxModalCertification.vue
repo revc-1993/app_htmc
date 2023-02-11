@@ -15,6 +15,7 @@ import CardBoxModal from "@/components/CardBoxModal.vue";
 import FormValidationErrors from "@/components/FormValidationErrors.vue";
 import FormField from "@/components/FormField.vue";
 import FormControl from "@/components/FormControl.vue";
+import StepperState from "@/components/StepperState.vue";
 
 // ---------------------------------------------------------
 // PROPS
@@ -218,6 +219,11 @@ const destroy = () => {
     >
         <div v-if="operation !== '4'">
             <FormValidationErrors v-if="form.hasErrors" />
+
+            <!-- <StepperState
+                v-if="value"
+                :state="certification.management_status"
+            /> -->
 
             <FormField
                 label="Objeto de contrato"
