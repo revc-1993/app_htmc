@@ -23,6 +23,7 @@ class User extends Authenticatable
         'department',
         'job_position',
         'password',
+        'job_position_id',
     ];
 
     /**
@@ -60,6 +61,11 @@ class User extends Authenticatable
      */
     public function certifications()
     {
-        return $this->hasMany(Certification::class, 'customer_id', 'id');
+        return $this->hasMany(Certification::class, 'customer_id');
+    }
+
+    public function jobPosition()
+    {
+        return $this->belongsTo(JobPosition::class, 'job_position_id'); //->withPivot();
     }
 }

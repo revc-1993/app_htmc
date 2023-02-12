@@ -49,6 +49,7 @@ const submit = () => {
                 @submit.prevent="submit"
             >
                 <FormValidationErrors v-if="form.hasErrors" />
+
                 <FormField
                     label="Nombres"
                     label-for="name"
@@ -62,8 +63,8 @@ const submit = () => {
                         autocomplete="name"
                         type="text"
                         required
+                        :has-errors="form.errors.name != null"
                     />
-                    <div v-if="form.errors.name">{{ form.errors.name }}</div>
                 </FormField>
 
                 <FormField
@@ -79,8 +80,8 @@ const submit = () => {
                         autocomplete="email"
                         type="email"
                         required
+                        :has-errors="form.errors.email != null"
                     />
-                    <div v-if="form.errors.email">{{ form.errors.email }}</div>
                 </FormField>
 
                 <FormField
@@ -91,11 +92,13 @@ const submit = () => {
                 >
                     <FormControl
                         v-model="form.department"
+                        name="department"
                         id="department"
                         :icon="mdiAccount"
                         autocomplete="department"
-                        type="text"
+                        :options="selectOptions.requestingArea"
                         required
+                        :has-errors="form.errors.department != null"
                     />
                     <div v-if="form.errors.department">
                         {{ form.errors.department }}

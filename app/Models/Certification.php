@@ -28,7 +28,15 @@ class Certification extends Model
         return $this->belongsTo(User::class, 'customer_id');
     }
 
-
+    /**
+     * Get the Department that owns the Certification
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
 
     public function scopePending($query)
     {

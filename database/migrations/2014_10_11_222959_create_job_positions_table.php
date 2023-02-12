@@ -13,9 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('department_job_position', function (Blueprint $table) {
+        Schema::create('job_positions', function (Blueprint $table) {
             $table->id();
+            $table->string('position_name');
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->softDeletes();
             $table->timestamps();
+
+            $table->foreign('department_id')->references('id')->on('departments');
         });
     }
 
@@ -26,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('department_job_position');
+        Schema::dropIfExists('job_positions');
     }
 };

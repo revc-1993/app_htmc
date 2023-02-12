@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\Certification;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\CertificationRequest;
+use App\Models\Department;
 
 class CertificationController extends Controller
 {
@@ -21,6 +22,7 @@ class CertificationController extends Controller
                 ->join('users', 'users.id', '=', 'certifications.customer_id')
                 ->select('certifications.*', 'users.name')
                 ->orderBy("id", "desc")->get(),
+            'area_requesting' => Department::all(),
         ]);
     }
 

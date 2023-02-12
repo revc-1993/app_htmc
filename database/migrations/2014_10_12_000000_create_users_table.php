@@ -23,7 +23,11 @@ return new class extends Migration
             $table->string('password');
             $table->timestamp('admin_since')->nullable();
             $table->rememberToken();
+            $table->unsignedBigInteger('job_position_id')->nullable();
+            // $table->unsignedBigInteger('department_job_position_id')->nullable();;
             $table->timestamps();
+
+            $table->foreign('job_position_id')->references('id')->on('job_positions');
         });
     }
 

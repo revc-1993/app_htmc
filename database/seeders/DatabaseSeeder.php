@@ -5,6 +5,8 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Department;
+use App\Models\JobPosition;
 use App\Models\Certification;
 
 class DatabaseSeeder extends Seeder
@@ -16,6 +18,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
+        $department = Department::factory(1)->create();
+        // dd($department);
+        // JobPosition::factory(5)->create(['department_id' => $department->id]);
+
         $user = User::factory()->create([
             'name' => 'Ronny Vera',
             'email' => 'ronny.verac.1993@gmail.com',
@@ -24,7 +30,6 @@ class DatabaseSeeder extends Seeder
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
             'admin_since' => now(),
         ]);
-
         Certification::factory(20)->create(['customer_id' => $user->id]);
     }
 }

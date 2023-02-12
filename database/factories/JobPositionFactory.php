@@ -17,7 +17,7 @@ class JobPositionFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'position_name' => $this->faker->randomElement(['Analista', 'Asistente', 'Director']),
         ];
     }
 }
