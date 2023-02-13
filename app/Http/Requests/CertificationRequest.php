@@ -24,11 +24,7 @@ class CertificationRequest extends FormRequest
     public function rules()
     {
         return [
-            'contract_object' => ['required', 'string', 'min:10', 'max:255'],
-            'requesting_area' => ['required', 'max:255'],   // Posiblemente FK
-            'reception_date' => ['required', 'date'],
-            'amount' => ['required', 'numeric', 'min:1'],
-            // 'certification_number' => ['alpha_dash', 'min:10', 'unique:certifications'],
+            'certification_number' => ['alpha_dash', 'min:10', 'unique:certifications'],
         ];
     }
 }

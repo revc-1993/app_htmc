@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Certification;
 use App\Http\Requests\StoreCertificationRequest;
-use App\Http\Requests\CertificationRequest;
+use App\Http\Requests\UpdateCertificationRequest;
 use App\Models\Department;
 
 class CertificationController extends Controller
@@ -18,11 +18,15 @@ class CertificationController extends Controller
     public function index()
     {
         return Inertia::render('Certifications/Index', [
-            'certifications' => Certification::pending()
+            'certifications' => Certification::query()
+                // ->select('certifications.*', 'departments.*')
+                // ->with('users:id', 'departments:department')
+                ->select('certifications.*', 'users.name', 'departments.department')
                 ->join('users', 'users.id', '=', 'certifications.customer_id')
-                ->select('certifications.*', 'users.name')
-                ->orderBy("id", "desc")->get(),
-            'area_requesting' => Department::all(),
+                ->join('departments', 'departments.id', '=', 'certifications.department_id')
+                ->pending()
+                ->orderBy("certifications.id", "desc")->get(),
+            'departments' => Department::all(),
         ]);
     }
 
@@ -77,11 +81,11 @@ class CertificationController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\CertificationRequest  $request
+     * @param  \App\Http\Requests\UpdateCertificationRequest  $request
      * @param  \App\Models\Certification  $certification
      * @return \Illuminate\Http\Response
      */
-    public function update(CertificationRequest $request, Certification $certification)
+    public function update(UpdateCertificationRequest $request, Certification $certification)
     {
         $certification->update($request->validated());
         return to_route('certifications.index');

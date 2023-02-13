@@ -12,10 +12,18 @@ class Certification extends Model
 
     protected $fillable = [
         'contract_object',
-        'requesting_area',   // Posiblemente FK
-        'amount',
         'reception_date',
+        'amount',
+        'department_id',
         'customer_id',
+        'certification_number',
+        'assignment_date',
+        'japc_reassignment_date',
+        'budget_line',
+        'amount_to_commit',
+        'obligation_type',
+        'process_type',
+        'comments',
     ];
 
     /**

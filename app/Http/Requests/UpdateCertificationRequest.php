@@ -13,7 +13,7 @@ class UpdateCertificationRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,20 @@ class UpdateCertificationRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'contract_object' => ['required', 'string', 'min:10', 'max:255'],
+            'reception_date' => ['required', 'date'],
+            'amount' => ['required', 'numeric', 'min:1'],
+            'department_id' => ['required'],
+            'customer_id' => ['required'],
+
+            'certification_number' => ['alpha_dash', 'min:10'],
+            'assignment_date' => ['date'],
+            'japc_reassignment_date' => ['date'],
+            'budget_line' => [''],
+            'amount_to_commit' => ['numeric', 'min:1'],
+            'obligation_type' => [''],
+            'process_type' => [''],
+            'comments' => ['max:255']
         ];
     }
 }

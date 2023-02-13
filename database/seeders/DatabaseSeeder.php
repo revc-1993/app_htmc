@@ -18,9 +18,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $department = Department::factory(1)->create();
+        $department = Department::factory(3)->create();
         // dd($department);
-        // JobPosition::factory(5)->create(['department_id' => $department->id]);
+        // factory(JobPosition::class)->create(['department_id' => $department->id]);
+        JobPosition::factory(5)->create();
 
         $user = User::factory()->create([
             'name' => 'Ronny Vera',

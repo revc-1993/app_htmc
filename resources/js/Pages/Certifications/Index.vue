@@ -13,13 +13,13 @@ import { parse } from "@vue/compiler-dom";
 // --------------------------------------------
 const props = defineProps({
     certifications: Object,
+    departments: Object,
 });
 
 // --------------------------------------------
 // MOSTRAR MENSAJES DE ALERTA
 // --------------------------------------------
 const getMessage = (operation) => {
-    const operations = parseInt(operation);
     const messages = {
         1: "ingresado",
         3: "actualizado",
@@ -55,6 +55,7 @@ const getMessage = (operation) => {
 
             <TableSampleCertifications
                 :certifications="certifications"
+                :departments="departments"
                 @alert="getMessage"
             />
         </SectionMain>

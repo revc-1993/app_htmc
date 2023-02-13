@@ -19,6 +19,7 @@ import CardBox from "@/components/CardBox.vue";
 const props = defineProps({
     checkable: Boolean,
     certifications: Object,
+    departments: Object,
 });
 
 // ---------------------------------------------------------
@@ -122,6 +123,7 @@ const closeModal = (isconfirm) => {
         v-model="isModalActive"
         instance="certificación"
         :certification="certification"
+        :departments="departments"
         :operation="operation"
         @confirm="closeModal"
     />
@@ -140,16 +142,17 @@ const closeModal = (isconfirm) => {
             </span>
         </div>
 
-        <table class="table text-center">
+        <table class="table">
             <thead>
                 <tr>
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
-                    <th v-if="checkable" />
-                    <th>N.</th>
-                    <th>Objeto de contrato</th>
-                    <th>Area requirente</th>
-                    <th>Estado</th>
-                    <th>Usuario</th>
+                    <th v-if="checkable" class="text-center" />
+                    <th class="text-center">N.</th>
+                    <th class="text-center">Objeto de contrato</th>
+                    <th class="text-center">Area requirente</th>
+                    <th class="text-center">Monto</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Usuario actual</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -168,26 +171,31 @@ const closeModal = (isconfirm) => {
                         v-if="checkable"
                         @checked="checked($event, certification)"
                     />
-                    <td class="border-b-0 lg:w-6 before:hidden">
+                    <td class="border-b-0 lg:w-6 before:hidden text-center">
                         {{ certification.id }}
                         <!-- <UserAvatar
                         :username="certification.cf_contract_object"
                         class="w-24 h-24 mx-auto lg:w-6 lg:h-6"
                     /> -->
                     </td>
-                    <td data-label="Objeto de Contrato">
+                    <td data-label="Objeto de Contrato" class="text-center">
                         {{ certification.contract_object }}
                     </td>
-                    <td data-label="Area Requirente">
-                        {{ certification.requesting_area }}
+                    <td data-label="Area Requirente" class="text-center">
+                        {{ certification.department }}
                     </td>
-                    <td data-label="Estado" class="py-3 px-6">
+                    <td data-label="Monto" class="text-center">
+                        {{ certification.amount }}
+                    </td>
+                    <td data-label="Estado" class="py-3 px-6 text-center">
                         <SpanState :state="certification.management_status" />
                     </td>
-                    <td data-label="Usuario">
+                    <td data-label="Usuario" class="text-center">
                         {{ certification.name }}
                     </td>
-                    <td class="before:hidden lg:w-1 whitespace-nowrap">
+                    <td
+                        class="before:hidden lg:w-1 whitespace-nowrap text-center"
+                    >
                         <BaseButtons
                             type="justify-start lg:justify-end"
                             no-wrap

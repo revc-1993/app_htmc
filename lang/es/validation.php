@@ -170,7 +170,7 @@ return [
 
     'attributes' => [
         'contract_object' => 'Objeto contrato',
-        'requesting_area' => 'Area requirente',
+        // 'requesting_area' => 'Area requirente',
         'reception_date' => 'Fecha recepcion',
         'amount' => 'Monto',
         // ANALISTA FINANCIERA

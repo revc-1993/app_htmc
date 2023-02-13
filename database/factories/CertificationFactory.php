@@ -18,7 +18,6 @@ class CertificationFactory extends Factory
     {
         return [
             'contract_object' => $this->faker->sentence(3),
-            'requesting_area' => $this->faker->randomElement(['Despacho', 'Financiero', 'Tesorería']),
             'reception_date' => $this->faker->date('Y-m-d', 'now'),
             'amount' => $this->faker->randomFloat($maxDecimals = 2, $min = 500, $max = 10000),
             // Posiblemente FK

@@ -24,11 +24,14 @@ const props = defineProps({
     instance: String,
     certification: Object,
     operation: String,
+    departments: Object,
     modelValue: {
         type: [String, Number, Boolean],
         default: null,
     },
 });
+
+console.log(props.certification);
 
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
@@ -63,17 +66,22 @@ const button =
         : props.operation === "3"
         ? "success"
         : "danger";
-const disabled = props.operation === "2";
+
+const isCreate = props.operation === "1";
+const isShow = props.operation === "2";
+const isUpdate = props.operation === "3";
 
 // ---------------------------------------------------------
 // SELECTS
 // ---------------------------------------------------------
+
+let departments = [];
+props.departments.forEach((element) => {
+    departments.push({ id: element.id, label: element.department });
+});
+
 let selectOptions = {
-    requestingArea: [
-        { id: 1, label: "Despacho" },
-        { id: 2, label: "Financiero" },
-        { id: 3, label: "Tesorería" },
-    ],
+    requestingArea: departments,
     budgetLine: [
         { id: 1, label: "530073 - Item 1" },
         { id: 2, label: "730010 - Item 2" },
@@ -97,7 +105,7 @@ let selectOptions = {
 const idOptionSelect = (arrayOptions, value) => {
     if (value && typeof value !== "undefined")
         // return arrayOptions.filter((option) => option.label == value);
-        return arrayOptions.find((option) => option.label == value).id || "";
+        return arrayOptions.find((option) => option.id == value).label || "";
     else return "";
 };
 
@@ -105,7 +113,6 @@ const form = useForm(
     props.operation === "1"
         ? {
               contract_object: "",
-              requesting_area: "",
               amount: "",
               reception_date: "",
               assignment_date: "",
@@ -118,49 +125,50 @@ const form = useForm(
               process_type: "",
               comments: "",
               customer_id: usePage().props.auth.user.id,
+              department_id: "",
               returned_document_number: "",
               management_status: "",
           }
         : {
               contract_object: props.certification.contract_object,
-              requesting_area: {
-                  id: idOptionSelect(
-                      selectOptions.requestingArea,
-                      props.certification.requesting_area
-                  ),
-                  label: props.certification.requesting_area,
-              },
               amount: props.certification.amount,
               reception_date: props.certification.reception_date,
               assignment_date: props.certification.assignment_date,
               japc_reassignment_date:
                   props.certification.japc_reassignment_date,
               budget_line: {
-                  id: idOptionSelect(
+                  id: props.certification.budget_line,
+                  label: idOptionSelect(
                       selectOptions.budgetLine,
                       props.certification.budget_line
                   ),
-                  label: props.certification.budget_line,
               },
               process_id: props.certification.process_id,
               certification_number: props.certification.certification_number,
               amount_to_commit: props.certification.amount_to_commit,
               obligation_type: {
-                  id: idOptionSelect(
+                  id: props.certification.obligation_type,
+                  label: idOptionSelect(
                       selectOptions.obligationType,
                       props.certification.obligation_type
                   ),
-                  label: props.certification.obligation_type,
               },
               process_type: {
-                  id: idOptionSelect(
+                  id: props.certification.process_type,
+                  label: idOptionSelect(
                       selectOptions.processType,
                       props.certification.process_type
                   ),
-                  label: props.certification.process_type,
               },
               comments: props.certification.comments,
               customer_id: usePage().props.auth.user.id,
+              department_id: {
+                  id: props.certification.department_id,
+                  label: idOptionSelect(
+                      selectOptions.requestingArea,
+                      props.certification.department_id
+                  ),
+              },
               returned_document_number:
                   props.certification.returned_document_number,
               management_status: "",
@@ -173,8 +181,11 @@ const form = useForm(
 const create = () => {
     form.transform((data) => ({
         ...data,
-        requesting_area: form.requesting_area.label,
+        department_id: form.department_id.id,
         customer_id: usePage().props.auth.user.id,
+        budget_line: form.budget_line.id,
+        obligation_type: form.obligation_type.id,
+        process_type: form.process_type.id,
     })).post(route("certifications.store"), {
         preserveScroll: false,
         onBefore: () => {
@@ -200,7 +211,11 @@ const create = () => {
 const update = () => {
     form.transform((data) => ({
         ...data,
-        requesting_area: form.requesting_area.label,
+        department_id: form.department_id.id,
+        customer_id: usePage().props.auth.user.id,
+        budget_line: form.budget_line.id,
+        obligation_type: form.obligation_type.id,
+        process_type: form.process_type.id,
     })).put(route("certifications.update", props.certification.id), {
         preserveScroll: false,
         onSuccess: () => {
@@ -257,25 +272,25 @@ const destroy = () => {
                     type="text"
                     placeholder="Detalle el objeto de contrato"
                     :has-errors="form.errors.contract_object != null"
-                    :disabled="disabled"
+                    :disabled="!isCreate || isShow || isUpdate"
                 />
             </FormField>
             <FormField>
                 <FormField
                     label="Area requirente"
-                    label-for="requesting_area"
+                    label-for="department_id"
                     help="Seleccione el área requirente"
-                    :errors="form.errors.requesting_area"
+                    :errors="form.errors.department_id"
                 >
                     <FormControl
-                        v-model="form.requesting_area"
-                        name="requesting_area"
-                        id="requesting_area"
+                        v-model="form.department_id"
+                        name="department_id"
+                        id="department_id"
                         :icon="mdiDomain"
-                        autocomplete="requesting_area"
+                        autocomplete="department_id"
                         :options="selectOptions.requestingArea"
-                        :has-errors="form.errors.requesting_area != null"
-                        :disabled="disabled"
+                        :has-errors="form.errors.department_id != null"
+                        :disabled="!isCreate || isShow || isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -292,7 +307,7 @@ const destroy = () => {
                         type="date"
                         placeholder="1000,00"
                         :has-errors="form.errors.reception_date != null"
-                        :disabled="disabled"
+                        :disabled="!isCreate || isShow || isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -310,7 +325,7 @@ const destroy = () => {
                         inputmode="decimal"
                         placeholder="1000,00"
                         :has-errors="form.errors.amount != null"
-                        :disabled="disabled"
+                        :disabled="!isCreate || isShow || isUpdate"
                     />
                 </FormField>
             </FormField>
@@ -330,7 +345,7 @@ const destroy = () => {
                         type="text"
                         placeholder="IE-RER-CM-43"
                         :has-errors="form.errors.certification_number != null"
-                        :disabled="disabled"
+                        :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -346,7 +361,7 @@ const destroy = () => {
                         autocomplete="assignment_date"
                         type="date"
                         :has-errors="form.errors.assignment_date != null"
-                        :disabled="disabled"
+                        :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -362,7 +377,7 @@ const destroy = () => {
                         autocomplete="japc_reassignment_date"
                         type="date"
                         :has-errors="form.errors.japc_reassignment_date != null"
-                        :disabled="disabled"
+                        :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
             </FormField>
@@ -382,7 +397,7 @@ const destroy = () => {
                         autocomplete="budget_line"
                         :options="selectOptions.budgetLine"
                         :has-errors="form.errors.budget_line != null"
-                        :disabled="disabled"
+                        :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -399,7 +414,7 @@ const destroy = () => {
                         type="number"
                         placeholder="1001,00"
                         :has-errors="form.errors.amount_to_commit != null"
-                        :disabled="disabled"
+                        :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
             </FormField>
@@ -418,7 +433,7 @@ const destroy = () => {
                         autocomplete="obligation_type"
                         :options="selectOptions.obligationType"
                         :has-errors="form.errors.obligation_type != null"
-                        :disabled="disabled"
+                        :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -435,7 +450,7 @@ const destroy = () => {
                         autocomplete="process_type"
                         :options="selectOptions.processType"
                         :has-errors="form.errors.process_type != null"
-                        :disabled="disabled"
+                        :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
             </FormField>
@@ -453,7 +468,7 @@ const destroy = () => {
                     autocomplete="comments"
                     placeholder="Indique las principales observaciones."
                     :has-errors="form.errors.comments != null"
-                    :disabled="disabled"
+                    :disabled="isShow"
                 />
             </FormField>
         </div>
