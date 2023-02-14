@@ -8,36 +8,24 @@ const props = defineProps({
     },
 });
 
-console.log(props.state);
-
 const colorLi = computed(() => {
-    switch (props.state) {
-        case "Pendiente de revisión":
-            return "text-red-600 dark:text-red-500";
-        case "En revisión":
-            return "text-yellow-600 dark:text-yellow-500";
-        case "Certificado":
-            return "text-green-600 dark:text-green-500";
-        case "Observado":
-            return "text-emerald-600 dark:text-emerald-500";
-        case "Devuelto":
-            return "text-violet-600 dark:text-violet-500";
-    }
+    return {
+        "Pendiente de revisión": "text-red-600 dark:text-red-500",
+        "En revisión": "text-yellow-600 dark:text-yellow-500",
+        Certificado: "text-green-600 dark:text-green-500",
+        Observado: "text-emerald-600 dark:text-emerald-500",
+        Devuelto: "text-violet-600 dark:text-violet-500",
+    }[props.state];
 });
 
 const colorSpan = computed(() => {
-    switch (props.state) {
-        case "Pendiente de revisión":
-            return "border-red-600 dark:border-red-500";
-        case "En revisión":
-            return "border-yellow-600 dark:border-yellow-500";
-        case "Certificado":
-            return "border-green-600 dark:border-green-500";
-        case "Observado":
-            return "border-emerald-600 dark:border-emerald-500";
-        case "Devuelto":
-            return "border-violet-600 dark:border-violet-500";
-    }
+    return {
+        "Pendiente de revisión": "border-red-600 dark:border-red-500",
+        "En revisión": "border-yellow-600 dark:border-yellow-500",
+        Certificado: "border-green-600 dark:border-green-500",
+        Observado: "border-emerald-600 dark:border-emerald-500",
+        Devuelto: "border-violet-600 dark:border-violet-500",
+    }[props.state];
 });
 </script>
 

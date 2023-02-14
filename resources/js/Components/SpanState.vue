@@ -30,22 +30,10 @@ const colorState = computed(() => {
     return {
         "Pendiente de revisión": "danger",
         "En revisión": "warning",
+        Devuelto: "violet",
         Certificado: "success",
         Observado: "teal",
-        Devuelto: "violet",
     }[props.state];
-    // switch (props.state) {
-    //     case "Pendiente de revisión":
-    //         return "danger";
-    //     case "En revisión":
-    //         return "warning";
-    //     case "Certificado":
-    //         return "success";
-    //     case "Observado":
-    //         return "teal";
-    //     case "Devuelto":
-    //         return "violet";
-    // }
 });
 
 const pillIcon = computed(() => {

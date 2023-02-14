@@ -2,7 +2,8 @@ import {
     mdiAccountCircle,
     mdiHome,
     mdiFileSign,
-    mdiLock,
+    mdiTextBoxMultipleOutline,
+    mdiCash,
     mdiAlertCircle,
     mdiFileDocumentEditOutline,
     mdiCardBulleted,
@@ -10,6 +11,7 @@ import {
     mdiTelevisionGuide,
     mdiResponsive,
     mdiPalette,
+    mdiRefresh,
 } from "@mdi/js";
 
 export default [
@@ -26,12 +28,22 @@ export default [
     {
         to: "commitments.index",
         label: "Compromisos",
-        icon: mdiFileDocumentEditOutline,
+        icon: mdiTextBoxMultipleOutline,
     },
     {
         to: "accruals.index",
         label: "Devengos",
-        icon: mdiAlertCircle,
+        icon: mdiFileDocumentEditOutline,
+    },
+    {
+        to: "accruals.index",
+        label: "Anticipos",
+        icon: mdiRefresh,
+    },
+    {
+        to: "accruals.index",
+        label: "Pagos",
+        icon: mdiCash,
     },
     // {
     //     to: "/forms",

@@ -7,7 +7,6 @@ import SectionMain from "@/components/SectionMain.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
 import TableSampleCertifications from "@/components/certifications/TableSampleCertifications.vue";
 import { TYPE, useToast } from "vue-toastification";
-import { createToaster } from "@meforma/vue-toaster";
 import { parse } from "@vue/compiler-dom";
 
 // --------------------------------------------

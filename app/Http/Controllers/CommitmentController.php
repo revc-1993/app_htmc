@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Commitment;
 use App\Http\Requests\StoreCommitmentRequest;
 use App\Http\Requests\UpdateCommitmentRequest;
@@ -15,7 +16,16 @@ class CommitmentController extends Controller
      */
     public function index()
     {
-        //
+        return Inertia::render('Commitments/Index', [
+            'commitments' => Commitment::query()
+                // ->select('certifications.*', 'departments.*')
+                // ->with('users:id', 'departments:department')
+                ->select('commitments.*', 'certifications.certification_number')
+                ->join('certifications', 'certifications.id', '=', 'commitments.certification_id')
+                // ->join('departments', 'departments.id', '=', 'certifications.department_id')
+                // ->pending()
+                ->orderBy("commitments.id", "desc")->get(),
+        ]);
     }
 
     /**

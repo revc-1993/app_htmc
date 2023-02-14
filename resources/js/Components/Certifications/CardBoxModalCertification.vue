@@ -16,6 +16,8 @@ import FormValidationErrors from "@/components/FormValidationErrors.vue";
 import FormField from "@/components/FormField.vue";
 import FormControl from "@/components/FormControl.vue";
 import StepperState from "@/components/StepperState.vue";
+import Stepper from "@/components/Stepper.vue";
+import Step from "@/components/Step.vue";
 import BaseDivider from "@/components/BaseDivider.vue";
 import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
 
@@ -31,6 +33,10 @@ const props = defineProps({
         type: [String, Number, Boolean],
         default: null,
     },
+});
+
+const isNotRegister = computed(() => {
+    typeof props.certification.management_status !== "undefined";
 });
 
 console.log(props.certification);
@@ -53,21 +59,21 @@ const confirm = () => confirmCancel("confirm");
 // TITULO Y COLOR DE MODAL
 // ---------------------------------------------------------
 const title =
-    (props.operation === "1"
-        ? "Crear "
-        : props.operation === "2"
-        ? "Ver "
-        : props.operation === "3"
-        ? "Actualizar "
-        : "Eliminar ") + props.instance;
-const button =
-    props.operation === "1"
-        ? "success"
-        : props.operation === "2"
-        ? "info"
-        : props.operation === "3"
-        ? "success"
-        : "danger";
+    {
+        1: "Crear ",
+        2: "Ver ",
+        3: "Actualizar ",
+        4: "Eliminar ",
+    }[props.operation] + props.instance;
+
+const button = computed(() => {
+    return {
+        1: "success",
+        2: "info",
+        3: "success",
+        4: "danger",
+    }[props.operation];
+});
 
 const isCreate = props.operation === "1";
 const isShow = props.operation === "2";
@@ -256,10 +262,14 @@ const destroy = () => {
         <div v-if="operation !== '4'">
             <FormValidationErrors v-if="form.hasErrors" />
 
-            <!-- <StepperState
+            <BaseDivider />
+
+            <Step
                 v-if="value"
-                :state="certification.management_status"
-            /> -->
+                :state="isCreate ? '' : certification.management_status"
+            />
+
+            <BaseDivider />
 
             <FormField
                 label="Objeto de contrato"
@@ -274,7 +284,7 @@ const destroy = () => {
                     type="text"
                     placeholder="Detalle el objeto de contrato"
                     :has-errors="form.errors.contract_object != null"
-                    :disabled="!isCreate || isShow || isUpdate"
+                    :disabled="!isCreate"
                 />
             </FormField>
             <FormField>
@@ -292,7 +302,7 @@ const destroy = () => {
                         autocomplete="department_id"
                         :options="selectOptions.requestingArea"
                         :has-errors="form.errors.department_id != null"
-                        :disabled="!isCreate || isShow || isUpdate"
+                        :disabled="!isCreate"
                     />
                 </FormField>
                 <FormField
@@ -309,7 +319,7 @@ const destroy = () => {
                         type="date"
                         placeholder="1000,00"
                         :has-errors="form.errors.reception_date != null"
-                        :disabled="!isCreate || isShow || isUpdate"
+                        :disabled="!isCreate"
                     />
                 </FormField>
                 <FormField
@@ -329,7 +339,7 @@ const destroy = () => {
                         :step="0.0001"
                         :min="0"
                         :has-errors="form.errors.amount != null"
-                        :disabled="!isCreate || isShow || isUpdate"
+                        :disabled="!isCreate"
                     />
                 </FormField>
             </FormField>
@@ -349,7 +359,7 @@ const destroy = () => {
                         autocomplete="budget_line"
                         :options="selectOptions.budgetLine"
                         :has-errors="form.errors.budget_line != null"
-                        :disabled="isCreate || isShow || !isUpdate"
+                        :disabled="!isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -365,7 +375,7 @@ const destroy = () => {
                         autocomplete="assignment_date"
                         type="date"
                         :has-errors="form.errors.assignment_date != null"
-                        :disabled="isCreate || isShow || !isUpdate"
+                        :disabled="!isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -381,7 +391,7 @@ const destroy = () => {
                         autocomplete="japc_reassignment_date"
                         type="date"
                         :has-errors="form.errors.japc_reassignment_date != null"
-                        :disabled="isCreate || isShow || !isUpdate"
+                        :disabled="!isUpdate"
                     />
                 </FormField>
             </FormField>
@@ -400,7 +410,7 @@ const destroy = () => {
                         autocomplete="obligation_type"
                         :options="selectOptions.obligationType"
                         :has-errors="form.errors.obligation_type != null"
-                        :disabled="isCreate || isShow || !isUpdate"
+                        :disabled="!isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -417,7 +427,7 @@ const destroy = () => {
                         autocomplete="process_type"
                         :options="selectOptions.processType"
                         :has-errors="form.errors.process_type != null"
-                        :disabled="isCreate || isShow || !isUpdate"
+                        :disabled="!isUpdate"
                     />
                 </FormField>
             </FormField>
@@ -436,7 +446,7 @@ const destroy = () => {
                         type="text"
                         placeholder="Ej: IE-RER-CM-43"
                         :has-errors="form.errors.certification_number != null"
-                        :disabled="isCreate || isShow || !isUpdate"
+                        :disabled="!isUpdate"
                     />
                 </FormField>
                 <FormField
@@ -455,9 +465,23 @@ const destroy = () => {
                         placeholder="Ej: 1000.00"
                         :step="0.0001"
                         :has-errors="form.errors.amount_to_commit != null"
-                        :disabled="isCreate || isShow || !isUpdate"
+                        :disabled="!isUpdate"
                     />
                 </FormField>
+            </FormField>
+            <FormField
+                label="Validación de Tesorería"
+                label-for="last_validation"
+                :errors="form.errors.last_validation"
+            >
+                <FormCheckRadioGroup
+                    v-model="form.last_validation"
+                    name="last_validation"
+                    :disabled="!isUpdate"
+                    :options="{
+                        agree: 'La certificación se encuentra correctamente registrada.',
+                    }"
+                />
             </FormField>
             <FormField
                 label="Observaciones"
@@ -474,20 +498,6 @@ const destroy = () => {
                     placeholder="Indique las principales observaciones."
                     :has-errors="form.errors.comments != null"
                     :disabled="isShow"
-                />
-            </FormField>
-            <FormField
-                label="Validación de Tesorería"
-                label-for="last_validation"
-                :errors="form.errors.last_validation"
-            >
-                <FormCheckRadioGroup
-                    v-model="form.last_validation"
-                    name="last_validation"
-                    :disabled="!isUpdate"
-                    :options="{
-                        agree: 'La certificación se encuentra correctamente registrada.',
-                    }"
                 />
             </FormField>
         </div>

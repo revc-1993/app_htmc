@@ -4,6 +4,7 @@ import { Head } from "@inertiajs/vue3";
 import { computed, ref, onMounted } from "vue";
 import { useMainStore } from "@/stores/main";
 import {
+    mdiTextBoxMultipleOutline,
     mdiRefresh,
     mdiCash,
     mdiAccountMultiple,
@@ -68,7 +69,7 @@ const transactionBarItems = computed(() => mainStore.history);
                     trend="12%"
                     trend-type="down"
                     color="text-orange-400"
-                    :icon="mdiFileDocumentEditOutline"
+                    :icon="mdiTextBoxMultipleOutline"
                     :number="5"
                     label="Compromisos"
                 />

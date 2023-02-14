@@ -44,7 +44,7 @@ class CertificationController extends Controller
         $certification = Certification::create($request->validated() + [
             'management_status' => $this->changeStatus($request),
         ]);
-        dd($certification);
+        // dd($certification);
         return to_route('certifications.index');
     }
 
