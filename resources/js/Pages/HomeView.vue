@@ -4,12 +4,14 @@ import { Head } from "@inertiajs/vue3";
 import { computed, ref, onMounted } from "vue";
 import { useMainStore } from "@/stores/main";
 import {
+    mdiRefresh,
+    mdiCash,
     mdiAccountMultiple,
-    mdiCartOutline,
     mdiChartTimelineVariant,
     mdiMonitorCellphone,
     mdiReload,
-    mdiGithub,
+    mdiFileDocumentEditOutline,
+    mdiCardBulleted,
     mdiChartPie,
 } from "@mdi/js";
 import * as chartConfig from "@/components/Charts/chart.config.js";
@@ -53,32 +55,46 @@ const transactionBarItems = computed(() => mainStore.history);
                 main
             />
 
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-5 mb-6">
                 <CardBoxWidget
                     trend="12%"
                     trend-type="up"
-                    color="text-emerald-500"
-                    :icon="mdiAccountMultiple"
-                    :number="512"
-                    label="Clients"
+                    color="text-gray-500"
+                    :icon="mdiCardBulleted"
+                    :number="12"
+                    label="Certificaciones"
                 />
                 <CardBoxWidget
                     trend="12%"
                     trend-type="down"
-                    color="text-blue-500"
-                    :icon="mdiCartOutline"
-                    :number="7770"
-                    prefix="$"
-                    label="Sales"
+                    color="text-orange-400"
+                    :icon="mdiFileDocumentEditOutline"
+                    :number="5"
+                    label="Compromisos"
                 />
                 <CardBoxWidget
                     trend="Overflow"
                     trend-type="alert"
-                    color="text-red-500"
-                    :icon="mdiChartTimelineVariant"
-                    :number="256"
-                    suffix="%"
-                    label="Performance"
+                    color="text-cyan-500"
+                    :icon="mdiFileDocumentEditOutline"
+                    :number="31"
+                    label="Devengos"
+                />
+                <CardBoxWidget
+                    trend="12%"
+                    trend-type="up"
+                    color="text-slate-500"
+                    :icon="mdiRefresh"
+                    :number="13"
+                    label="Anticipos"
+                />
+                <CardBoxWidget
+                    trend="12%"
+                    trend-type="down"
+                    color="text-emerald-500"
+                    :icon="mdiCash"
+                    :number="24"
+                    label="Pagos"
                 />
             </div>
 

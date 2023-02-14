@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('process_type')->nullable();
             $table->string('comments')->nullable();
             $table->string('returned_document_number')->nullable();
+            $table->boolean('last_validation')->default(false);  // Considerar posibilidad de FK a tabla ESTADOS
             $table->string('management_status')->default("Pendiente de revisión");  // Considerar posibilidad de FK a tabla ESTADOS
             $table->softDeletes();
             $table->timestamps();

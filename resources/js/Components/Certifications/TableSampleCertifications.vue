@@ -1,12 +1,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { router } from "@inertiajs/vue3";
-import {
-    mdiEye,
-    mdiPenPlus,
-    mdiTrashCan,
-    mdiChartTimelineVariant,
-} from "@mdi/js";
+import { mdiEye, mdiPenPlus, mdiTrashCan, mdiFindReplace } from "@mdi/js";
 import CardBoxComponentEmpty from "@/components/CardBoxComponentEmpty.vue";
 import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
@@ -15,6 +10,7 @@ import BaseButton from "@/components/BaseButton.vue";
 import SpanState from "@/components/SpanState.vue";
 import CardBoxModalCertification from "@/components/certifications/CardBoxModalCertification.vue";
 import CardBox from "@/components/CardBox.vue";
+import NumberDynamic from "@/components/NumberDynamic.vue";
 
 const props = defineProps({
     checkable: Boolean,
@@ -149,11 +145,12 @@ const closeModal = (isconfirm) => {
                     <th v-if="checkable" class="text-center" />
                     <th class="text-center">N.</th>
                     <th class="text-center">Objeto de contrato</th>
+                    <th class="text-center">N. Certificación</th>
                     <th class="text-center">Area requirente</th>
                     <th class="text-center">Monto</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Usuario actual</th>
-                    <th>Acciones</th>
+                    <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -182,22 +179,30 @@ const closeModal = (isconfirm) => {
                         {{ certification.contract_object }}
                     </td>
                     <td data-label="Area Requirente" class="text-center">
+                        {{ certification.certification_number }}
+                    </td>
+                    <td data-label="Area Requirente" class="text-center">
                         {{ certification.department }}
                     </td>
-                    <td data-label="Monto" class="text-center">
-                        {{ certification.amount }}
+                    <td data-label="Monto" class="text-center text-sm">
+                        <strong>$ {{ certification.amount }}</strong>
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
                         <SpanState :state="certification.management_status" />
                     </td>
-                    <td data-label="Usuario" class="text-center">
-                        {{ certification.name }}
+                    <td
+                        data-label="Usuario"
+                        class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
+                    >
+                        <strong>
+                            {{ certification.name }}
+                        </strong>
                     </td>
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"
                     >
                         <BaseButtons
-                            type="justify-start lg:justify-end"
+                            type="justify-start lg:justify-center whitespace-nowrap"
                             no-wrap
                         >
                             <BaseButton
@@ -208,7 +213,7 @@ const closeModal = (isconfirm) => {
                             />
                             <BaseButton
                                 color="warning"
-                                :icon="mdiChartTimelineVariant"
+                                :icon="mdiFindReplace"
                                 small
                                 @click="openModal('3', certification)"
                             />

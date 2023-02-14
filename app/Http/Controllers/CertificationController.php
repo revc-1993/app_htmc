@@ -8,6 +8,8 @@ use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
 use App\Models\Department;
 
+use function PHPUnit\Framework\isNull;
+
 class CertificationController extends Controller
 {
     /**
@@ -31,16 +33,6 @@ class CertificationController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \App\Http\Requests\StoreCertificationRequest  $request
@@ -48,34 +40,12 @@ class CertificationController extends Controller
      */
     public function store(StoreCertificationRequest $request)
     {
-        // Certification::create($request->validated());
-
-        // return to_route('certifications.index');
-
-        Certification::create($request->validated());
+        // dd($request);
+        $certification = Certification::create($request->validated() + [
+            'management_status' => $this->changeStatus($request),
+        ]);
+        dd($certification);
         return to_route('certifications.index');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Certification  $certification
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Certification $certification)
-    {
-        // 
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Certification  $certification
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Certification $certification)
-    {
-        //
     }
 
     /**
@@ -87,7 +57,9 @@ class CertificationController extends Controller
      */
     public function update(UpdateCertificationRequest $request, Certification $certification)
     {
-        $certification->update($request->validated());
+        $certification->update($request->validated() + [
+            'management_status' => $this->updateStatus($request),
+        ]);
         return to_route('certifications.index');
     }
 
@@ -101,5 +73,29 @@ class CertificationController extends Controller
     {
         $certification->delete();
         return to_route('certifications.index');
+    }
+
+    public function changeStatus(StoreCertificationRequest $request)
+    {
+        if ($request->last_validation)
+            return "Observado";
+        else if (!is_null($request->certification_number) && !is_null($request->amount_to_commit))
+            return "Certificado";
+        else if (!is_null($request->budget_line) || !is_null($request->assignment_date) || !is_null($request->japc_reassignment_date) || !is_null($request->obligation_type) || !is_null($request->process_type))
+            return "En revisión";
+        else
+            return "Pendiente de revisión";
+    }
+
+    public function updateStatus(UpdateCertificationRequest $request)
+    {
+        if ($request->last_validation)
+            return "Observado";
+        else if (!is_null($request->certification_number) && !is_null($request->amount_to_commit))
+            return "Certificado";
+        else if (!is_null($request->budget_line) || !is_null($request->assignment_date) || !is_null($request->japc_reassignment_date) || !is_null($request->obligation_type) || !is_null($request->process_type))
+            return "En revisión";
+        else
+            return "Pendiente de revisión";
     }
 }

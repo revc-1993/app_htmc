@@ -6,6 +6,7 @@ import BaseButtons from "@/components/BaseButtons.vue";
 import CardBox from "@/components/CardBox.vue";
 import OverlayLayer from "@/components/OverlayLayer.vue";
 import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
+import NotificationBarInCard from "@/components/NotificationBarInCard.vue";
 
 const props = defineProps({
     title: {

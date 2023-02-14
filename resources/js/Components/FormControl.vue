@@ -36,6 +36,14 @@ const props = defineProps({
         type: String,
         default: "text",
     },
+    min: {
+        type: Number,
+        default: 0,
+    },
+    step: {
+        type: Number,
+        default: 0,
+    },
     modelValue: {
         type: [String, Number, Boolean, Array, Object],
         default: "",
@@ -61,8 +69,8 @@ const inputElClass = computed(() => {
     const base = [
         "px-3 py-2 max-w-full rounded w-full focus:outline-none focus:ring",
         props.disabled
-            ? "text-slate-500 dark:text-slate-400"
-            : " border-green-700 focus:ring-green-600",
+            ? "text-slate-500 dark:text-slate-300 border-slate-400"
+            : " border-slate-700 focus:ring-blue-600",
         props.hasErrors
             ? "border-red-700 focus:border-red-700 focus:ring-red-600 dark:focus:ring-red-600"
             : "border-gray-700",
@@ -183,6 +191,8 @@ if (props.ctrlKFocus) {
             :disabled="disabled"
             :placeholder="placeholder"
             :type="computedType"
+            :min="min"
+            :step="step"
             :class="inputElClass"
         />
         <FormControlIcon v-if="icon" :icon="icon" :h="controlIconH" />

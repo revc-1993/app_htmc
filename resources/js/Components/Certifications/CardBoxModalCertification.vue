@@ -16,6 +16,8 @@ import FormValidationErrors from "@/components/FormValidationErrors.vue";
 import FormField from "@/components/FormField.vue";
 import FormControl from "@/components/FormControl.vue";
 import StepperState from "@/components/StepperState.vue";
+import BaseDivider from "@/components/BaseDivider.vue";
+import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
 
 // ---------------------------------------------------------
 // PROPS
@@ -127,7 +129,7 @@ const form = useForm(
               customer_id: usePage().props.auth.user.id,
               department_id: "",
               returned_document_number: "",
-              management_status: "",
+              last_validation: "",
           }
         : {
               contract_object: props.certification.contract_object,
@@ -171,7 +173,7 @@ const form = useForm(
               },
               returned_document_number:
                   props.certification.returned_document_number,
-              management_status: "",
+              last_validation: props.certification.last_validation,
           }
 );
 
@@ -321,9 +323,11 @@ const destroy = () => {
                         id="amount"
                         :icon="mdiCurrencyUsd"
                         autocomplete="amount"
-                        type="text"
+                        type="number"
                         inputmode="decimal"
-                        placeholder="1000,00"
+                        placeholder="Ej: 1000.00"
+                        :step="0.0001"
+                        :min="0"
                         :has-errors="form.errors.amount != null"
                         :disabled="!isCreate || isShow || isUpdate"
                     />
@@ -332,19 +336,19 @@ const destroy = () => {
 
             <FormField>
                 <FormField
-                    label="N. Certificación"
-                    label-for="certification_number"
-                    help="Ingrese el Nro. de la certificación"
-                    :errors="form.errors.certification_number"
+                    label="Item presupuestario"
+                    label-for="budget_line"
+                    help="Escoja el ítem presupuestario"
+                    :errors="form.errors.budget_line"
                 >
                     <FormControl
-                        v-model="form.certification_number"
-                        id="certification_number"
-                        :icon="mdiNumeric"
-                        autocomplete="certification_number"
-                        type="text"
-                        placeholder="IE-RER-CM-43"
-                        :has-errors="form.errors.certification_number != null"
+                        v-model="form.budget_line"
+                        name="budget_line"
+                        id="budget_line"
+                        :icon="mdiTag"
+                        autocomplete="budget_line"
+                        :options="selectOptions.budgetLine"
+                        :has-errors="form.errors.budget_line != null"
                         :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
@@ -377,43 +381,6 @@ const destroy = () => {
                         autocomplete="japc_reassignment_date"
                         type="date"
                         :has-errors="form.errors.japc_reassignment_date != null"
-                        :disabled="isCreate || isShow || !isUpdate"
-                    />
-                </FormField>
-            </FormField>
-
-            <FormField>
-                <FormField
-                    label="Item presupuestario"
-                    label-for="budget_line"
-                    help="Escoja el ítem presupuestario"
-                    :errors="form.errors.budget_line"
-                >
-                    <FormControl
-                        v-model="form.budget_line"
-                        name="budget_line"
-                        id="budget_line"
-                        :icon="mdiTag"
-                        autocomplete="budget_line"
-                        :options="selectOptions.budgetLine"
-                        :has-errors="form.errors.budget_line != null"
-                        :disabled="isCreate || isShow || !isUpdate"
-                    />
-                </FormField>
-                <FormField
-                    label="Monto a comprometer"
-                    label-for="amount_to_commit"
-                    help="Ingrese el monto a comprometer"
-                    :errors="form.errors.amount_to_commit"
-                >
-                    <FormControl
-                        v-model="form.amount_to_commit"
-                        id="amount_to_commit"
-                        :icon="mdiCurrencyUsd"
-                        autocomplete="amount_to_commit"
-                        type="number"
-                        placeholder="1001,00"
-                        :has-errors="form.errors.amount_to_commit != null"
                         :disabled="isCreate || isShow || !isUpdate"
                     />
                 </FormField>
@@ -454,6 +421,44 @@ const destroy = () => {
                     />
                 </FormField>
             </FormField>
+            <FormField>
+                <FormField
+                    label="N. Certificación"
+                    label-for="certification_number"
+                    help="Ingrese el Nro. de la certificación"
+                    :errors="form.errors.certification_number"
+                >
+                    <FormControl
+                        v-model="form.certification_number"
+                        id="certification_number"
+                        :icon="mdiNumeric"
+                        autocomplete="certification_number"
+                        type="text"
+                        placeholder="Ej: IE-RER-CM-43"
+                        :has-errors="form.errors.certification_number != null"
+                        :disabled="isCreate || isShow || !isUpdate"
+                    />
+                </FormField>
+                <FormField
+                    label="Monto a comprometer"
+                    label-for="amount_to_commit"
+                    help="Ingrese el monto a comprometer"
+                    :errors="form.errors.amount_to_commit"
+                >
+                    <FormControl
+                        v-model="form.amount_to_commit"
+                        id="amount_to_commit"
+                        :icon="mdiCurrencyUsd"
+                        autocomplete="amount_to_commit"
+                        type="number"
+                        inputmode="decimal"
+                        placeholder="Ej: 1000.00"
+                        :step="0.0001"
+                        :has-errors="form.errors.amount_to_commit != null"
+                        :disabled="isCreate || isShow || !isUpdate"
+                    />
+                </FormField>
+            </FormField>
             <FormField
                 label="Observaciones"
                 label-for="comments"
@@ -469,6 +474,20 @@ const destroy = () => {
                     placeholder="Indique las principales observaciones."
                     :has-errors="form.errors.comments != null"
                     :disabled="isShow"
+                />
+            </FormField>
+            <FormField
+                label="Validación de Tesorería"
+                label-for="last_validation"
+                :errors="form.errors.last_validation"
+            >
+                <FormCheckRadioGroup
+                    v-model="form.last_validation"
+                    name="last_validation"
+                    :disabled="!isUpdate"
+                    :options="{
+                        agree: 'La certificación se encuentra correctamente registrada.',
+                    }"
                 />
             </FormField>
         </div>

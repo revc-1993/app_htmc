@@ -4,7 +4,7 @@ import {
     mdiFileSign,
     mdiLock,
     mdiAlertCircle,
-    mdiSquareEditOutline,
+    mdiFileDocumentEditOutline,
     mdiCardBulleted,
     mdiViewList,
     mdiTelevisionGuide,
@@ -22,6 +22,16 @@ export default [
         route: "certifications.index",
         label: "Certificaciones",
         icon: mdiCardBulleted,
+    },
+    {
+        to: "commitments.index",
+        label: "Compromisos",
+        icon: mdiFileDocumentEditOutline,
+    },
+    {
+        to: "accruals.index",
+        label: "Devengos",
+        icon: mdiAlertCircle,
     },
     // {
     //     to: "/forms",

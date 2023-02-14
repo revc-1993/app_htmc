@@ -35,7 +35,10 @@ const hasSlot = computed(() => useSlots().default);
                 bg
             />
             <BaseIcon v-else-if="icon" :path="icon" class="mr-2" size="20" />
-            <h1 :class="main ? 'text-3xl' : 'text-2xl'" class="leading-tight">
+            <h1
+                :class="main ? 'text-3xl' : 'text-2xl'"
+                class="leading-tight font-medium"
+            >
                 {{ title }}
             </h1>
         </div>

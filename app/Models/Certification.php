@@ -24,6 +24,8 @@ class Certification extends Model
         'obligation_type',
         'process_type',
         'comments',
+        'management_status',
+        'last_validation',
     ];
 
     /**
@@ -45,6 +47,17 @@ class Certification extends Model
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
+
+    /**
+     * Get all of the Certifications for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function commitments()
+    {
+        return $this->hasMany(Commitment::class, 'certification_id');
+    }
+
 
     public function scopePending($query)
     {

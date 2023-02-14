@@ -37,7 +37,8 @@ class UpdateCertificationRequest extends FormRequest
             'amount_to_commit' => ['numeric', 'min:1'],
             'obligation_type' => [''],
             'process_type' => [''],
-            'comments' => ['max:255']
+            'comments' => ['max:255'],
+            'last_validation' => [''],
         ];
     }
 }
