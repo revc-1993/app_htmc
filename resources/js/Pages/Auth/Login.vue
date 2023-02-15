@@ -37,6 +37,8 @@ const submit = () => {
         onFinish: () => form.reset("password"),
     });
 };
+
+console.log(form);
 </script>
 
 <template>
@@ -45,8 +47,12 @@ const submit = () => {
 
         <SectionFullScreen v-slot="{ cardClass }" bg="slateGray">
             <CardBox :class="cardClass" is-form @submit.prevent="submit">
-                <SectionTitleLineWithButton title="HTMC - IESS" main>
-                    mb-6
+                <SectionTitleLineWithButton
+                    title="HTMC - IESS"
+                    :class="'text-center'"
+                    main
+                >
+                    {{}}
                 </SectionTitleLineWithButton>
 
                 <FormValidationErrors v-if="form.hasErrors" />
@@ -62,6 +68,7 @@ const submit = () => {
                         id="email"
                         autocomplete="email"
                         type="email"
+                        :has-errors="form.errors.email != null"
                     />
                 </FormField>
 
@@ -69,7 +76,6 @@ const submit = () => {
                     label="Contraseña"
                     label-for="password"
                     help="Ingrese su contraseña"
-                    :errors="form.errors.password"
                 >
                     <FormControl
                         v-model="form.password"
@@ -77,6 +83,7 @@ const submit = () => {
                         type="password"
                         id="password"
                         autocomplete="current-password"
+                        :has-errors="form.errors.email != null"
                     />
                 </FormField>
 
