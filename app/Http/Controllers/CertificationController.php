@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\Certification;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
+use App\Models\Commitment;
 use App\Models\Department;
 
 use function PHPUnit\Framework\isNull;
@@ -20,15 +21,19 @@ class CertificationController extends Controller
     public function index()
     {
         return Inertia::render('Certifications/Index', [
-            'certifications' => Certification::query()
-                // ->select('certifications.*', 'departments.*')
-                // ->with('users:id', 'departments:department')
-                ->select('certifications.*', 'users.name', 'departments.department')
-                ->join('users', 'users.id', '=', 'certifications.customer_id')
-                ->join('departments', 'departments.id', '=', 'certifications.department_id')
+            'certifications' => Certification
+                ::with([
+                    'user' => function ($query) {
+                        $query->select('id', 'name');
+                    },
+                    'department' => function ($query) {
+                        $query->select('id', 'department');
+                    }
+                ])
                 ->pending()
-                ->orderBy("certifications.id", "desc")->get(),
-            'departments' => Department::all(),
+                ->orderBy("certifications.id", "desc")
+                ->get(),
+            'departments' => Department::all(['id', 'department']),
         ]);
     }
 
@@ -41,7 +46,7 @@ class CertificationController extends Controller
     public function store(StoreCertificationRequest $request)
     {
         // dd($request);
-        $certification = Certification::create($request->validated() + [
+        Certification::create($request->validated() + [
             'management_status' => $this->changeStatus($request),
         ]);
         // dd($certification);
@@ -60,6 +65,12 @@ class CertificationController extends Controller
         $certification->update($request->validated() + [
             'management_status' => $this->updateStatus($request),
         ]);
+
+        if ($certification->management_status === 'Observado')
+            Commitment::create([
+                'certification_id' => $certification->id,
+            ]);
+
         return to_route('certifications.index');
     }
 

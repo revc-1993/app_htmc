@@ -6,6 +6,7 @@ use Inertia\Inertia;
 use App\Models\Commitment;
 use App\Http\Requests\StoreCommitmentRequest;
 use App\Http\Requests\UpdateCommitmentRequest;
+use App\Models\Certification;
 
 class CommitmentController extends Controller
 {
@@ -17,25 +18,15 @@ class CommitmentController extends Controller
     public function index()
     {
         return Inertia::render('Commitments/Index', [
-            'commitments' => Commitment::query()
-                // ->select('certifications.*', 'departments.*')
-                // ->with('users:id', 'departments:department')
-                ->select('commitments.*', 'certifications.certification_number')
-                ->join('certifications', 'certifications.id', '=', 'commitments.certification_id')
-                // ->join('departments', 'departments.id', '=', 'certifications.department_id')
-                // ->pending()
-                ->orderBy("commitments.id", "desc")->get(),
+            'commitments' => Commitment
+                ::with([
+                    'certification' => function ($query) {
+                        $query->select('id', 'certification_number');
+                    },
+                ])
+                ->orderBy("commitments.id", "desc")
+                ->get(),
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -44,9 +35,11 @@ class CommitmentController extends Controller
      * @param  \App\Http\Requests\StoreCommitmentRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreCommitmentRequest $request)
+    public function store(Certification $certification)
     {
-        //
+        Commitment::create([
+            'certification_id' => $certification->id,
+        ]);
     }
 
     /**

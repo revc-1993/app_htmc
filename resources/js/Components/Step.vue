@@ -24,9 +24,7 @@ const colorInactive = "bg-gray-100";
 
 <template>
     <div>
-        <h2 class="sr-only">Steps</h2>
-
-        <div>
+        <div class="py-3">
             <ol
                 class="grid grid-cols-1 divide-x divide-gray-300 overflow-hidden rounded-lg border border-gray-100 text-sm text-gray-500 sm:grid-cols-5"
             >

@@ -64,6 +64,7 @@ const transactionBarItems = computed(() => mainStore.history);
                     :icon="mdiCardBulleted"
                     :number="12"
                     label="Certificaciones"
+                    :is-button="false"
                 />
                 <CardBoxWidget
                     trend="12%"
@@ -72,6 +73,7 @@ const transactionBarItems = computed(() => mainStore.history);
                     :icon="mdiTextBoxMultipleOutline"
                     :number="5"
                     label="Compromisos"
+                    :is-button="false"
                 />
                 <CardBoxWidget
                     trend="Overflow"
@@ -80,6 +82,7 @@ const transactionBarItems = computed(() => mainStore.history);
                     :icon="mdiFileDocumentEditOutline"
                     :number="31"
                     label="Devengos"
+                    :is-button="false"
                 />
                 <CardBoxWidget
                     trend="12%"
@@ -88,6 +91,7 @@ const transactionBarItems = computed(() => mainStore.history);
                     :icon="mdiRefresh"
                     :number="13"
                     label="Anticipos"
+                    :is-button="false"
                 />
                 <CardBoxWidget
                     trend="12%"
@@ -96,6 +100,7 @@ const transactionBarItems = computed(() => mainStore.history);
                     :icon="mdiCash"
                     :number="24"
                     label="Pagos"
+                    :is-button="false"
                 />
             </div>
 

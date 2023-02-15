@@ -178,11 +178,11 @@ const closeModal = (isconfirm) => {
                     <td data-label="Objeto de Contrato" class="text-center">
                         {{ certification.contract_object }}
                     </td>
-                    <td data-label="Area Requirente" class="text-center">
+                    <td data-label="Nro. Certificación" class="text-center">
                         {{ certification.certification_number }}
                     </td>
                     <td data-label="Area Requirente" class="text-center">
-                        {{ certification.department }}
+                        {{ certification.department.department }}
                     </td>
                     <td data-label="Monto" class="text-center text-sm">
                         <strong>$ {{ certification.amount }}</strong>
@@ -195,7 +195,7 @@ const closeModal = (isconfirm) => {
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
                         <strong>
-                            {{ certification.name }}
+                            {{ certification.user.name }}
                         </strong>
                     </td>
                     <td

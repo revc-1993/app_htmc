@@ -32,13 +32,23 @@ const colorClass = computed(() => {
 
     return "";
 });
+
+// style="
+//     background-image: url('https://www.htmc.gob.ec/wp-content/uploads/2021/07/20210719-QUIROFANO-NO-1280x663.jpeg');
+// "
 </script>
 
 <template>
     <div
-        class="flex min-h-screen items-center justify-center"
+        class="flex min-h-screen h-full w-full items-center justify-center bg-cover bg-left-bottom bg-fixed"
         :class="colorClass"
+        style="
+            background-image: url('https://www.htmc.gob.ec/wp-content/uploads/2021/07/20210719-QUIROFANO-NO-1280x663.jpeg');
+        "
     >
-        <slot card-class="w-11/12 md:w-7/12 lg:w-6/12 xl:w-4/12 shadow-2xl" />
+        <div class="absolute inset-0 bg-gray-900 bg-opacity-50"></div>
+        <slot
+            card-class="absolute w-11/12 md:w-7/12 lg:w-6/12 xl:w-4/12 shadow-2xl"
+        />
     </div>
 </template>
