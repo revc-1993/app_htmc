@@ -26,7 +26,7 @@ export default [
         icon: mdiCardBulleted,
     },
     {
-        to: "commitments.index",
+        route: "commitments.index",
         label: "Compromisos",
         icon: mdiTextBoxMultipleOutline,
     },

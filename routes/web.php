@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CertificationController;
+use App\Http\Controllers\CommitmentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;

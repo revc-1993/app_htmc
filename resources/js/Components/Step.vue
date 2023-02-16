@@ -36,6 +36,15 @@ const colorInactive = "bg-gray-100";
                             : colorInactive
                     "
                 >
+                    <!-- <BaseIcon
+                        v-if="item.icon"
+                        :path="item.icon"
+                        class="flex-none"
+                        :class="activeInactiveStyle"
+                        w="w-16"
+                        :size="18"
+                    /> -->
+
                     <p class="leading-none">
                         <strong class="block font-medium"> 1. </strong>
                         <small class="mt-1"> Pendiente de revisión </small>

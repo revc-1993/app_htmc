@@ -15,10 +15,10 @@ return new class extends Migration
     {
         Schema::create('commitments', function (Blueprint $table) {
             $table->id();
-            $table->string("process_code");
-            $table->string("vendor_name");
+            $table->string("process_code")->nullable();
+            $table->string("vendor_name")->nullable();
             $table->string("contract_administrator")->nullable();
-            $table->string("amount_to_commit");
+            $table->string("amount_to_commit")->nullable();
             $table->string('management_status')->default("Pendiente de revisión");  // Considerar posibilidad de FK a tabla ESTADOS
             $table->unsignedBigInteger("certification_id");
             $table->softDeletes();
