@@ -25,16 +25,16 @@ class UpdateCertificationRequest extends FormRequest
     {
         return [
             'contract_object' => ['required', 'string', 'min:10', 'max:255'],
-            'reception_date' => ['required', 'date'],
-            'amount' => ['required', 'numeric', 'min:1'],
+            'reception_date' => ['required', 'date', 'before_or_equal:today', 'after:last year'],
+            'amount' => ['required', 'numeric', 'min:10'],
             'department_id' => ['required'],
             'customer_id' => ['required'],
 
             'certification_number' => ['alpha_dash', 'min:10'],
-            'assignment_date' => ['date'],
-            'japc_reassignment_date' => ['date'],
+            'assignment_date' => ['date', 'after_or_equal:reception_date'],
+            'japc_reassignment_date' => ['date', 'after_or_equal:assignment_date'],
             'budget_line' => [''],
-            'amount_to_commit' => ['numeric', 'min:1'],
+            'amount_to_commit' => ['numeric', 'min:10'],
             'obligation_type' => [''],
             'process_type' => [''],
             'comments' => ['max:255'],

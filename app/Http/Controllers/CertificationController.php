@@ -9,8 +9,6 @@ use App\Http\Requests\UpdateCertificationRequest;
 use App\Models\Commitment;
 use App\Models\Department;
 
-use function PHPUnit\Framework\isNull;
-
 class CertificationController extends Controller
 {
     /**
@@ -46,11 +44,17 @@ class CertificationController extends Controller
     public function store(StoreCertificationRequest $request)
     {
         // dd($request);
-        Certification::create($request->validated() + [
+        $certification = Certification::create($request->validated() + [
             'management_status' => $this->changeStatus($request),
         ]);
-        // dd($certification);
-        return to_route('certifications.index');
+
+        $message = "Registro creado correctamente.";
+        $state = $certification->management_status;
+        return to_route('certifications.index')->with(compact('message', 'state'));
+
+
+        // return to_route('certifications.index')
+        //     ->with('message', 'Registro Nro. ' . $certification->id . " creado exitosamente. \n Estado: <strong>" . $certification->management_status . "</strong>");
     }
 
     /**
@@ -66,12 +70,17 @@ class CertificationController extends Controller
             'management_status' => $this->updateStatus($request),
         ]);
 
-        if ($certification->management_status === 'Observado')
+        $message = "Registro actualizado correctamente.";
+        $state = $certification->management_status;
+
+        if ($certification->management_status === 'Observado') {
             Commitment::create([
                 'certification_id' => $certification->id,
             ]);
+            $message .= "\nPuede revisar el nuevo compromiso en el módulo COMPROMISOS.";
+        }
 
-        return to_route('certifications.index');
+        return to_route('certifications.index')->with(compact('message', 'state'));
     }
 
     /**

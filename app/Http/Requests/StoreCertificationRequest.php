@@ -25,8 +25,8 @@ class StoreCertificationRequest extends FormRequest
     {
         return [
             'contract_object' => ['required', 'unique:certifications', 'string', 'min:10', 'max:255'],
-            'reception_date' => ['required', 'date'],
-            'amount' => ['required', 'numeric', 'min:1'],
+            'reception_date' => ['required', 'date', 'before_or_equal:today', 'after:last year'],
+            'amount' => ['required', 'numeric', 'min:10'],
             'department_id' => ['required'],
             'customer_id' => ['required'],
             // 'certification_number' => ['alpha_dash', 'min:10', 'unique:certifications'],

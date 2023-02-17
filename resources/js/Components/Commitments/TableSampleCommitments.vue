@@ -12,14 +12,13 @@ import CardBox from "@/components/CardBox.vue";
 
 const props = defineProps({
     checkable: Boolean,
-    certifications: Object,
-    departments: Object,
+    commitments: Object,
 });
 
 // ---------------------------------------------------------
 // PAGINACIÓN
 // ---------------------------------------------------------
-const items = computed(() => props.certifications);
+const items = computed(() => props.commitments);
 const perPage = ref(5);
 const currentPage = ref(0);
 const itemsPaginated = computed(() =>
@@ -51,13 +50,13 @@ const remove = (arr, cb) => {
     });
     return newArr;
 };
-const checked = (isChecked, certification) => {
+const checked = (isChecked, commitment) => {
     if (isChecked) {
-        checkedRows.value.push(certification);
+        checkedRows.value.push(commitment);
     } else {
         checkedRows.value = remove(
             checkedRows.value,
-            (row) => row.id === certification.id
+            (row) => row.id === commitment.id
         );
     }
 };
@@ -74,19 +73,19 @@ const alert = (operation) => alerts("alert", operation);
 // ---------------------------------------------------------
 // VARIABLES
 // ---------------------------------------------------------
-let certification;
+let commitment;
 const isModalActive = ref(false);
 const operation = ref("");
 
 // --------------------------------------------
 // ABRIR MODAL: 1 Create, 2 Show, 3 Update, 4 Delete
 // --------------------------------------------
-const openModal = (action, certifications = "") => {
-    // console.log(certifications);
-    if (action !== "1") certification = certifications;
+const openModal = (action, commitments = "") => {
+    // console.log(commitments);
+    if (action !== "1") commitment = commitments;
     operation.value = action;
     isModalActive.value = true;
-    // console.log(certification);
+    // console.log(commitment);
     // console.log(operation.value);
 };
 
@@ -102,17 +101,17 @@ const closeModal = (isconfirm) => {
 
 <template>
     <!-- BOTON CREATE (OK) -->
-    <BaseButtons type="justify-end">
+    <!-- <BaseButtons type="justify-end">
         <BaseButton
             color="success"
             small
             :icon="mdiPenPlus"
-            label="Crear certificación"
+            label="Crear compromiso"
             @click="openModal('1')"
         />
-    </BaseButtons>
+    </BaseButtons> -->
 
-    <CardBoxModalCertification
+    <!-- <CardBoxModalCertification
         v-if="isModalActive"
         v-model="isModalActive"
         instance="certificación"
@@ -120,7 +119,7 @@ const closeModal = (isconfirm) => {
         :departments="departments"
         :operation="operation"
         @confirm="closeModal"
-    />
+    /> -->
 
     <CardBox class="mb-6" has-table>
         <div
@@ -142,10 +141,11 @@ const closeModal = (isconfirm) => {
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-if="checkable" class="text-center" />
                     <th class="text-center">N.</th>
-                    <th class="text-center">Objeto de contrato</th>
                     <th class="text-center">N. Certificación</th>
-                    <th class="text-center">Area requirente</th>
-                    <th class="text-center">Monto</th>
+                    <th class="text-center">Cod. Proceso</th>
+                    <th class="text-center">Nombre de Proveedor</th>
+                    <th class="text-center">Administrador de Contrato</th>
+                    <th class="text-center">Monto a comprometer</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Usuario actual</th>
                     <th class="text-center">Acciones</th>
@@ -158,43 +158,51 @@ const closeModal = (isconfirm) => {
                     </td>
                 </tr> -->
                 <tr
-                    v-for="certification in itemsPaginated"
-                    :key="certification.id"
+                    v-for="commitment in itemsPaginated"
+                    :key="commitment.id"
                     class="border-b border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                     <TableCheckboxCell
                         v-if="checkable"
-                        @checked="checked($event, certification)"
+                        @checked="checked($event, commitment)"
                     />
                     <td class="border-b-0 lg:w-6 before:hidden text-center">
-                        {{ certification.id }}
+                        {{ commitment.id }}
                         <!-- <UserAvatar
                         :username="certification.cf_contract_object"
                         class="w-24 h-24 mx-auto lg:w-6 lg:h-6"
                     /> -->
                     </td>
-                    <td data-label="Objeto de Contrato" class="text-center">
-                        {{ certification.contract_object }}
+                    <td data-label="N. Certificación" class="text-center">
+                        {{ commitment.certification.certification_number }}
                     </td>
-                    <td data-label="Nro. Certificación" class="text-center">
-                        {{ certification.certification_number }}
+                    <td data-label="Cod. Proceso" class="text-center">
+                        {{ commitment.process_code }}
                     </td>
-                    <td data-label="Area Requirente" class="text-center">
-                        {{ certification.department.department }}
+                    <td data-label="Proveedor" class="text-center">
+                        {{ commitment.vendor_name }}
                     </td>
-                    <td data-label="Monto" class="text-center text-sm">
-                        <strong>$ {{ certification.amount }}</strong>
+                    <td
+                        data-label="Administrador de contrato"
+                        class="text-center"
+                    >
+                        {{ commitment.contract_administrator }}
+                    </td>
+                    <td
+                        data-label="Monto a comprometer"
+                        class="text-center text-sm"
+                    >
+                        <strong>$ {{ commitment.amount_to_commit }}</strong>
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
-                        <SpanState :state="certification.management_status" />
+                        <SpanState :state="commitment.management_status" />
                     </td>
                     <td
                         data-label="Usuario"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        <strong>
-                            {{ certification.user.name }}
-                        </strong>
+                        "-"
+                        <strong> </strong>
                     </td>
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"
@@ -207,19 +215,19 @@ const closeModal = (isconfirm) => {
                                 color="info"
                                 :icon="mdiEye"
                                 small
-                                @click="openModal('2', certification)"
+                                @click="openModal('2', commitment)"
                             />
                             <BaseButton
                                 color="warning"
                                 :icon="mdiFindReplace"
                                 small
-                                @click="openModal('3', certification)"
+                                @click="openModal('3', commitment)"
                             />
                             <BaseButton
                                 color="danger"
                                 :icon="mdiTrashCan"
                                 small
-                                @click="openModal('4', certification)"
+                                @click="openModal('4', commitment)"
                             />
                         </BaseButtons>
                     </td>

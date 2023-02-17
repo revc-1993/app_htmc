@@ -1,13 +1,11 @@
 <script setup>
 import { mdiTextBoxMultipleOutline, mdiCheckBold } from "@mdi/js";
-import { ref } from "vue";
 import { Head } from "@inertiajs/vue3";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionMain from "@/components/SectionMain.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import TableSampleCertifications from "@/components/certifications/TableSampleCertifications.vue";
-import { TYPE, useToast } from "vue-toastification";
-import { parse } from "@vue/compiler-dom";
+import TableSampleCommitments from "@/components/commitments/TableSampleCommitments.vue";
+import { useToast } from "vue-toastification";
 
 // --------------------------------------------
 const props = defineProps({
@@ -51,11 +49,10 @@ const getMessage = (operation) => {
             >
             </SectionTitleLineWithButton>
 
-            <!-- <TableSampleCertifications
-                :certifications="certifications"
-                :departments="departments"
+            <TableSampleCommitments
+                :commitments="commitments"
                 @alert="getMessage"
-            /> -->
+            />
         </SectionMain>
     </LayoutAuthenticated>
 </template>

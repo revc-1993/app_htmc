@@ -16,8 +16,6 @@ const props = defineProps({
     },
 });
 
-console.log("PROPS: " + typeof props.username);
-
 const avatar = computed(
     () =>
         props.avatar ??

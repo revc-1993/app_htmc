@@ -157,6 +157,14 @@ return [
         ],
     ],
 
+    'values' => [
+        'reception_date' => [
+            'today' => 'hoy',
+            'tomorrow' => 'mañana',
+            'last year' => 'año anterior'
+        ],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Atributos de validación personalizados

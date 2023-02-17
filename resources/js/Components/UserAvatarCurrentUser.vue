@@ -6,14 +6,6 @@ import { usePage } from "@inertiajs/vue3";
 
 // const mainStore = useMainStore();
 
-console.log(
-    computed(
-        () =>
-            // $page.props.auth.user.name
-            usePage().props.auth.name
-    )
-);
-
 const userName = computed(
     () =>
         // $page.props.auth.user.name

@@ -39,8 +39,6 @@ const isNotRegister = computed(() => {
     typeof props.certification.management_status !== "undefined";
 });
 
-console.log(props.certification);
-
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
 // ---------------------------------------------------------
@@ -196,17 +194,7 @@ const create = () => {
         process_type: form.process_type.id,
     })).post(route("certifications.store"), {
         preserveScroll: false,
-        onBefore: () => {
-            // console.log("ANTES");
-            // console.log(form.data);
-        },
-        onError: () => {
-            // console.log("ERROR");
-            // console.log(form.errors);
-        },
         onSuccess: () => {
-            // console.log("EXITOSO");
-            // console.log(form.data);
             form.reset();
             confirm();
         },
