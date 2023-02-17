@@ -29,6 +29,7 @@ class StoreCertificationRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:10'],
             'department_id' => ['required'],
             'customer_id' => ['required'],
+            'comments' => [''],
             // 'certification_number' => ['alpha_dash', 'min:10', 'unique:certifications'],
         ];
     }

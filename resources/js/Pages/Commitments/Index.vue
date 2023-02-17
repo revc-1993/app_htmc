@@ -15,22 +15,18 @@ const props = defineProps({
 // --------------------------------------------
 // MOSTRAR MENSAJES DE ALERTA
 // --------------------------------------------
-const getMessage = (operation) => {
-    const messages = {
-        1: "ingresado",
-        3: "actualizado",
-        4: "eliminado",
-    };
+const getMessage = (operation, message, state) => {
     const colors = {
         1: "success-class",
         3: "warning-class",
         4: "danger-class",
     };
+    const messages = `${message}. \nEstado: ${state}`;
 
     const toast = useToast();
-    toast("Registro " + (messages[operation] || "leído") + " correctamente.", {
-        timeout: 2500,
-        // type: colors[operation] || TYPE.INFO,
+    toast(messages, {
+        position: "top-center",
+        timeout: 3500,
         toastClassName: ["height-class", colors[operation] || "blue-class"],
         bodyClassName: "custom-class",
         hideProgressBar: true,
@@ -51,7 +47,13 @@ const getMessage = (operation) => {
 
             <TableSampleCommitments
                 :commitments="commitments"
-                @alert="getMessage"
+                @alert="
+                    getMessage(
+                        $event,
+                        $page.props.flash.message,
+                        $page.props.flash.state
+                    )
+                "
             />
         </SectionMain>
     </LayoutAuthenticated>
@@ -59,7 +61,7 @@ const getMessage = (operation) => {
 
 <style>
 .Vue-Toastification__toast--default.height-class {
-    height: 0.75rem; /* 12px */
+    height: max-content;
 }
 .Vue-Toastification__toast--default.danger-class {
     background-color: rgb(220 38 38);

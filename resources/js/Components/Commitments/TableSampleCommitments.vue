@@ -7,7 +7,7 @@ import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import SpanState from "@/components/SpanState.vue";
-import CardBoxModalCertification from "@/components/certifications/CardBoxModalCertification.vue";
+import CardBoxModalCommitment from "@/components/commitments/CardBoxModalCommitment.vue";
 import CardBox from "@/components/CardBox.vue";
 
 const props = defineProps({
@@ -111,15 +111,14 @@ const closeModal = (isconfirm) => {
         />
     </BaseButtons> -->
 
-    <!-- <CardBoxModalCertification
+    <CardBoxModalCommitment
         v-if="isModalActive"
         v-model="isModalActive"
-        instance="certificación"
-        :certification="certification"
-        :departments="departments"
+        instance="compromiso"
+        :commitment="commitment"
         :operation="operation"
         @confirm="closeModal"
-    /> -->
+    />
 
     <CardBox class="mb-6" has-table>
         <div
@@ -192,7 +191,9 @@ const closeModal = (isconfirm) => {
                         data-label="Monto a comprometer"
                         class="text-center text-sm"
                     >
-                        <strong>$ {{ commitment.amount_to_commit }}</strong>
+                        <strong v-if="commitment.amount_to_commit"
+                            >$ {{ commitment.amount_to_commit }}</strong
+                        >
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
                         <SpanState :state="commitment.management_status" />
@@ -201,7 +202,7 @@ const closeModal = (isconfirm) => {
                         data-label="Usuario"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        "-"
+                        -
                         <strong> </strong>
                     </td>
                     <td

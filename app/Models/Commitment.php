@@ -15,6 +15,7 @@ class Commitment extends Model
         "vendor_name",
         "contract_administrator",
         "amount_to_commit",
+        'comments',
         'management_status',  // Considerar posibilidad de FK a tabla ESTADOS
         "certification_id",
     ];

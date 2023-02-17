@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Commitment;
-use App\Http\Requests\StoreCommitmentRequest;
 use App\Http\Requests\UpdateCommitmentRequest;
-use App\Models\Certification;
 
 class CommitmentController extends Controller
 {
@@ -30,41 +28,6 @@ class CommitmentController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreCommitmentRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Certification $certification)
-    {
-        Commitment::create([
-            'certification_id' => $certification->id,
-        ]);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Commitment  $commitment
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Commitment $commitment)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Commitment  $commitment
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Commitment $commitment)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \App\Http\Requests\UpdateCommitmentRequest  $request
@@ -73,7 +36,19 @@ class CommitmentController extends Controller
      */
     public function update(UpdateCommitmentRequest $request, Commitment $commitment)
     {
-        //
+        $commitment->update($request->validated());
+
+        $message = "Registro actualizado correctamente.";
+        $state = $commitment->management_status;
+
+        // if ($commitment->management_status === 'Observado') {
+        //     Commitment::create([
+        //         'certification_id' => $commitment->id,
+        //     ]);
+        //     $message .= "\nPuede revisar el nuevo compromiso en el módulo COMPROMISOS.";
+        // }
+
+        return to_route('commitments.index')->with(compact('message', 'state'));
     }
 
     /**
@@ -84,6 +59,7 @@ class CommitmentController extends Controller
      */
     public function destroy(Commitment $commitment)
     {
-        //
+        $commitment->delete();
+        return to_route('commitments.index');
     }
 }

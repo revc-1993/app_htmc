@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string("vendor_name")->nullable();
             $table->string("contract_administrator")->nullable();
             $table->string("amount_to_commit")->nullable();
+            $table->string("comments")->nullable();
             $table->string('management_status')->default("Pendiente de revisión");  // Considerar posibilidad de FK a tabla ESTADOS
             $table->unsignedBigInteger("certification_id");
             $table->softDeletes();

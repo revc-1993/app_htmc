@@ -31,8 +31,8 @@ class UpdateCertificationRequest extends FormRequest
             'customer_id' => ['required'],
 
             'certification_number' => ['alpha_dash', 'min:10'],
-            'assignment_date' => ['date', 'after_or_equal:reception_date'],
-            'japc_reassignment_date' => ['date', 'after_or_equal:assignment_date'],
+            'assignment_date' => ['date', 'after_or_equal:reception_date', 'before_or_equal:today'],
+            'japc_reassignment_date' => ['date', 'after_or_equal:assignment_date', 'before_or_equal:today'],
             'budget_line' => [''],
             'amount_to_commit' => ['numeric', 'min:10'],
             'obligation_type' => [''],

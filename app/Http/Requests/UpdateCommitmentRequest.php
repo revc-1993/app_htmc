@@ -13,7 +13,7 @@ class UpdateCommitmentRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,7 +24,13 @@ class UpdateCommitmentRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'process_code' => [],
+            'vendor_name' => [],
+            'contract_administrator' => [],
+            'amount_to_commit' => [],
+            'comments' => [],
+            'management_status' => [],
+            'certification_id' => [],
         ];
     }
 }
