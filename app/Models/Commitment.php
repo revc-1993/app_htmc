@@ -18,6 +18,7 @@ class Commitment extends Model
         'comments',
         'management_status',  // Considerar posibilidad de FK a tabla ESTADOS
         "certification_id",
+        "customer_id",
     ];
 
     /**
@@ -28,5 +29,15 @@ class Commitment extends Model
     public function certification()
     {
         return $this->belongsTo(Certification::class, 'certification_id');
+    }
+
+    /**
+     * Get the User that owns the Commitment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'customer_id');
     }
 }

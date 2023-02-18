@@ -29,6 +29,14 @@ import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
 import SectionBannerStarOnGitHub from "@/components/SectionBannerStarOnGitHub.vue";
 
+const props = defineProps({
+    certifications_percent: Number,
+    n_certifications_ok: Number,
+    commitments_percent: Number,
+    n_commitments_ok: Number,
+    pending_certifications: Object,
+    certifications_amount_ordered: Object,
+});
 const chartData = ref(null);
 
 const fillChartData = () => {
@@ -56,22 +64,24 @@ const transactionBarItems = computed(() => mainStore.history);
                 main
             />
 
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-5 mb-6">
+            <div
+                class="grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-5 mb-6"
+            >
                 <CardBoxWidget
-                    trend="12%"
-                    trend-type="up"
+                    :trend="certifications_percent + '%'"
+                    :trend-type="certifications_percent > 50 ? 'up' : 'down'"
                     color="text-gray-500"
                     :icon="mdiCardBulleted"
-                    :number="12"
+                    :number="n_certifications_ok"
                     label="Certificaciones"
                     :is-button="false"
                 />
                 <CardBoxWidget
-                    trend="12%"
-                    trend-type="down"
+                    :trend="commitments_percent + '%'"
+                    :trend-type="commitments_percent > 50 ? 'up' : 'down'"
                     color="text-orange-400"
                     :icon="mdiTextBoxMultipleOutline"
-                    :number="5"
+                    :number="n_commitments_ok"
                     label="Compromisos"
                     :is-button="false"
                 />
@@ -107,24 +117,28 @@ const transactionBarItems = computed(() => mainStore.history);
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div class="flex flex-col justify-between">
                     <CardBoxTransaction
-                        v-for="(transaction, index) in transactionBarItems"
+                        v-for="(certification, index) in pending_certifications"
                         :key="index"
-                        :amount="transaction.amount"
-                        :date="transaction.date"
-                        :business="transaction.business"
-                        :type="transaction.type"
-                        :name="transaction.name"
-                        :account="transaction.account"
+                        :amount="certification.contract_object"
+                        :date="certification.reception_date"
+                        :business="certification.department.department"
+                        :type="certification.management_status"
+                        :name="certification.user.name"
+                        :account="certification.user.name"
                     />
                 </div>
                 <div class="flex flex-col justify-between">
-                    <CardBoxClient
-                        v-for="client in clientBarItems"
-                        :key="client.id"
-                        :name="client.name"
-                        :login="client.login"
-                        :date="client.created"
-                        :progress="client.progress"
+                    <CardBoxTransaction
+                        v-for="(
+                            certification, index
+                        ) in certifications_amount_ordered"
+                        :key="index"
+                        :amount="certification.contract_object"
+                        :date="certification.reception_date"
+                        :business="certification.department.department"
+                        :type="certification.management_status"
+                        :name="'$ ' + certification.amount"
+                        :account="certification.user.name"
                     />
                 </div>
             </div>

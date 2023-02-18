@@ -1,6 +1,6 @@
 import {
     mdiAccountCircle,
-    mdiHome,
+    mdiMonitor,
     mdiFileSign,
     mdiTextBoxMultipleOutline,
     mdiCash,
@@ -17,7 +17,7 @@ import {
 export default [
     {
         route: "dashboard",
-        icon: mdiHome,
+        icon: mdiMonitor,
         label: "Dashboard",
     },
     {

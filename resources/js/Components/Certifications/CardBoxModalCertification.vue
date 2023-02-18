@@ -250,13 +250,10 @@ const destroy = () => {
         <div v-if="operation !== '4'">
             <FormValidationErrors v-if="form.hasErrors" />
 
-            <BaseDivider />
-
             <Step
                 v-if="value"
                 :state="isCreate ? '' : certification.management_status"
             />
-
             <BaseDivider />
 
             <FormField
@@ -272,7 +269,7 @@ const destroy = () => {
                     type="text"
                     placeholder="Detalle el objeto de contrato"
                     :has-errors="form.errors.contract_object != null"
-                    :disabled="!isCreate"
+                    :disabled="isShow"
                 />
             </FormField>
             <FormField>
@@ -290,7 +287,7 @@ const destroy = () => {
                         autocomplete="department_id"
                         :options="selectOptions.requestingArea"
                         :has-errors="form.errors.department_id != null"
-                        :disabled="!isCreate"
+                        :disabled="isShow"
                     />
                 </FormField>
                 <FormField
@@ -307,7 +304,7 @@ const destroy = () => {
                         type="date"
                         placeholder="1000,00"
                         :has-errors="form.errors.reception_date != null"
-                        :disabled="!isCreate"
+                        :disabled="isShow"
                     />
                 </FormField>
                 <FormField
@@ -327,7 +324,7 @@ const destroy = () => {
                         :step="0.0001"
                         :min="0"
                         :has-errors="form.errors.amount != null"
-                        :disabled="!isCreate"
+                        :disabled="isShow"
                     />
                 </FormField>
             </FormField>
@@ -347,7 +344,7 @@ const destroy = () => {
                         autocomplete="budget_line"
                         :options="selectOptions.budgetLine"
                         :has-errors="form.errors.budget_line != null"
-                        :disabled="!isUpdate"
+                        :disabled="isShow"
                     />
                 </FormField>
                 <FormField
@@ -363,7 +360,7 @@ const destroy = () => {
                         autocomplete="assignment_date"
                         type="date"
                         :has-errors="form.errors.assignment_date != null"
-                        :disabled="!isUpdate"
+                        :disabled="isShow"
                     />
                 </FormField>
                 <FormField
@@ -379,7 +376,7 @@ const destroy = () => {
                         autocomplete="japc_reassignment_date"
                         type="date"
                         :has-errors="form.errors.japc_reassignment_date != null"
-                        :disabled="!isUpdate"
+                        :disabled="isShow"
                     />
                 </FormField>
             </FormField>
@@ -398,7 +395,7 @@ const destroy = () => {
                         autocomplete="obligation_type"
                         :options="selectOptions.obligationType"
                         :has-errors="form.errors.obligation_type != null"
-                        :disabled="!isUpdate"
+                        :disabled="isShow"
                     />
                 </FormField>
                 <FormField
@@ -415,7 +412,7 @@ const destroy = () => {
                         autocomplete="process_type"
                         :options="selectOptions.processType"
                         :has-errors="form.errors.process_type != null"
-                        :disabled="!isUpdate"
+                        :disabled="isShow"
                     />
                 </FormField>
             </FormField>
@@ -434,7 +431,7 @@ const destroy = () => {
                         type="text"
                         placeholder="Ej: IE-RER-CM-43"
                         :has-errors="form.errors.certification_number != null"
-                        :disabled="!isUpdate"
+                        :disabled="isShow"
                     />
                 </FormField>
                 <FormField
@@ -453,7 +450,7 @@ const destroy = () => {
                         placeholder="Ej: 1000.00"
                         :step="0.0001"
                         :has-errors="form.errors.amount_to_commit != null"
-                        :disabled="!isUpdate"
+                        :disabled="isShow"
                     />
                 </FormField>
             </FormField>
@@ -465,7 +462,7 @@ const destroy = () => {
                 <FormCheckRadioGroup
                     v-model="form.last_validation"
                     name="last_validation"
-                    :disabled="!isUpdate"
+                    :disabled="isShow"
                     :options="{
                         agree: 'La certificación se encuentra correctamente registrada.',
                     }"

@@ -84,6 +84,7 @@ const form = useForm(
               amount_to_commit: "",
               management_status: "",
               comments: "",
+              customer_id: usePage().props.auth.user.id,
           }
         : {
               process_code: props.commitment.process_code,
@@ -92,6 +93,7 @@ const form = useForm(
               amount_to_commit: props.commitment.amount_to_commit,
               management_status: props.commitment.management_status,
               comments: props.commitment.comments,
+              customer_id: usePage().props.auth.user.id,
           }
 );
 
@@ -139,9 +141,8 @@ const destroy = () => {
         <div v-if="operation !== '4'">
             <FormValidationErrors v-if="form.hasErrors" />
 
-            <BaseDivider />
-
             <Step v-if="value" :state="commitment.management_status ?? ''" />
+            <BaseDivider />
 
             <FormField>
                 <FormField

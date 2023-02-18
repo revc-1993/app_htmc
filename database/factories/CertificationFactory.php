@@ -18,7 +18,7 @@ class CertificationFactory extends Factory
     {
         return [
             'contract_object' => $this->faker->sentence(3),
-            'reception_date' => $this->faker->date('Y-m-d', 'now'),
+            'reception_date' => $this->faker->dateTimeBetween('-6 months', '-1 day'),
             'amount' => $this->faker->randomFloat($maxDecimals = 2, $min = 500, $max = 10000),
             // Posiblemente FK
             'management_status' => $this->faker->randomElement(['Pendiente de revisión', 'En revisión', 'Certificado', 'Observado', 'Devuelto']),

@@ -29,7 +29,6 @@ class CertificationController extends Controller
                     }
                 ])
                 ->pending()
-                ->orderBy("certifications.id", "desc")
                 ->get(),
             'departments' => Department::all(['id', 'department']),
         ]);
@@ -76,6 +75,7 @@ class CertificationController extends Controller
         if ($certification->management_status === 'Observado') {
             Commitment::create([
                 'certification_id' => $certification->id,
+                'customer_id' => $certification->customer_id,
             ]);
             $message .= "\nPuede revisar el nuevo compromiso en el módulo COMPROMISOS.";
         }
@@ -92,7 +92,8 @@ class CertificationController extends Controller
     public function destroy(Certification $certification)
     {
         $certification->delete();
-        return to_route('certifications.index');
+        $message = "Registro eliminado correctamente.";
+        return to_route('certifications.index')->with(compact('message'));
     }
 
     public function changeStatus(StoreCertificationRequest $request)

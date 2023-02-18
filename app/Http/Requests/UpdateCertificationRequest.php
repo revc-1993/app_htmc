@@ -30,15 +30,15 @@ class UpdateCertificationRequest extends FormRequest
             'department_id' => ['required'],
             'customer_id' => ['required'],
 
-            'certification_number' => ['alpha_dash', 'min:10'],
-            'assignment_date' => ['date', 'after_or_equal:reception_date', 'before_or_equal:today'],
-            'japc_reassignment_date' => ['date', 'after_or_equal:assignment_date', 'before_or_equal:today'],
-            'budget_line' => [''],
-            'amount_to_commit' => ['numeric', 'min:10'],
-            'obligation_type' => [''],
-            'process_type' => [''],
-            'comments' => ['max:255'],
-            'last_validation' => [''],
+            'certification_number' => ['nullable', 'alpha_dash', 'min:10'],
+            'assignment_date' => ['nullable', 'date', 'after_or_equal:reception_date', 'before_or_equal:today'],
+            'japc_reassignment_date' => ['nullable', 'date', 'after_or_equal:assignment_date', 'before_or_equal:today'],
+            'budget_line' => ['nullable'],
+            'amount_to_commit' => ['nullable', 'numeric', 'min:10'],
+            'obligation_type' => ['nullable'],
+            'process_type' => ['nullable'],
+            'comments' => ['nullable', 'max:255'],
+            'last_validation' => ['nullable'],
         ];
     }
 }

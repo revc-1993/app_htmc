@@ -202,8 +202,7 @@ const closeModal = (isconfirm) => {
                         data-label="Usuario"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        -
-                        <strong> </strong>
+                        <strong> {{ commitment.user.name }} </strong>
                     </td>
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"

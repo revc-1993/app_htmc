@@ -64,6 +64,17 @@ class User extends Authenticatable
         return $this->hasMany(Certification::class, 'customer_id');
     }
 
+    /**
+     * Get all of the Certifications for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function commitments()
+    {
+        return $this->hasMany(Commitment::class, 'customer_id');
+    }
+
+
     public function jobPosition()
     {
         return $this->belongsTo(JobPosition::class, 'job_position_id'); //->withPivot();

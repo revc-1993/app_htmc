@@ -61,6 +61,16 @@ class Certification extends Model
 
     public function scopePending($query)
     {
-        $query->where('management_status', '<>', 'Observado');
+        $query->where('management_status', '<>', 'Observado')->orderBy("certifications.id", "desc");
+    }
+
+    public function scopeNotReviewed($query)
+    {
+        $query->where('management_status', '<>', 'Observado')->orderBy("certifications.reception_date", "asc");
+    }
+
+    public function scopeAmountOrdered($query)
+    {
+        $query->where('management_status', '=', 'Certificado')->orderBy("certifications.amount", "desc");
     }
 }

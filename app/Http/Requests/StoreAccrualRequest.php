@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateCommitmentRequest extends FormRequest
+class StoreAccrualRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -13,7 +13,7 @@ class UpdateCommitmentRequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        return false;
     }
 
     /**
@@ -24,12 +24,7 @@ class UpdateCommitmentRequest extends FormRequest
     public function rules()
     {
         return [
-            'process_code' => [],
-            'vendor_name' => [],
-            'contract_administrator' => [],
-            'amount_to_commit' => [],
-            'comments' => [],
-            'certification_id' => [],
+            //
         ];
     }
 }

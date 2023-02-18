@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CertificationController;
+use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CommitmentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -27,9 +28,8 @@ Route::get('/', function () {
     ]);
 })->middleware(['auth', 'verified']);
 
-Route::get('/dashboard', function () {
-    return Inertia::render('HomeView');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [ChartController::class, 'dashboard'])
+    ->middleware(['auth', 'verified'])->name('dashboard');
 
 // Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
 //     return Inertia::render('HomeView');

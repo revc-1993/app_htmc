@@ -23,14 +23,23 @@ class DatabaseSeeder extends Seeder
         // factory(JobPosition::class)->create(['department_id' => $department->id]);
         JobPosition::factory(5)->create();
 
-        $user = User::factory()->create([
-            'name' => 'Ronny Vera',
-            'email' => 'ronny.verac.1993@gmail.com',
+        $user1 = User::factory()->create([
+            'name' => 'Usuario 1',
+            'email' => 'usuario1@gmail.com',
             'department' => 'Financiero',
             'job_position' => 'Analista',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
             'admin_since' => now(),
         ]);
-        Certification::factory(20)->create(['customer_id' => $user->id]);
+        Certification::factory(2)->create(['customer_id' => $user1->id]);
+        $user2 = User::factory()->create([
+            'name' => 'Usuario 2',
+            'email' => 'usuario2@gmail.com',
+            'department' => 'Despacho',
+            'job_position' => 'Analista',
+            'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
+            'admin_since' => now(),
+        ]);
+        Certification::factory(2)->create(['customer_id' => $user2->id]);
     }
 }

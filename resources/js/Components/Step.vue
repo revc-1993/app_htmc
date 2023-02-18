@@ -29,7 +29,7 @@ const colorInactive = "bg-gray-100";
                 class="grid grid-cols-1 divide-x divide-gray-300 overflow-hidden rounded-lg border border-gray-100 text-sm text-gray-500 sm:grid-cols-5"
             >
                 <li
-                    class="flex items-center justify-center p-4"
+                    class="flex items-center justify-center p-3"
                     :class="
                         state == 'Pendiente de revisión'
                             ? colorActive
@@ -63,7 +63,7 @@ const colorInactive = "bg-gray-100";
                 </li>
 
                 <li
-                    class="relative flex items-center justify-center p-4"
+                    class="relative flex items-center justify-center p-3"
                     :class="
                         state == 'En revisión' ? colorActive : colorInactive
                     "
@@ -113,7 +113,7 @@ const colorInactive = "bg-gray-100";
                 </li>
 
                 <li
-                    class="relative flex items-center justify-center p-4"
+                    class="relative flex items-center justify-center p-3"
                     :class="state == 'Devuelto' ? colorActive : colorInactive"
                 >
                     <span
@@ -159,7 +159,7 @@ const colorInactive = "bg-gray-100";
                 </li>
 
                 <li
-                    class="relative flex items-center justify-center p-4"
+                    class="relative flex items-center justify-center p-3"
                     :class="
                         state == 'Certificado' ? colorActive : colorInactive
                     "
@@ -187,7 +187,7 @@ const colorInactive = "bg-gray-100";
                 </li>
 
                 <li
-                    class="flex items-center justify-center p-4"
+                    class="flex items-center justify-center p-3"
                     :class="state == 'Observado' ? colorActive : colorInactive"
                 >
                     <svg

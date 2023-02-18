@@ -22,9 +22,11 @@ return new class extends Migration
             $table->string("comments")->nullable();
             $table->string('management_status')->default("Pendiente de revisión");  // Considerar posibilidad de FK a tabla ESTADOS
             $table->unsignedBigInteger("certification_id");
+            $table->unsignedBigInteger('customer_id')->nullable();  // Considerar posibilidad de FK a tabla USERS
             $table->softDeletes();
             $table->timestamps();
 
+            $table->foreign('customer_id')->references('id')->on('users');
             $table->foreign('certification_id')->references('id')->on('certifications');
         });
     }
