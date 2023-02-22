@@ -36,6 +36,9 @@ const getMessage = (operation, message, state) => {
     <LayoutAuthenticated>
         <Head title="Certificaciones" />
         <SectionMain>
+            <div class="mt-4">
+                {{ $page.props }}
+            </div>
             <SectionTitleLineWithButton
                 :icon="mdiCardBulleted"
                 title="Certificaciones"

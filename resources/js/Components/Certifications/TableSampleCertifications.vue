@@ -102,7 +102,10 @@ const closeModal = (isconfirm) => {
 
 <template>
     <!-- BOTON CREATE (OK) -->
-    <BaseButtons type="justify-end">
+    <BaseButtons
+        type="justify-end"
+        v-if="$page.props.user.permissions.includes('registro_certificacion')"
+    >
         <BaseButton
             color="success"
             small
@@ -179,9 +182,7 @@ const closeModal = (isconfirm) => {
                     <td data-label="Nro. Certificación" class="text-center">
                         {{ certification.certification_number }}
                     </td>
-                    <td data-label="Area Requirente" class="text-center">
-                        {{ certification.department.department }}
-                    </td>
+                    <td data-label="Area Requirente" class="text-center"></td>
                     <td data-label="Monto" class="text-center text-sm">
                         <strong>$ {{ certification.amount }}</strong>
                     </td>
