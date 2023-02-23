@@ -17,11 +17,13 @@ class CertificationFactory extends Factory
     public function definition()
     {
         return [
-            'contract_object' => $this->faker->sentence(3),
-            'reception_date' => $this->faker->dateTimeBetween('-6 months', '-1 day'),
-            'amount' => $this->faker->randomFloat($maxDecimals = 2, $min = 500, $max = 10000),
-            // Posiblemente FK
-            'management_status' => $this->faker->randomElement(['Pendiente de revisión', 'En revisión', 'Certificado', 'Observado', 'Devuelto']),
+            'certification_memo' => $this->faker->word(),
+            'content' => $this->faker->word(3),
+            'process_type' => $this->faker->randomElement(["PROCESO 1", "PROCESO 2", "PROCESO 3"]),
+            // 'process_type' => $this->faker->randomElement([1, 2, 3, 4]),
+            'contract_object' => $this->faker->word(3),
+            'expense_type' => $this->faker->randomElement(["CONVALIDACIÓN", "DEUDA", "PROCESO 2023"]),
+            'cgf_date' => now(),
         ];
     }
 }

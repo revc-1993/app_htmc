@@ -14,29 +14,42 @@ return new class extends Migration
     public function up()
     {
         Schema::create('certifications', function (Blueprint $table) {
-            // Prefijos -> cf: coordinación financiera. an: analista.
             $table->id();
-            // COORDINACION FINANCIERA
+
+            // SECRETARÍA COORDINACION FINANCIERA
+            $table->string('certification_memo')->nullable();
+            $table->string('content')->nullable();
+            $table->string('process_type');
             $table->string('contract_object');
-            $table->date('reception_date');
-            $table->float('amount')->unsigned();
-            $table->unsignedBigInteger('department_id')->nullable();  // Considerar posibilidad de FK a tabla USERS
-            $table->unsignedBigInteger('customer_id')->nullable();  // Considerar posibilidad de FK a tabla USERS
-            // ANALISTA FINANCIERA
-            $table->string('certification_number')->nullable();  // Actualiza Analista y Secretaria
+            $table->string('expense_type');
+            $table->string('cgf_comments')->nullable();
+            $table->date('cgf_date');
+            $table->unsignedBigInteger('department_id')->nullable();
+
+            // SECRETARÍA JAPC-CP
             $table->date('assignment_date')->nullable();
-            $table->date('japc_reassignment_date')->nullable();
-            $table->string('budget_line')->nullable();  // Debe ser FK a tabla PARTIDAS PRESUPUESTARIAS 
-            $table->float('amount_to_commit')->unsigned()->nullable();
-            $table->string('obligation_type')->nullable();
-            $table->string('process_type')->nullable();
-            $table->string('comments')->nullable();
+            $table->string('japc_comments')->nullable();
+
+            // ANALISTA DE CERTIFICACIÓN
+            $table->string('process_number')->nullable();
+            $table->string('nit_name')->nullable();
+            $table->date('cp_date')->nullable();
+            $table->string('budget_line')->nullable();
+            $table->float('certified_amount')->unsigned()->nullable();
+            $table->string('certification_status')->nullable();
+            $table->string('certification_comments')->nullable();
+
+            // TESORERÍA
+            $table->string('treasury_approved')->nullable();
             $table->string('returned_document_number')->nullable();
-            $table->boolean('last_validation')->default(false);  // Considerar posibilidad de FK a tabla ESTADOS
-            $table->string('management_status')->default("Pendiente de revisión");  // Considerar posibilidad de FK a tabla ESTADOS
+
+            // CONTROL TOTAL
+            $table->unsignedBigInteger('record_status')->default(1);    // Roles
+            $table->unsignedBigInteger('customer_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
-            // Relaciones
+
+            // RELACIONES
             $table->foreign('customer_id')->references('id')->on('users');
             $table->foreign('department_id')->references('id')->on('departments');
         });

@@ -74,7 +74,7 @@ const alert = (operation) => alerts("alert", operation);
 // ---------------------------------------------------------
 // VARIABLES
 // ---------------------------------------------------------
-let certification;
+const certification = ref({});
 const isModalActive = ref(false);
 const operation = ref("");
 
@@ -83,7 +83,7 @@ const operation = ref("");
 // --------------------------------------------
 const openModal = (action, certifications = "") => {
     // console.log(certifications);
-    if (action !== "1") certification = certifications;
+    if (action !== "1") certification.value = certifications;
     operation.value = action;
     isModalActive.value = true;
     // console.log(certification);
@@ -145,21 +145,16 @@ const closeModal = (isconfirm) => {
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-if="checkable" class="text-center" />
                     <th class="text-center">N.</th>
+                    <th class="text-center">Memorando de Certificación</th>
+                    <th class="text-center">Tipo de proceso</th>
                     <th class="text-center">Objeto de contrato</th>
-                    <th class="text-center">N. Certificación</th>
-                    <th class="text-center">Area requirente</th>
-                    <th class="text-center">Monto</th>
-                    <th class="text-center">Estado</th>
+                    <th class="text-center">Tipo de gasto</th>
+                    <th class="text-center">Fecha de recepción</th>
                     <th class="text-center">Usuario actual</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- <tr v-if="nItems == 0">
-                    <td colspan="5">
-                        <CardBoxComponentEmpty />
-                    </td>
-                </tr> -->
                 <tr
                     v-for="certification in itemsPaginated"
                     :key="certification.id"
@@ -176,19 +171,27 @@ const closeModal = (isconfirm) => {
                         class="w-24 h-24 mx-auto lg:w-6 lg:h-6"
                     /> -->
                     </td>
-                    <td data-label="Objeto de Contrato" class="text-center">
+                    <td
+                        data-label="Memorando de Certificación"
+                        class="text-center"
+                    >
+                        {{ certification.certification_memo }}
+                    </td>
+                    <td data-label="Tipo de proceso" class="text-center">
+                        {{ certification.process_type }}
+                    </td>
+                    <td data-label="Objeto de contrato" class="text-left">
                         {{ certification.contract_object }}
                     </td>
-                    <td data-label="Nro. Certificación" class="text-center">
-                        {{ certification.certification_number }}
+                    <td data-label="Tipo de gasto" class="text-center">
+                        {{ certification.expense_type }}
                     </td>
-                    <td data-label="Area Requirente" class="text-center"></td>
-                    <td data-label="Monto" class="text-center text-sm">
-                        <strong>$ {{ certification.amount }}</strong>
+                    <td data-label="Fecha" class="text-center">
+                        {{ certification.cgf_date }}
                     </td>
-                    <td data-label="Estado" class="py-3 px-6 text-center">
+                    <!-- <td data-label="Estado" class="py-3 px-6 text-center">
                         <SpanState :state="certification.management_status" />
-                    </td>
+                    </td> -->
                     <td
                         data-label="Usuario"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"

@@ -19,10 +19,12 @@ const getMessage = (operation, message, state) => {
         3: "warning-class",
         4: "danger-class",
     };
-    const messages = `${message}. \nEstado: ${state}`;
+    const messages = computed(() => {
+        return `${message}. \nEstado: ${state}`;
+    });
 
     const toast = useToast();
-    toast(messages, {
+    toast(messages.value, {
         position: "top-center",
         timeout: 3500,
         toastClassName: ["height-class", colors[operation] || "blue-class"],
@@ -36,9 +38,6 @@ const getMessage = (operation, message, state) => {
     <LayoutAuthenticated>
         <Head title="Certificaciones" />
         <SectionMain>
-            <div class="mt-4">
-                {{ $page.props }}
-            </div>
             <SectionTitleLineWithButton
                 :icon="mdiCardBulleted"
                 title="Certificaciones"

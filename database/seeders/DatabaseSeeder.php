@@ -39,7 +39,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'usuario1@gmail.com',
             'department' => 'Financiero',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
-            'admin_since' => now(),
         ]);
         $user1->assignRole($role_secretario_cgf);
         Certification::factory(2)->create(['customer_id' => $user1->id]);
@@ -47,9 +46,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Secretario Presupuesto 1',
             'email' => 'usuario2@gmail.com',
             'department' => 'Despacho',
-            'job_position' => 'Analista',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
-            'admin_since' => now(),
         ]);
         $user2->assignRole($role_secretario_presupuesto);
         Certification::factory(2)->create(['customer_id' => $user2->id]);

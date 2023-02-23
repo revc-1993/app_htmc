@@ -11,21 +11,36 @@ class Certification extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'contract_object',
-        'reception_date',
-        'amount',
-        'department_id',
-        'customer_id',
-        'certification_number',
-        'assignment_date',
-        'japc_reassignment_date',
-        'budget_line',
-        'amount_to_commit',
-        'obligation_type',
+        // SECRETARÍA COORDINACION FINANCIERA
+        'certification_memo',
+        'content',
         'process_type',
-        'comments',
-        'management_status',
-        'last_validation',
+        'contract_object',
+        'expense_type',
+        'cgf_comments',
+        'cgf_date',
+        'department_id',
+
+        // SECRETARÍA JAPC-CP
+        'assignment_date',
+        'japc_comments',
+
+        // ANALISTA DE CERTIFICACIÓN
+        'process_number',
+        'nit_name',
+        'cp_date',
+        'budget_line',
+        'certified_amount',
+        'certification_status',
+        'certification_comments',
+
+        // TESORERÍA
+        'treasury_approved',
+        'returned_document_number',
+
+        // CONTROL TOTAL
+        'record_status',
+        'customer_id',
     ];
 
     /**
@@ -61,16 +76,16 @@ class Certification extends Model
 
     public function scopePending($query)
     {
-        $query->where('management_status', '<>', 'Observado')->orderBy("certifications.id", "desc");
+        $query->where('record_status', '<>', 'Observado')->orderBy("certifications.id", "desc");
     }
 
     public function scopeNotReviewed($query)
     {
-        $query->where('management_status', '<>', 'Observado')->orderBy("certifications.reception_date", "asc");
+        $query->where('record_status', '<>', 'Observado')->orderBy("certifications.cgf_date", "asc");
     }
 
     public function scopeAmountOrdered($query)
     {
-        $query->where('management_status', '=', 'Certificado')->orderBy("certifications.amount", "desc");
+        $query->where('record_status', '=', 'Certificado')->orderBy("certifications.certified_amount", "desc");
     }
 }

@@ -96,27 +96,27 @@ class CertificationController extends Controller
         return to_route('certifications.index')->with(compact('message'));
     }
 
-    public function changeStatus(StoreCertificationRequest $request)
-    {
-        if ($request->last_validation)
-            return "Observado";
-        else if (!is_null($request->certification_number) && !is_null($request->amount_to_commit))
-            return "Certificado";
-        else if (!is_null($request->budget_line) || !is_null($request->assignment_date) || !is_null($request->japc_reassignment_date) || !is_null($request->obligation_type) || !is_null($request->process_type))
-            return "En revisión";
-        else
-            return "Pendiente de revisión";
-    }
+    // public function changeStatus(StoreCertificationRequest $request)
+    // {
+    //     if ($request->last_validation)
+    //         return "Observado";
+    //     else if (!is_null($request->certification_number) && !is_null($request->amount_to_commit))
+    //         return "Certificado";
+    //     else if (!is_null($request->budget_line) || !is_null($request->assignment_date) || !is_null($request->japc_reassignment_date) || !is_null($request->obligation_type) || !is_null($request->process_type))
+    //         return "En revisión";
+    //     else
+    //         return "Pendiente de revisión";
+    // }
 
-    public function updateStatus(UpdateCertificationRequest $request)
-    {
-        if ($request->last_validation)
-            return "Observado";
-        else if (!is_null($request->certification_number) && !is_null($request->amount_to_commit))
-            return "Certificado";
-        else if (!is_null($request->budget_line) || !is_null($request->assignment_date) || !is_null($request->japc_reassignment_date) || !is_null($request->obligation_type) || !is_null($request->process_type))
-            return "En revisión";
-        else
-            return "Pendiente de revisión";
-    }
+    // public function updateStatus(UpdateCertificationRequest $request)
+    // {
+    //     if ($request->last_validation)
+    //         return "Observado";
+    //     else if (!is_null($request->certification_number) && !is_null($request->amount_to_commit))
+    //         return "Certificado";
+    //     else if (!is_null($request->budget_line) || !is_null($request->assignment_date) || !is_null($request->japc_reassignment_date) || !is_null($request->obligation_type) || !is_null($request->process_type))
+    //         return "En revisión";
+    //     else
+    //         return "Pendiente de revisión";
+    // }
 }

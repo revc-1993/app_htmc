@@ -16,12 +16,6 @@ class Department extends Model
         'department',
     ];
 
-
-    public function jobPositions()
-    {
-        return $this->hasMany(JobPosition::class, 'department_id'); //->withPivot();
-    }
-
     public function certifications()
     {
         return $this->hasMany(Certification::class, 'department_id'); //->withPivot();

@@ -16,14 +16,4 @@ class JobPosition extends Model
         'position_name',
         'department_id',
     ];
-
-    public function department()
-    {
-        return $this->belongsTo(Department::class, 'department_id'); //->withPivot();
-    }
-
-    public function users()
-    {
-        return $this->hasMany(User::class, 'job_position_id'); //->withPivot();
-    }
 }
