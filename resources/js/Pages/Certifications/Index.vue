@@ -6,6 +6,8 @@ import SectionMain from "@/components/SectionMain.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
 import TableSampleCertifications from "@/components/certifications/TableSampleCertifications.vue";
 import { useToast } from "vue-toastification";
+import StepperComponent from "@/components/StepperComponent.vue";
+import Stepper from "@/components/Stepper.vue";
 
 // --------------------------------------------
 const props = defineProps({
@@ -38,6 +40,7 @@ const getMessage = (operation, message, state) => {
     <LayoutAuthenticated>
         <Head title="Certificaciones" />
         <SectionMain>
+            <StepperComponent></StepperComponent>
             <SectionTitleLineWithButton
                 :icon="mdiCardBulleted"
                 title="Certificaciones"

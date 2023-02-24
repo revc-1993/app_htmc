@@ -12,11 +12,11 @@ class ChartController extends Controller
     public function dashboard()
     {
         $ncertifications = Certification::count();
-        $ncertificationsOk = Certification::where('management_status', '=', 'Observado')->count();
+        $ncertificationsOk = Certification::where('certification_status', '=', 'Observado')->count();
         $certifications_percent = $ncertifications > 0 ? ceil($ncertificationsOk / $ncertifications * 100) : 0;
-        $ncommitments = Commitment::count();
-        $ncommitmentsOk = Commitment::where('management_status', '=', 'Observado')->count();
-        $commitments_percent = $ncommitments > 0 ? ceil($ncommitmentsOk / $ncommitments * 100) : 0;
+        // $ncommitments = Commitment::count();
+        // $ncommitmentsOk = Commitment::where('certification_status', '=', 'Observado')->count();
+        // $commitments_percent = $ncommitments > 0 ? ceil($ncommitmentsOk / $ncommitments * 100) : 0;
 
         $pending_certifications = Certification
             ::with([
@@ -48,8 +48,8 @@ class ChartController extends Controller
         return Inertia::render('HomeView', [
             'n_certifications_ok' => $ncertificationsOk,
             'certifications_percent' => $certifications_percent,
-            'n_commitments_ok' => $ncommitmentsOk,
-            'commitments_percent' => $commitments_percent,
+            // 'n_commitments_ok' => $ncommitmentsOk,
+            // 'commitments_percent' => $commitments_percent,
             'pending_certifications' => $pending_certifications,
             'certifications_amount_ordered' => $certifications_amount_ordered,
         ]);

@@ -58,7 +58,7 @@ const transactionBarItems = computed(() => mainStore.history);
     <LayoutAuthenticated>
         <Head title="Dashboard" />
         <SectionMain>
-            <SectionTitleLineWithButton
+            <!-- <SectionTitleLineWithButton
                 :icon="mdiChartTimelineVariant"
                 title="Estadísticas"
                 main
@@ -141,11 +141,11 @@ const transactionBarItems = computed(() => mainStore.history);
                         :account="certification.user.name"
                     />
                 </div>
-            </div>
+            </div> -->
 
             <!-- <SectionBannerStarOnGitHub class="mt-6 mb-6" /> -->
 
-            <SectionTitleLineWithButton
+            <!-- <SectionTitleLineWithButton
                 :icon="mdiChartPie"
                 title="Trends overview"
             >
@@ -169,7 +169,7 @@ const transactionBarItems = computed(() => mainStore.history);
 
             <NotificationBar color="info" :icon="mdiMonitorCellphone">
                 <b>Responsive table.</b> Collapses on mobile
-            </NotificationBar>
+            </NotificationBar> -->
 
             <!-- <CardBox has-table>
                 <TableSampleClients />

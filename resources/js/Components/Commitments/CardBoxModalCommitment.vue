@@ -15,8 +15,7 @@ import CardBoxModal from "@/components/CardBoxModal.vue";
 import FormValidationErrors from "@/components/FormValidationErrors.vue";
 import FormField from "@/components/FormField.vue";
 import FormControl from "@/components/FormControl.vue";
-import Stepper from "@/components/Stepper.vue";
-import Step from "@/components/Step.vue";
+import Stepper from "@/Components/Stepper.vue";
 import BaseDivider from "@/components/BaseDivider.vue";
 import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
 
@@ -141,7 +140,7 @@ const destroy = () => {
         <div v-if="operation !== '4'">
             <FormValidationErrors v-if="form.hasErrors" />
 
-            <Step v-if="value" :state="commitment.management_status ?? ''" />
+            <Stepper v-if="value" :state="commitment.management_status ?? ''" />
             <BaseDivider />
 
             <FormField>
