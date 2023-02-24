@@ -20,6 +20,8 @@ import StepperComponent from "@/components/StepperComponent.vue";
 import BaseDivider from "@/components/BaseDivider.vue";
 import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
 
+console.log(usePage().props);
+
 // ---------------------------------------------------------
 // PROPS
 // ---------------------------------------------------------
@@ -50,6 +52,20 @@ const confirmCancel = (mode) => {
 const confirm = () => confirmCancel("confirm");
 
 // ---------------------------------------------------------
+// STEPPER
+// ---------------------------------------------------------
+const activePhase = ref(1);
+activePhase.value = computed(() => {
+    usePage().props.user.roles.value <= 4
+        ? usePage().props.user.roles.value
+        : 1;
+});
+
+const goToStep = (step) => {
+    activePhase.value = parseInt(step);
+};
+
+// ---------------------------------------------------------
 // TITULO Y COLOR DE MODAL
 // ---------------------------------------------------------
 const title = computed(() => {
@@ -72,23 +88,16 @@ const button = computed(() => {
     }[props.operation];
 });
 
-const isCreate = computed(() => {
-    props.operation === "1";
-});
-const isShow = computed(() => {
-    props.operation === "2";
-});
-const isUpdate = computed(() => {
-    props.operation === "3";
-});
-const isDelete = computed(() => {
-    props.operation === "4";
-});
+const operations = {
+    isCreate: computed(() => props.operation === "1"),
+    isShow: computed(() => props.operation === "2"),
+    isUpdate: computed(() => props.operation === "3"),
+    isDelete: computed(() => props.operation === "4"),
+};
 
 // ---------------------------------------------------------
 // SELECTS
 // ---------------------------------------------------------
-
 let departments = [];
 props.departments.forEach((element) => {
     departments.push({ id: element.id, label: element.department });
@@ -172,15 +181,94 @@ const destroy = () => {
         has-cancel
         is-form
         @confirm="
-            isCreate
+            operations.isCreate
                 ? create()
-                : isUpdate
+                : operations.isUpdate
                 ? update()
-                : isDelete
+                : operations.isDelete
                 ? destroy()
                 : ''
         "
     >
-        <Stepper />
+        <Stepper v-model="activePhase" />
+
+        <!-- STEP 1 -->
+        <template
+            v-if="
+                activePhase === 1 &&
+                $page.props.user.permissions.includes('cgf_certification')
+            "
+        >
+            <h1>STEPPER 1</h1>
+            <button
+                type="button"
+                @click.prevent="goToStep(2)"
+                class="bg-green-500 text-white"
+            >
+                Adelante
+            </button>
+        </template>
+        <!-- STEP 2 -->
+        <template
+            v-if="
+                activePhase === 2 &&
+                $page.props.user.permissions.includes('japc_certification')
+            "
+        >
+            <h1>STEPPER 2</h1>
+            <button
+                type="button"
+                @click.prevent="goToStep(1)"
+                class="bg-green-500 text-white"
+            >
+                Atrás
+            </button>
+            <button
+                type="button"
+                @click.prevent="goToStep(3)"
+                class="bg-green-500 text-white"
+            >
+                Adelante
+            </button>
+        </template>
+        <!-- STEP 3 -->
+        <template
+            v-if="
+                activePhase === 3 &&
+                $page.props.user.permissions.includes('financial_certification')
+            "
+        >
+            <h1>STEPPER 3</h1>
+            <button
+                type="button"
+                @click.prevent="goToStep(2)"
+                class="bg-green-500 text-white"
+            >
+                Atrás
+            </button>
+            <button
+                type="button"
+                @click.prevent="goToStep(4)"
+                class="bg-green-500 text-white"
+            >
+                Adelante
+            </button>
+        </template>
+        <!-- STEP 4 -->
+        <template
+            v-if="
+                activePhase === 4 &&
+                $page.props.user.permissions.includes('treasury_certification')
+            "
+        >
+            <h1>STEPPER 4</h1>
+            <button
+                type="button"
+                @click.prevent="goToStep(3)"
+                class="bg-green-500 text-white"
+            >
+                Atrás
+            </button>
+        </template>
     </CardBoxModal>
 </template>

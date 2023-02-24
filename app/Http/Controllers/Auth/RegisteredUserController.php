@@ -35,7 +35,6 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:' . User::class,
             'department' => 'required|string|max:255',
-            'job_position' => 'required|string|max:255',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -43,7 +42,6 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'department' => $request->department,
-            'job_position' => $request->job_position,
             'password' => Hash::make($request->password),
         ]);
 

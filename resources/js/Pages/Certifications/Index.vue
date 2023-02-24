@@ -40,7 +40,7 @@ const getMessage = (operation, message, state) => {
     <LayoutAuthenticated>
         <Head title="Certificaciones" />
         <SectionMain>
-            <StepperComponent></StepperComponent>
+            <p>{{ $page.props.auth.user }}</p>
             <SectionTitleLineWithButton
                 :icon="mdiCardBulleted"
                 title="Certificaciones"

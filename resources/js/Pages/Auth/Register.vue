@@ -13,11 +13,16 @@ import BaseButton from "@/components/BaseButton.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import FormValidationErrors from "@/components/FormValidationErrors.vue";
 
+const props = defineProps({
+    departments: Object,
+    roles: Object,
+});
+
 const form = useForm({
     name: "",
     email: "",
     department: "",
-    job_position: "",
+    role: "",
     password: "",
     password_confirmation: "",
     terms: [],
@@ -107,20 +112,20 @@ const submit = () => {
 
                 <FormField
                     label="Función laboral"
-                    label-for="job_position"
+                    label-for="role"
                     help="Por favor ingrese el cargo que desempeña"
-                    :errors="form.errors.job_position"
+                    :errors="form.errors.role"
                 >
                     <FormControl
-                        v-model="form.job_position"
-                        id="job_position"
+                        v-model="form.role"
+                        id="role"
                         :icon="mdiAccount"
-                        autocomplete="job_position"
+                        autocomplete="role"
                         type="text"
                         required
                     />
-                    <div v-if="form.errors.job_position">
-                        {{ form.errors.job_position }}
+                    <div v-if="form.errors.role">
+                        {{ form.errors.role }}
                     </div>
                 </FormField>
 

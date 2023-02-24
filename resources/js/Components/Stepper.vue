@@ -8,6 +8,10 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    modelValue: {
+        type: [String, Number, Boolean],
+        default: null,
+    },
 });
 
 const colorActive = computed(() => {
@@ -20,6 +24,19 @@ const colorActive = computed(() => {
     }[props.state];
 });
 const colorInactive = "bg-gray-100";
+
+const emit = defineEmits(["update:modelValue", "stepping"]);
+const value = computed({
+    get: () => props.modelValue,
+    set: (value) => emit("update:modelValue", value),
+});
+const confirmCancel = (step) => {
+    value.value = step;
+    emit("stepping", step);
+};
+const stepping = (step) => {
+    confirmCancel(parseInt(step));
+};
 </script>
 
 <template>
@@ -30,6 +47,7 @@ const colorInactive = "bg-gray-100";
             >
                 <li
                     class="flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
+                    @click.prevent="stepping('1')"
                 >
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
@@ -59,6 +77,7 @@ const colorInactive = "bg-gray-100";
 
                 <li
                     class="relative flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
+                    @click.prevent="stepping('2')"
                 >
                     <span
                         class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
@@ -98,6 +117,7 @@ const colorInactive = "bg-gray-100";
 
                 <li
                     class="relative flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
+                    @click.prevent="stepping('3')"
                 >
                     <span
                         class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
@@ -137,6 +157,7 @@ const colorInactive = "bg-gray-100";
 
                 <li
                     class="relative flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
+                    @click.prevent="stepping('4')"
                 >
                     <span
                         class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
@@ -156,6 +177,7 @@ const colorInactive = "bg-gray-100";
 
                 <li
                     class="flex items-center justify-center p-3 cursor-pointer bg-slate-100 focus:outline-none focus:bg-sky-700"
+                    @click.prevent="stepping('5')"
                 >
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"

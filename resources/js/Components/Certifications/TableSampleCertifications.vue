@@ -104,7 +104,7 @@ const closeModal = (isconfirm) => {
     <!-- BOTON CREATE (OK) -->
     <BaseButtons
         type="justify-end"
-        v-if="$page.props.user.permissions.includes('registro_certificacion')"
+        v-if="$page.props.user.permissions.includes('create_certification')"
     >
         <BaseButton
             color="success"
@@ -208,18 +208,33 @@ const closeModal = (isconfirm) => {
                             no-wrap
                         >
                             <BaseButton
+                                v-if="
+                                    $page.props.user.permissions.includes(
+                                        'show_certification'
+                                    )
+                                "
                                 color="info"
                                 :icon="mdiEye"
                                 small
                                 @click="openModal('2', certification)"
                             />
                             <BaseButton
+                                v-if="
+                                    $page.props.user.permissions.includes(
+                                        'update_certification'
+                                    )
+                                "
                                 color="warning"
                                 :icon="mdiFindReplace"
                                 small
                                 @click="openModal('3', certification)"
                             />
                             <BaseButton
+                                v-if="
+                                    $page.props.user.permissions.includes(
+                                        'delete_certification'
+                                    )
+                                "
                                 color="danger"
                                 :icon="mdiTrashCan"
                                 small
