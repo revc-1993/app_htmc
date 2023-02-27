@@ -6,7 +6,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Department;
-use App\Models\JobPosition;
+use App\Models\ProcessType;
+use App\Models\ExpenseType;
 use App\Models\Certification;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -83,6 +84,12 @@ class DatabaseSeeder extends Seeder
 
         // *---- DEPARTAMENTOS ----*
         $department = Department::factory(3)->create();
+
+        // *---- TIPOS DE PROCESO ----*
+        $process_type = ProcessType::factory(3)->create();
+
+        // *---- TIPOS DE GASTO ----*
+        $expense_type = ExpenseType::factory(3)->create();
 
         // *---- USUARIOS ----*
         $user_cgf_1 = User::factory()->create([

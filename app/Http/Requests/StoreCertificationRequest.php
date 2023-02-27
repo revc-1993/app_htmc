@@ -24,12 +24,17 @@ class StoreCertificationRequest extends FormRequest
     public function rules()
     {
         return [
-            'contract_object' => ['required', 'unique:certifications', 'string', 'min:10', 'max:255'],
-            'reception_date' => ['required', 'date', 'before_or_equal:today', 'after:last year'],
-            'amount' => ['required', 'numeric', 'min:10'],
+            'certification_memo' => ['nullable', 'alpha_dash', 'min:20', 'max:40'],
+            'content' => ['nullable', 'min:10'],
+            'contract_object' => ['required', 'string', 'min:15', 'max:255'],
+            'process_type_id' => ['required'],
+            'expense_type_id' => ['required'],
             'department_id' => ['required'],
-            'customer_id' => ['required'],
-            'comments' => [''],
+            'cgf_comments' => ['nullable'],
+
+            // 'reception_date' => ['required', 'date', 'before_or_equal:today', 'after:last year'],
+            // 'amount' => ['required', 'numeric', 'min:10'],
+            // 'customer_id' => ['required'],
             // 'certification_number' => ['alpha_dash', 'min:10', 'unique:certifications'],
         ];
     }

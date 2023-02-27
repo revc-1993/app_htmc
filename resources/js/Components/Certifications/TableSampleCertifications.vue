@@ -14,6 +14,8 @@ const props = defineProps({
     checkable: Boolean,
     certifications: Object,
     departments: Object,
+    process_types: Object,
+    expense_types: Object,
 });
 
 // ---------------------------------------------------------
@@ -121,6 +123,8 @@ const closeModal = (isconfirm) => {
         instance="certificación"
         :certification="certification"
         :departments="departments"
+        :process_types="process_types"
+        :expense_types="expense_types"
         :operation="operation"
         @confirm="closeModal"
     />
@@ -150,7 +154,8 @@ const closeModal = (isconfirm) => {
                     <th class="text-center">Objeto de contrato</th>
                     <th class="text-center">Tipo de gasto</th>
                     <th class="text-center">Fecha de recepción</th>
-                    <th class="text-center">Usuario actual</th>
+                    <th class="text-center">Gestión actual</th>
+                    <th class="text-center">Usuario asignado</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -178,13 +183,13 @@ const closeModal = (isconfirm) => {
                         {{ certification.certification_memo }}
                     </td>
                     <td data-label="Tipo de proceso" class="text-center">
-                        {{ certification.process_type }}
+                        {{ certification.process_type.process_type }}
                     </td>
                     <td data-label="Objeto de contrato" class="text-left">
                         {{ certification.contract_object }}
                     </td>
                     <td data-label="Tipo de gasto" class="text-center">
-                        {{ certification.expense_type }}
+                        {{ certification.expense_type.expense_type }}
                     </td>
                     <td data-label="Fecha" class="text-center">
                         {{ certification.cgf_date }}
@@ -192,6 +197,14 @@ const closeModal = (isconfirm) => {
                     <!-- <td data-label="Estado" class="py-3 px-6 text-center">
                         <SpanState :state="certification.management_status" />
                     </td> -->
+                    <td
+                        data-label="Usuario"
+                        class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
+                    >
+                        <strong>
+                            {{ certification.record_status.department }}
+                        </strong>
+                    </td>
                     <td
                         data-label="Usuario"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"

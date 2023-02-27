@@ -8,6 +8,8 @@ use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
 use App\Models\Commitment;
 use App\Models\Department;
+use App\Models\ProcessType;
+use App\Models\ExpenseType;
 
 class CertificationController extends Controller
 {
@@ -18,6 +20,7 @@ class CertificationController extends Controller
      */
     public function index()
     {
+        // dd();
         return Inertia::render('Certifications/Index', [
             'certifications' => Certification
                 ::with([
@@ -26,11 +29,22 @@ class CertificationController extends Controller
                     },
                     'department' => function ($query) {
                         $query->select('id', 'department');
-                    }
+                    },
+                    'processType' => function ($query) {
+                        $query->select('id', 'process_type');
+                    },
+                    'expenseType' => function ($query) {
+                        $query->select('id', 'expense_type');
+                    },
+                    'recordStatus' => function ($query) {
+                        $query->select('id', 'department');
+                    },
                 ])
                 ->pending()
                 ->get(),
             'departments' => Department::all(['id', 'department']),
+            'process_types' => ProcessType::all(['id', 'process_type']),
+            'expense_types' => ExpenseType::all(['id', 'expense_type']),
         ]);
     }
 
@@ -44,12 +58,13 @@ class CertificationController extends Controller
     {
         // dd($request);
         $certification = Certification::create($request->validated() + [
-            'management_status' => $this->changeStatus($request),
+            'customer_id' => auth()->user()->id,
+            'record_status' => auth()->user()->roles()->first()->id + 1,
+            'cgf_date' => now(),
         ]);
 
         $message = "Registro creado correctamente.";
-        $state = $certification->management_status;
-        return to_route('certifications.index')->with(compact('message', 'state'));
+        return to_route('certifications.index')->with(compact('message'));
 
 
         // return to_route('certifications.index')

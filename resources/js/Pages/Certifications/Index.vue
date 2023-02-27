@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from "vue";
 import { mdiCardBulleted, mdiCheckBold } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
@@ -13,16 +14,18 @@ import Stepper from "@/components/Stepper.vue";
 const props = defineProps({
     certifications: Object,
     departments: Object,
+    process_types: Object,
+    expense_types: Object,
 });
 
-const getMessage = (operation, message, state) => {
+const getMessage = (operation, message) => {
     const colors = {
         1: "success-class",
         3: "warning-class",
         4: "danger-class",
     };
     const messages = computed(() => {
-        return `${message}. \nEstado: ${state}`;
+        return `${message}`;
     });
 
     const toast = useToast();
@@ -40,7 +43,7 @@ const getMessage = (operation, message, state) => {
     <LayoutAuthenticated>
         <Head title="Certificaciones" />
         <SectionMain>
-            <p>{{ $page.props.auth.user }}</p>
+            <p>{{ $page.props.auth.user.roles }}</p>
             <SectionTitleLineWithButton
                 :icon="mdiCardBulleted"
                 title="Certificaciones"
@@ -51,13 +54,9 @@ const getMessage = (operation, message, state) => {
             <TableSampleCertifications
                 :certifications="certifications"
                 :departments="departments"
-                @alert="
-                    getMessage(
-                        $event,
-                        $page.props.flash.message,
-                        $page.props.flash.state
-                    )
-                "
+                :process_types="process_types"
+                :expense_types="expense_types"
+                @alert="getMessage($event, $page.props.flash.message)"
             />
         </SectionMain>
     </LayoutAuthenticated>

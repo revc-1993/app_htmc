@@ -19,12 +19,12 @@ return new class extends Migration
             // SECRETARÍA COORDINACION FINANCIERA
             $table->string('certification_memo')->nullable();
             $table->string('content')->nullable();
-            $table->string('process_type');
             $table->string('contract_object');
-            $table->string('expense_type');
+            $table->unsignedBigInteger('process_type_id')->nullable();
+            $table->unsignedBigInteger('expense_type_id')->nullable();
+            $table->unsignedBigInteger('department_id')->nullable();
             $table->string('cgf_comments')->nullable();
             $table->date('cgf_date');
-            $table->unsignedBigInteger('department_id')->nullable();
 
             // SECRETARÍA JAPC-CP
             $table->date('assignment_date')->nullable();
@@ -44,14 +44,17 @@ return new class extends Migration
             $table->string('returned_document_number')->nullable();
 
             // CONTROL TOTAL
-            $table->unsignedBigInteger('record_status')->default(1);    // Roles
+            $table->unsignedBigInteger('record_status');    // Rol: CGF
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
 
             // RELACIONES
             $table->foreign('customer_id')->references('id')->on('users');
+            $table->foreign('process_type_id')->references('id')->on('process_types');
+            $table->foreign('expense_type_id')->references('id')->on('expense_types');
             $table->foreign('department_id')->references('id')->on('departments');
+            $table->foreign('record_status')->references('id')->on('departments');
         });
     }
 

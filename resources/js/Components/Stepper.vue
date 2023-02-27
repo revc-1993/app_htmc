@@ -14,6 +14,8 @@ const props = defineProps({
     },
 });
 
+console.log(props.modelValue);
+
 const colorActive = computed(() => {
     return {
         "Pendiente de revisión": "bg-red-500 text-gray-100",
@@ -43,11 +45,11 @@ const stepping = (step) => {
     <div>
         <div class="py-2">
             <ol
-                class="grid grid-cols-1 divide-x divide-gray-800 overflow-hidden rounded-lg border border-gray-100 text-gray-500 sm:grid-cols-5"
+                class="grid grid-cols-1 divide-x divide-gray-800 overflow-hidden rounded-lg border border-gray-100 text-gray-500 sm:grid-cols-4"
             >
                 <li
                     class="flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
-                    @click.prevent="stepping('1')"
+                    @click.prevent="stepping(1)"
                 >
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
@@ -71,13 +73,13 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 1. </strong>
-                        <small class="mt-1"> Pendiente de revisión </small>
+                        <small class="mt-1"> Secretaría CGF </small>
                     </p>
                 </li>
 
                 <li
                     class="relative flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
-                    @click.prevent="stepping('2')"
+                    @click.prevent="stepping(2)"
                 >
                     <span
                         class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
@@ -111,13 +113,13 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 2. </strong>
-                        <small class="mt-1"> En revisión </small>
+                        <small class="mt-1"> Secretaría JAPC - CP </small>
                     </p>
                 </li>
 
                 <li
                     class="relative flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
-                    @click.prevent="stepping('3')"
+                    @click.prevent="stepping(3)"
                 >
                     <span
                         class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
@@ -151,33 +153,12 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 3. </strong>
-                        <small class="mt-1"> Devuelto </small>
+                        <small class="mt-1"> Analista de Certificación </small>
                     </p>
                 </li>
-
-                <li
-                    class="relative flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
-                    @click.prevent="stepping('4')"
-                >
-                    <span
-                        class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
-                    >
-                    </span>
-
-                    <span
-                        class="absolute -right-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
-                    >
-                    </span>
-
-                    <p class="leading-none">
-                        <strong class="block font-medium"> 4. </strong>
-                        <small class="mt-1"> Certificado </small>
-                    </p>
-                </li>
-
                 <li
                     class="flex items-center justify-center p-3 cursor-pointer bg-slate-100 focus:outline-none focus:bg-sky-700"
-                    @click.prevent="stepping('5')"
+                    @click.prevent="stepping(4)"
                 >
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
@@ -195,8 +176,8 @@ const stepping = (step) => {
                     </svg>
 
                     <p class="leading-none">
-                        <strong class="block font-medium"> 5. </strong>
-                        <small class="mt-1"> Observado. </small>
+                        <strong class="block font-medium"> 4. </strong>
+                        <small class="mt-1"> Tesorería. </small>
                     </p>
                 </li>
             </ol>

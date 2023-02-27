@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Department>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ExpenseType>
  */
-class DepartmentFactory extends Factory
+class ExpenseTypeFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,8 +17,8 @@ class DepartmentFactory extends Factory
     public function definition()
     {
         return [
-            'department' => $this->faker->unique()->randomElement([
-                'FARMACIA HOSPITALARIA', 'GENETICA MOLECULAR', 'ENFERMERIA'
+            'expense_type' => $this->faker->unique()->randomElement([
+                'CONVALIDACION', 'PROCESO 2023', 'DEUDA DE AÑOS ANTERIORES'
             ]),
         ];
     }

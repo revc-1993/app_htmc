@@ -139,23 +139,19 @@ if (props.ctrlKFocus) {
 
 <template>
     <div class="relative">
-        <select
+        <v-select
             v-if="computedType === 'select'"
             :id="id"
             v-model="computedValue"
             :name="name"
             :disabled="disabled"
             :class="inputElClass"
-        >
-            <option :value="''">Escoja una opción</option>
-            <option
-                v-for="option in options"
-                :key="option.id ?? option"
-                :value="option"
-            >
-                {{ option.label ?? key == 0 }}
-            </option>
-        </select>
+            class="select-style"
+            :options="options"
+            :reduce="(label) => label.id"
+            placeholder="Escoja una opción"
+            label="label"
+        />
         <textarea
             v-else-if="computedType === 'textarea'"
             :id="id"
@@ -166,19 +162,6 @@ if (props.ctrlKFocus) {
             :placeholder="placeholder"
             :required="required"
         />
-        <!-- <input
-            v-else-if="computedType === 'number'"
-            :id="id"
-            ref="inputEl"
-            v-model="computedValue"
-            :name="name"
-            :inputmode="inputmode"
-            :autocomplete="autocomplete"
-            :required="required"
-            :placeholder="placeholder"
-            :type="computedType"
-            :class="inputElClass"
-        /> -->
         <input
             v-else
             :id="id"
@@ -198,3 +181,17 @@ if (props.ctrlKFocus) {
         <FormControlIcon v-if="icon" :icon="icon" :h="controlIconH" />
     </div>
 </template>
+<style>
+.select-style .vs__dropdown-toggle,
+.select-style .vs__dropdown-menu {
+    border: none;
+    background: rgb(255, 255, 255);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.select-style .vs__search::placeholder {
+    color: rgb(107 114 128);
+}
+</style>

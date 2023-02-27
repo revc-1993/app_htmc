@@ -14,12 +14,12 @@ class Certification extends Model
         // SECRETARÍA COORDINACION FINANCIERA
         'certification_memo',
         'content',
-        'process_type',
         'contract_object',
-        'expense_type',
+        'process_type_id',
+        'expense_type_id',
+        'department_id',
         'cgf_comments',
         'cgf_date',
-        'department_id',
 
         // SECRETARÍA JAPC-CP
         'assignment_date',
@@ -62,6 +62,37 @@ class Certification extends Model
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
+
+    /**
+     * Get the Department that owns the Certification
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function recordStatus()
+    {
+        return $this->belongsTo(Department::class, 'record_status');
+    }
+
+    /**
+     * Get the ProcessType that owns the Certification
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function processType()
+    {
+        return $this->belongsTo(ProcessType::class, 'process_type_id');
+    }
+
+    /**
+     * Get the ExpenseType that owns the Certification
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function expenseType()
+    {
+        return $this->belongsTo(ExpenseType::class, 'expense_type_id');
+    }
+
 
     /**
      * Get all of the Certifications for the User

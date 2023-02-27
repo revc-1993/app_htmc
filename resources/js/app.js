@@ -11,6 +11,8 @@ import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy/dist/vue.m";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
+import vSelect from "vue-select";
+import "vue-select/dist/vue-select.css";
 
 const appName =
     window.document.getElementsByTagName("title")[0]?.innerText || "Laravel";
@@ -32,6 +34,7 @@ createInertiaApp({
             .use(Toast, {
                 transition: "Vue-Toastification__fade",
             })
+            .component("v-select", vSelect)
             .mount(el);
     },
     progress: {

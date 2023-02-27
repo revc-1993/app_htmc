@@ -30,11 +30,11 @@ const wrapperClass = computed(() => {
     }
 
     if (slotsLength === 2) {
-        base.push("md:grid-cols-2");
+        base.push("lg:grid-cols-2");
     }
 
     if (slotsLength === 3) {
-        base.push("md:grid-cols-3");
+        base.push("lg:grid-cols-3");
     }
 
     return base;
