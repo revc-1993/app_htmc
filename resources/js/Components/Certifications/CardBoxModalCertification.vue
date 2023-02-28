@@ -192,8 +192,6 @@ const form = useForm(
           }
 );
 
-console.log(form.process_type);
-
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
 // ---------------------------------------------------------
@@ -202,10 +200,6 @@ const create = () => {
         ...data,
     })).post(route("certifications.store"), {
         preserveScroll: false,
-        onStart: () => {
-            console.log(form.department_id);
-            console.log(form.expense_type_id);
-        },
         onSuccess: () => {
             form.reset();
             confirm();
@@ -219,11 +213,6 @@ const create = () => {
 const update = () => {
     form.transform((data) => ({
         ...data,
-        department_id: form.department_id.id,
-        customer_id: usePage().props.auth.user.id,
-        budget_line: form.budget_line.id,
-        obligation_type: form.obligation_type.id,
-        process_type: form.process_type.id,
     })).put(route("certifications.update", props.certification.id), {
         preserveScroll: false,
         onSuccess: () => {
@@ -266,7 +255,7 @@ const destroy = () => {
         <Stepper v-model="activePhase" />
 
         <!-- STEP 1 -->
-        <template v-if="activePhase === 1">
+        <div v-show="activePhase === 1">
             <FormField
                 label="Objeto de contrato"
                 label-for="contract_object"
@@ -389,12 +378,12 @@ const destroy = () => {
                     :disabled="disabled"
                 />
             </FormField>
-        </template>
+        </div>
         <!-- STEP 2 -->
-        <template v-if="activePhase === 2"> </template>
+        <div v-show="activePhase === 2"></div>
         <!-- STEP 3 -->
-        <template v-if="activePhase === 3"> </template>
+        <div v-show="activePhase === 3"></div>
         <!-- STEP 4 -->
-        <template v-if="activePhase === 4"> </template>
+        <template v-show="activePhase === 4"> </template>
     </CardBoxModal>
 </template>

@@ -14,18 +14,21 @@ const props = defineProps({
     },
 });
 
-console.log(props.modelValue);
-
-const colorActive = computed(() => {
-    return {
-        "Pendiente de revisión": "bg-red-500 text-gray-100",
-        "En revisión": "bg-yellow-500 text-gray-100",
-        Devuelto: "bg-violet-500 text-gray-100",
-        Certificado: "bg-emerald-500 text-gray-100",
-        Observado: "bg-emerald-500 text-gray-100",
-    }[props.state];
-});
-const colorInactive = "bg-gray-100";
+const liClass = (isactive) => {
+    const base = [
+        "flex",
+        "items-center",
+        "justify-center",
+        "p-3",
+        "cursor-pointer",
+    ];
+    if (isactive) {
+        base.push("bg-sky-700", "text-white");
+    } else {
+        base.push("hover:bg-stone-400", "hover:text-white");
+    }
+    return base;
+};
 
 const emit = defineEmits(["update:modelValue", "stepping"]);
 const value = computed({
@@ -45,12 +48,9 @@ const stepping = (step) => {
     <div>
         <div class="py-2">
             <ol
-                class="grid grid-cols-1 divide-x divide-gray-800 overflow-hidden rounded-lg border border-gray-100 text-gray-500 sm:grid-cols-4"
+                class="grid grid-cols-1 divide-x divide-gray-200 overflow-hidden rounded-lg border bg-stone-100 border-stone-400 text-gray-500 sm:grid-cols-4"
             >
-                <li
-                    class="flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
-                    @click.prevent="stepping(1)"
-                >
+                <li :class="liClass(value === 1)" @click.prevent="stepping(1)">
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
@@ -73,21 +73,24 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 1. </strong>
-                        <small class="mt-1"> Secretaría CGF </small>
+                        <strong class="mt-1 text-sm"> Secretaría CGF </strong>
                     </p>
                 </li>
 
                 <li
-                    class="relative flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
+                    class="relative"
+                    :class="liClass(value === 2)"
                     @click.prevent="stepping(2)"
                 >
                     <span
                         class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
+                        :class="{ 'bg-sky-700 text-white': value === 2 }"
                     >
                     </span>
 
                     <span
                         class="absolute -right-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
+                        :class="{ 'bg-sky-700 text-white': value === 1 }"
                     >
                     </span>
 
@@ -113,12 +116,13 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 2. </strong>
-                        <small class="mt-1"> Secretaría JAPC - CP </small>
+                        <strong class="mt-1"> Secretaría JAPC - CP </strong>
                     </p>
                 </li>
 
                 <li
-                    class="relative flex items-center justify-center p-3 cursor-pointer hover:bg-gray-400 hover:text-white focus:bg-sky-700 focus:text-white"
+                    class="relative"
+                    :class="liClass(value === 3)"
                     @click.prevent="stepping(3)"
                 >
                     <span
@@ -156,10 +160,7 @@ const stepping = (step) => {
                         <small class="mt-1"> Analista de Certificación </small>
                     </p>
                 </li>
-                <li
-                    class="flex items-center justify-center p-3 cursor-pointer bg-slate-100 focus:outline-none focus:bg-sky-700"
-                    @click.prevent="stepping(4)"
-                >
+                <li :class="liClass(value === 4)" @click.prevent="stepping(4)">
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
