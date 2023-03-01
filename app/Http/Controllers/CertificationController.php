@@ -10,6 +10,7 @@ use App\Models\Commitment;
 use App\Models\Department;
 use App\Models\ProcessType;
 use App\Models\ExpenseType;
+use App\Models\User;
 
 class CertificationController extends Controller
 {
@@ -45,6 +46,7 @@ class CertificationController extends Controller
             'departments' => Department::all(['id', 'department']),
             'process_types' => ProcessType::all(['id', 'process_type']),
             'expense_types' => ExpenseType::all(['id', 'expense_type']),
+            'users' => User::analystCertification()->get(),
         ]);
     }
 
@@ -58,17 +60,13 @@ class CertificationController extends Controller
     {
         // dd($request);
         $certification = Certification::create($request->validated() + [
-            'customer_id' => auth()->user()->id,
+            // 'customer_id' => auth()->user()->id,
             'record_status' => auth()->user()->roles()->first()->id + 1,
             'cgf_date' => now(),
         ]);
 
         $message = "Registro creado correctamente.";
         return to_route('certifications.index')->with(compact('message'));
-
-
-        // return to_route('certifications.index')
-        //     ->with('message', 'Registro Nro. ' . $certification->id . " creado exitosamente. \n Estado: <strong>" . $certification->management_status . "</strong>");
     }
 
     /**
@@ -81,21 +79,21 @@ class CertificationController extends Controller
     public function update(UpdateCertificationRequest $request, Certification $certification)
     {
         $certification->update($request->validated() + [
-            'management_status' => $this->updateStatus($request),
+            'record_status' => auth()->user()->roles()->first()->id + 1,
+            'assignment_date' => now(),
         ]);
 
         $message = "Registro actualizado correctamente.";
-        $state = $certification->management_status;
 
-        if ($certification->management_status === 'Observado') {
-            Commitment::create([
-                'certification_id' => $certification->id,
-                'customer_id' => $certification->customer_id,
-            ]);
-            $message .= "\nPuede revisar el nuevo compromiso en el módulo COMPROMISOS.";
-        }
+        // if ($certification->management_status === 'Observado') {
+        //     Commitment::create([
+        //         'certification_id' => $certification->id,
+        //         'customer_id' => $certification->customer_id,
+        //     ]);
+        //     $message .= "\nPuede revisar el nuevo compromiso en el módulo COMPROMISOS.";
+        // }
 
-        return to_route('certifications.index')->with(compact('message', 'state'));
+        return to_route('certifications.index')->with(compact('message'));
     }
 
     /**

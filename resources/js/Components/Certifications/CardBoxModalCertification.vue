@@ -30,14 +30,12 @@ const props = defineProps({
     departments: Object,
     process_types: Object,
     expense_types: Object,
+    users: Object,
     modelValue: {
         type: [String, Number, Boolean],
         default: null,
     },
 });
-
-console.log(props.expense_types);
-console.log(props.departments);
 
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
@@ -61,7 +59,22 @@ const activePhase = ref(1);
 activePhase.value === role ? role : 1;
 
 // ---------------------------------------------------------
-// TITULO Y COLOR DE MODAL
+// TRANSACCION A REALIZAR
+// ---------------------------------------------------------
+const transaction = () => {
+    if (props.operation === "1") {
+        create();
+    } else if (props.operation === "3") {
+        update();
+    } else if (props.operation === "4") {
+        destroy();
+    } else {
+        console.log("Error de envío de formulario");
+    }
+};
+
+// ---------------------------------------------------------
+// CARACTERISTICAS DE MODAL
 // ---------------------------------------------------------
 const title = computed(() => {
     return (
@@ -83,15 +96,8 @@ const button = computed(() => {
     }[props.operation];
 });
 
-const operations = {
-    isCreate: computed(() => props.operation === "1"),
-    isShow: computed(() => props.operation === "2"),
-    isUpdate: computed(() => props.operation === "3"),
-    isDelete: computed(() => props.operation === "4"),
-};
-
 const disabled = computed(() => {
-    return operations.isShow.value || activePhase.value !== role;
+    return props.operation === "2" || activePhase.value !== role;
 });
 
 // ---------------------------------------------------------
@@ -100,6 +106,7 @@ const disabled = computed(() => {
 let process_types = [];
 let expense_types = [];
 let departments = [];
+let users = [];
 
 const optionSelect = (array, newArray) => {
     array.forEach((element) => {
@@ -115,18 +122,12 @@ let selectOptions = {
     processType: optionSelect(props.process_types, process_types),
     expenseType: optionSelect(props.expense_types, expense_types),
     requestingArea: optionSelect(props.departments, departments),
+    users: optionSelect(props.users, users),
 };
 
 // ---------------------------------------------------------
 // FORM
 // ---------------------------------------------------------
-// const idOptionSelect = (arrayOptions, value) => {
-//     if (value && typeof value !== "undefined")
-//         // return arrayOptions.filter((option) => option.label == value);
-//         return arrayOptions.find((option) => option.id == value).label || "";
-//     else return "";
-// };
-
 const form = useForm(
     props.operation === "1"
         ? {
@@ -137,6 +138,7 @@ const form = useForm(
               expense_type_id: "",
               department_id: "",
               cgf_comments: "",
+              customer_id: "",
               //   assignment_date: "",
               //   japc_reassignment_date: "",
               //   budget_line: "",
@@ -157,7 +159,8 @@ const form = useForm(
               expense_type_id: props.certification.expense_type_id,
               department_id: props.certification.department_id,
               cgf_comments: props.certification.cgf_comments,
-
+              customer_id:
+                  role.value === "1" ? props.certification.customer_id : "",
               //   assignment_date: props.certification.assignment_date,
               //   japc_reassignment_date:
               //       props.certification.japc_reassignment_date,
@@ -200,6 +203,7 @@ const create = () => {
         ...data,
     })).post(route("certifications.store"), {
         preserveScroll: false,
+        onStart: () => console.log("CREATE"),
         onSuccess: () => {
             form.reset();
             confirm();
@@ -215,6 +219,7 @@ const update = () => {
         ...data,
     })).put(route("certifications.update", props.certification.id), {
         preserveScroll: false,
+        onStart: () => console.log("UPDATE"),
         onSuccess: () => {
             form.reset();
             confirm();
@@ -230,8 +235,6 @@ const destroy = () => {
         onSuccess: () => confirm(),
     });
 };
-
-// $page.props.user.permissions.includes('japc_certification')
 </script>
 
 <template>
@@ -242,148 +245,200 @@ const destroy = () => {
         :button-label="title"
         has-cancel
         is-form
-        @confirm="
-            operations.isCreate
-                ? create()
-                : operations.isUpdate
-                ? update()
-                : operations.isDelete
-                ? destroy()
-                : ''
-        "
+        @confirm="transaction"
     >
-        <Stepper v-model="activePhase" />
+        <template v-if="operation !== '4'">
+            <Stepper v-model="activePhase" />
 
-        <!-- STEP 1 -->
-        <div v-show="activePhase === 1">
-            <FormField
-                label="Objeto de contrato"
-                label-for="contract_object"
-                :errors="form.errors.contract_object"
-            >
-                <FormControl
-                    v-model="form.contract_object"
-                    id="contract_object"
-                    :icon="mdiCardAccountDetails"
-                    autocomplete="contract_object"
-                    type="text"
-                    placeholder="Detalle el objeto de contrato"
-                    :has-errors="form.errors.contract_object != null"
-                    :disabled="disabled"
-                />
-            </FormField>
-            <FormField>
+            <!-- STEP 1 -->
+            <div v-show="activePhase === 1">
                 <FormField
-                    label="Nro. Memorando de certificación"
-                    label-for="certification_memo"
-                    help="Ingrese el Nro. de Memorando de la certificación"
-                    :errors="form.errors.certification_memo"
+                    label="Objeto de contrato"
+                    label-for="contract_object"
+                    :errors="form.errors.contract_object"
                 >
                     <FormControl
-                        v-model="form.certification_memo"
-                        id="certification_memo"
-                        :icon="mdiNumeric"
-                        autocomplete="certification_memo"
+                        v-model="form.contract_object"
+                        id="contract_object"
+                        :icon="mdiCardAccountDetails"
+                        autocomplete="contract_object"
                         type="text"
-                        placeholder="Ej: IE-RER-CM-43"
-                        :has-errors="form.errors.certification_memo != null"
+                        placeholder="Detalle el objeto de contrato"
+                        :has-errors="form.errors.contract_object != null"
+                        :disabled="disabled"
+                    />
+                </FormField>
+                <FormField>
+                    <FormField
+                        label="Nro. Memorando de certificación"
+                        label-for="certification_memo"
+                        help="Ingrese el Nro. de Memorando de la certificación"
+                        :errors="form.errors.certification_memo"
+                    >
+                        <FormControl
+                            v-model="form.certification_memo"
+                            id="certification_memo"
+                            :icon="mdiNumeric"
+                            autocomplete="certification_memo"
+                            type="text"
+                            placeholder="Ej: IE-RER-CM-43"
+                            :has-errors="form.errors.certification_memo != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                    <FormField
+                        label="Contenido"
+                        label-for="content"
+                        help="Indique el contenido de la certificación"
+                        :errors="form.errors.content"
+                    >
+                        <FormControl
+                            v-model="form.content"
+                            id="content"
+                            :icon="mdiNumeric"
+                            autocomplete="content"
+                            type="text"
+                            placeholder="Ej: 01 EXPEDIENTE CON VINCHA"
+                            :has-errors="form.errors.content != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                </FormField>
+                <FormField>
+                    <FormField
+                        label="Tipo de proceso"
+                        label-for="process_type_id"
+                        help="Escoja el tipo de proceso"
+                        :errors="form.errors.process_type_id"
+                    >
+                        <FormControl
+                            v-model="form.process_type_id"
+                            name="process_type_id"
+                            id="process_type_id"
+                            :icon="mdiFormatListBulletedType"
+                            autocomplete="process_type_id"
+                            :options="selectOptions.processType"
+                            :has-errors="form.errors.process_type_id != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                    <FormField
+                        label="Tipo de gasto"
+                        label-for="expense_type_id"
+                        help="Escoja el tipo de gasto"
+                        :errors="form.errors.expense_type_id"
+                    >
+                        <FormControl
+                            v-model="form.expense_type_id"
+                            name="expense_type_id"
+                            id="expense_type_id"
+                            :icon="mdiFormatListBulletedType"
+                            autocomplete="expense_type_id"
+                            :options="selectOptions.expenseType"
+                            :has-errors="form.errors.expense_type_id != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                </FormField>
+                <FormField
+                    label="Area requirente"
+                    label-for="department_id"
+                    help="Seleccione el área requirente"
+                    :errors="form.errors.department_id"
+                >
+                    <FormControl
+                        v-model="form.department_id"
+                        name="department_id"
+                        id="department_id"
+                        :icon="mdiDomain"
+                        autocomplete="department_id"
+                        :options="selectOptions.requestingArea"
+                        :has-errors="form.errors.department_id != null"
                         :disabled="disabled"
                     />
                 </FormField>
                 <FormField
-                    label="Contenido"
-                    label-for="content"
-                    help="Indique el contenido de la certificación"
-                    :errors="form.errors.content"
+                    label="Observaciones"
+                    label-for="cgf_comments"
+                    help="Máximo 255 caracteres."
+                    :errors="form.errors.cgf_comments"
                 >
                     <FormControl
-                        v-model="form.content"
-                        id="content"
-                        :icon="mdiNumeric"
-                        autocomplete="content"
-                        type="text"
-                        placeholder="Ej: 01 EXPEDIENTE CON VINCHA"
-                        :has-errors="form.errors.content != null"
+                        v-model="form.cgf_comments"
+                        type="textarea"
+                        id="cgf_comments"
+                        :icon="mdiTag"
+                        autocomplete="cgf_comments"
+                        placeholder="Indique las principales observaciones."
+                        :has-errors="form.errors.cgf_comments != null"
                         :disabled="disabled"
                     />
                 </FormField>
-            </FormField>
-            <FormField>
+            </div>
+            <!-- STEP 2 -->
+            <div v-show="activePhase === 2">
+                <FormField>
+                    <FormField
+                        label="Contenido"
+                        label-for="content"
+                        help="Indique el contenido de la certificación"
+                        :errors="form.errors.content"
+                    >
+                        <FormControl
+                            v-model="form.content"
+                            id="content"
+                            :icon="mdiNumeric"
+                            autocomplete="content"
+                            type="text"
+                            placeholder="Ej: 01 EXPEDIENTE CON VINCHA"
+                            :has-errors="form.errors.content != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                    <FormField
+                        label="Reasignar a "
+                        label-for="customer_id"
+                        help="Seleccione el usuario a reasignar la gestión"
+                        :errors="form.errors.customer_id"
+                    >
+                        <FormControl
+                            v-model="form.customer_id"
+                            name="customer_id"
+                            id="customer_id"
+                            :icon="mdiDomain"
+                            autocomplete="customer_id"
+                            :options="selectOptions.users"
+                            :has-errors="form.errors.customer_id != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                </FormField>
                 <FormField
-                    label="Tipo de proceso"
-                    label-for="process_type_id"
-                    help="Escoja el tipo de proceso"
-                    :errors="form.errors.process_type_id"
+                    label="Observaciones"
+                    label-for="cgf_comments"
+                    help="Máximo 255 caracteres."
+                    :errors="form.errors.cgf_comments"
                 >
                     <FormControl
-                        v-model="form.process_type_id"
-                        name="process_type_id"
-                        id="process_type_id"
-                        :icon="mdiFormatListBulletedType"
-                        autocomplete="process_type_id"
-                        :options="selectOptions.processType"
-                        :has-errors="form.errors.process_type_id != null"
+                        v-model="form.cgf_comments"
+                        type="textarea"
+                        id="cgf_comments"
+                        :icon="mdiTag"
+                        autocomplete="cgf_comments"
+                        placeholder="Indique las principales observaciones."
+                        :has-errors="form.errors.cgf_comments != null"
                         :disabled="disabled"
                     />
                 </FormField>
-                <FormField
-                    label="Tipo de gasto"
-                    label-for="expense_type_id"
-                    help="Escoja el tipo de gasto"
-                    :errors="form.errors.expense_type_id"
-                >
-                    <FormControl
-                        v-model="form.expense_type_id"
-                        name="expense_type_id"
-                        id="expense_type_id"
-                        :icon="mdiFormatListBulletedType"
-                        autocomplete="expense_type_id"
-                        :options="selectOptions.expenseType"
-                        :has-errors="form.errors.expense_type_id != null"
-                        :disabled="disabled"
-                    />
-                </FormField>
-            </FormField>
-            <FormField
-                label="Area requirente"
-                label-for="department_id"
-                help="Seleccione el área requirente"
-                :errors="form.errors.department_id"
-            >
-                <FormControl
-                    v-model="form.department_id"
-                    name="department_id"
-                    id="department_id"
-                    :icon="mdiDomain"
-                    autocomplete="department_id"
-                    :options="selectOptions.requestingArea"
-                    :has-errors="form.errors.department_id != null"
-                    :disabled="disabled"
-                />
-            </FormField>
-            <FormField
-                label="Observaciones"
-                label-for="cgf_comments"
-                help="Máximo 255 caracteres."
-                :errors="form.errors.cgf_comments"
-            >
-                <FormControl
-                    v-model="form.cgf_comments"
-                    type="textarea"
-                    id="cgf_comments"
-                    :icon="mdiTag"
-                    autocomplete="cgf_comments"
-                    placeholder="Indique las principales observaciones."
-                    :has-errors="form.errors.cgf_comments != null"
-                    :disabled="disabled"
-                />
-            </FormField>
-        </div>
-        <!-- STEP 2 -->
-        <div v-show="activePhase === 2"></div>
-        <!-- STEP 3 -->
-        <div v-show="activePhase === 3"></div>
-        <!-- STEP 4 -->
-        <template v-show="activePhase === 4"> </template>
+            </div>
+            <!-- STEP 3 -->
+            <div v-show="activePhase === 3"></div>
+            <!-- STEP 4 -->
+            <div v-show="activePhase === 4"></div>
+        </template>
+        <template v-else>
+            <strong>¿Está seguro de continuar con esta acción?</strong>
+            <p>No se podrá recuperar recuperar los datos eliminados.</p>
+        </template>
     </CardBoxModal>
 </template>

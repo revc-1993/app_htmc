@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
             $financial_certification, $treasury_certification,
         ]);
         $admin_role->syncPermissions([
-            $create_certification, $show_certification, $update_certification,
+            $create_certification, $show_certification, $update_certification, $delete_certification,
             $cgf_certification, $japc_certification, $financial_certification, $treasury_certification,
         ]);
 
@@ -110,6 +110,12 @@ class DatabaseSeeder extends Seeder
             'department' => 'HTMC',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
         ]);
+        $user_cert_analyst_2 = User::factory()->create([
+            'name' => 'Analista de Certificación 2',
+            'email' => 'analista_certificacion_2@gmail.com',
+            'department' => 'HTMC',
+            'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
+        ]);
         $user_treasury_1 = User::factory()->create([
             'name' => 'Analista de Tesorería 1',
             'email' => 'analista_tesoreria_1@gmail.com',
@@ -127,6 +133,7 @@ class DatabaseSeeder extends Seeder
         $user_cgf_1->assignRole($cgf_secretary_role);
         $user_japc_1->assignRole($japc_secretary_role);
         $user_cert_analyst_1->assignRole($certification_analyst_role);
+        $user_cert_analyst_2->assignRole($certification_analyst_role);
         $user_treasury_1->assignRole($treasury_analyst_role);
         $user_admin->assignRole($admin_role);
 

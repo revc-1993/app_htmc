@@ -16,6 +16,7 @@ const props = defineProps({
     departments: Object,
     process_types: Object,
     expense_types: Object,
+    users: Object,
 });
 
 const getMessage = (operation, message) => {
@@ -56,6 +57,7 @@ const getMessage = (operation, message) => {
                 :departments="departments"
                 :process_types="process_types"
                 :expense_types="expense_types"
+                :users="users"
                 @alert="getMessage($event, $page.props.flash.message)"
             />
         </SectionMain>

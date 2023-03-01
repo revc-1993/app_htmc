@@ -24,21 +24,26 @@ class UpdateCertificationRequest extends FormRequest
     public function rules()
     {
         return [
-            'contract_object' => ['required', 'string', 'min:10', 'max:255'],
-            'reception_date' => ['required', 'date', 'before_or_equal:today', 'after:last year'],
-            'amount' => ['required', 'numeric', 'min:10'],
+            'certification_memo' => ['nullable', 'alpha_dash', 'min:20', 'max:40'],
+            'content' => ['nullable', 'min:10'],
+            'contract_object' => ['required', 'string', 'min:15', 'max:255'],
+            'process_type_id' => ['required'],
+            'expense_type_id' => ['required'],
             'department_id' => ['required'],
-            'customer_id' => ['required'],
+            'cgf_comments' => ['nullable'],
 
-            'certification_number' => ['nullable', 'alpha_dash', 'min:10'],
-            'assignment_date' => ['nullable', 'date', 'after_or_equal:reception_date', 'before_or_equal:today'],
-            'japc_reassignment_date' => ['nullable', 'date', 'after_or_equal:assignment_date', 'before_or_equal:today'],
-            'budget_line' => ['nullable'],
-            'amount_to_commit' => ['nullable', 'numeric', 'min:10'],
-            'obligation_type' => ['nullable'],
-            'process_type' => ['nullable'],
-            'comments' => ['nullable', 'max:255'],
-            'last_validation' => ['nullable'],
+            'japc_comments' => ['nullable'],
+            'customer_id' => ['nullable'],
+
+            // 'certification_number' => ['nullable', 'alpha_dash', 'min:10'],
+            // 'assignment_date' => ['nullable', 'date', 'after_or_equal:reception_date', 'before_or_equal:today'],
+            // 'japc_reassignment_date' => ['nullable', 'date', 'after_or_equal:assignment_date', 'before_or_equal:today'],
+            // 'budget_line' => ['nullable'],
+            // 'amount_to_commit' => ['nullable', 'numeric', 'min:10'],
+            // 'obligation_type' => ['nullable'],
+            // 'process_type' => ['nullable'],
+            // 'comments' => ['nullable', 'max:255'],
+            // 'last_validation' => ['nullable'],
         ];
     }
 }

@@ -16,6 +16,7 @@ const props = defineProps({
     departments: Object,
     process_types: Object,
     expense_types: Object,
+    users: Object,
 });
 
 // ---------------------------------------------------------
@@ -126,6 +127,7 @@ const closeModal = (isconfirm) => {
         :process_types="process_types"
         :expense_types="expense_types"
         :operation="operation"
+        :users="users"
         @confirm="closeModal"
     />
 
@@ -209,9 +211,10 @@ const closeModal = (isconfirm) => {
                         data-label="Usuario"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        <strong>
+                        <strong v-if="certification.user">
                             {{ certification.user.name }}
                         </strong>
+                        <div v-else>-</div>
                     </td>
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"

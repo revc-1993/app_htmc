@@ -34,7 +34,6 @@ class StoreCertificationRequest extends FormRequest
 
             // 'reception_date' => ['required', 'date', 'before_or_equal:today', 'after:last year'],
             // 'amount' => ['required', 'numeric', 'min:10'],
-            // 'customer_id' => ['required'],
             // 'certification_number' => ['alpha_dash', 'min:10', 'unique:certifications'],
         ];
     }
