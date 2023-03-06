@@ -62,7 +62,7 @@ window.addEventListener("keydown", (e) => {
     <OverlayLayer v-show="value" @overlay-click="cancel">
         <CardBox
             v-show="value"
-            class="shadow-lg max-h-modal w-11/12 z-50"
+            class="shadow-lg max-h-modal h-7/12 w-11/12 z-50"
             :class="
                 button === 'danger'
                     ? 'md:w-2/5 lg:w-2/5 xl:w-4/12'

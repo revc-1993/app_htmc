@@ -8,7 +8,7 @@
   }
   
   tr {
-    @apply max-w-full block relative border-b-4 border-gray-100
+    @apply max-w-full block relative border-b-4 border-gray-200
       lg:table-row lg:border-b-0 dark:border-slate-800;
   }
   
@@ -43,6 +43,6 @@
   
   td:before {
     content: attr(data-label);
-    @apply font-semibold pr-3 text-left lg:hidden;
+    @apply font-semibold pr-3 text-left text-sm lg:hidden;
   }
 }

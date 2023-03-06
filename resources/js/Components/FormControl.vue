@@ -54,6 +54,7 @@ const props = defineProps({
     ctrlKFocus: Boolean,
     hasErrors: Boolean,
     disabled: Boolean,
+    pattern: String,
 });
 
 const emit = defineEmits(["update:modelValue", "setRef"]);
@@ -177,6 +178,7 @@ if (props.ctrlKFocus) {
             :min="min"
             :step="step"
             :class="inputElClass"
+            :pattern="pattern"
         />
         <FormControlIcon v-if="icon" :icon="icon" :h="controlIconH" />
     </div>
@@ -185,7 +187,6 @@ if (props.ctrlKFocus) {
 .select-style .vs__dropdown-toggle,
 .select-style .vs__dropdown-menu {
     border: none;
-    background: rgb(255, 255, 255);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -193,5 +194,13 @@ if (props.ctrlKFocus) {
 
 .select-style .vs__search::placeholder {
     color: rgb(107 114 128);
+    background: rgba(255, 255, 255, 0);
+}
+
+.select-style .vs__dropdown-toggle:disabled,
+.select-style .vs__dropdown-menu:disabled,
+.select-style .vs__search::placeholder:disabled {
+    color: rgb(107 114 128);
+    background: rgba(255, 255, 255, 0);
 }
 </style>

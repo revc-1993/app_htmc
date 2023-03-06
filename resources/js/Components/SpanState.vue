@@ -5,35 +5,19 @@ import { mdiTrendingDown, mdiTrendingUp, mdiTrendingNeutral } from "@mdi/js";
 
 const props = defineProps({
     state: {
-        type: String,
+        type: Object,
     },
 });
 
-// const state = props.state;
-
-// const colorState = computed(() => {
-//     switch (props.state) {
-//         case "Pendiente de revisión":
-//             return "bg-red-200 text-red-600 ";
-//         case "En revisión":
-//             return "bg-yellow-200 text-yellow-600";
-//         case "Certificado":
-//             return "bg-green-200 text-green-600";
-//         case "Observado":
-//             return "bg-emerald-200 text-emerald-600";
-//         case "Devuelto":
-//             return "bg-violet-200 text-violet-600";
-//     }
-// });
-
 const colorState = computed(() => {
     return {
-        "Pendiente de revisión": "danger",
-        "En revisión": "warning",
-        Devuelto: "violet",
-        Certificado: "success",
-        Observado: "teal",
-    }[props.state];
+        1: "danger",
+        2: "warning",
+        3: "success",
+        4: "violet",
+        5: "teal",
+        6: "teal",
+    }[props.state.id];
 });
 
 const pillIcon = computed(() => {
@@ -49,14 +33,9 @@ const pillIcon = computed(() => {
 </script>
 
 <template>
-    <!-- <span class="py-1 px-3 rounded-full border text-sm" :class="colorState">
-        <span class="h-2.5 w-2.5 text-xl">•</span>
-        {{ state }}</span
-    > -->
-
     <PillTag
         :color="colorState"
-        :label="state"
+        :label="state.status"
         :small="true"
         :outline="false"
         :icon="pillIcon"

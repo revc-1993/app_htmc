@@ -34,9 +34,8 @@ return new class extends Migration
             $table->string('process_number')->nullable();
             $table->string('nit_name')->nullable();
             $table->date('cp_date')->nullable();
-            $table->string('budget_line')->nullable();
+            $table->unsignedBigInteger('budget_line_id')->nullable();
             $table->float('certified_amount')->unsigned()->nullable();
-            $table->string('certification_status')->nullable();
             $table->string('certification_comments')->nullable();
 
             // TESORERÍA
@@ -44,7 +43,8 @@ return new class extends Migration
             $table->string('returned_document_number')->nullable();
 
             // CONTROL TOTAL
-            $table->unsignedBigInteger('record_status');    // Rol: CGF
+            $table->integer('current_management')->default(2);
+            $table->unsignedBigInteger('record_status')->nullable();    // Estado de la certificación
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
@@ -53,8 +53,9 @@ return new class extends Migration
             $table->foreign('customer_id')->references('id')->on('users');
             $table->foreign('process_type_id')->references('id')->on('process_types');
             $table->foreign('expense_type_id')->references('id')->on('expense_types');
+            $table->foreign('budget_line_id')->references('id')->on('budget_lines');
             $table->foreign('department_id')->references('id')->on('departments');
-            $table->foreign('record_status')->references('id')->on('departments');
+            $table->foreign('record_status')->references('id')->on('record_statuses');
         });
     }
 

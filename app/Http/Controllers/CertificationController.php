@@ -6,11 +6,14 @@ use Inertia\Inertia;
 use App\Models\Certification;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
+use App\Models\BudgetLine;
 use App\Models\Commitment;
 use App\Models\Department;
 use App\Models\ProcessType;
 use App\Models\ExpenseType;
+use App\Models\RecordStatus;
 use App\Models\User;
+use Faker\Core\Number;
 
 class CertificationController extends Controller
 {
@@ -21,12 +24,11 @@ class CertificationController extends Controller
      */
     public function index()
     {
-        // dd();
         return Inertia::render('Certifications/Index', [
             'certifications' => Certification
                 ::with([
                     'user' => function ($query) {
-                        $query->select('id', 'name');
+                        $query->select('id', 'username');
                     },
                     'department' => function ($query) {
                         $query->select('id', 'department');
@@ -37,16 +39,21 @@ class CertificationController extends Controller
                     'expenseType' => function ($query) {
                         $query->select('id', 'expense_type');
                     },
+                    'budgetLine' => function ($query) {
+                        $query->select('id', 'budget_line');
+                    },
                     'recordStatus' => function ($query) {
-                        $query->select('id', 'department');
+                        $query->select('id', 'status');
                     },
                 ])
-                ->pending()
+                ->filtered()
                 ->get(),
             'departments' => Department::all(['id', 'department']),
             'process_types' => ProcessType::all(['id', 'process_type']),
             'expense_types' => ExpenseType::all(['id', 'expense_type']),
+            'budget_lines' => BudgetLine::all(['id', 'budget_line']),
             'users' => User::analystCertification()->get(),
+            'record_statuses' => RecordStatus::all(['id', 'status']),
         ]);
     }
 
@@ -58,12 +65,12 @@ class CertificationController extends Controller
      */
     public function store(StoreCertificationRequest $request)
     {
-        // dd($request);
-        $certification = Certification::create($request->validated() + [
-            // 'customer_id' => auth()->user()->id,
-            'record_status' => auth()->user()->roles()->first()->id + 1,
+        $paramsControl = [
+            'current_management' => auth()->user()->roles()->first()->id + 1,
             'cgf_date' => now(),
-        ]);
+        ];
+
+        $certification = Certification::create($request->validated() + $paramsControl);
 
         $message = "Registro creado correctamente.";
         return to_route('certifications.index')->with(compact('message'));
@@ -78,21 +85,16 @@ class CertificationController extends Controller
      */
     public function update(UpdateCertificationRequest $request, Certification $certification)
     {
-        $certification->update($request->validated() + [
-            'record_status' => auth()->user()->roles()->first()->id + 1,
-            'assignment_date' => now(),
-        ]);
+        $role = auth()->user()->roles()->first()->id;
+
+        $paramsControl = $this->paramsControl($request, $role);
+        $adjustedRequest = $request->validated();
+        $adjustedRequest['record_status'] =
+            $this->setRecordStatus($request, $role);
+
+        $certification->update($adjustedRequest + $paramsControl);
 
         $message = "Registro actualizado correctamente.";
-
-        // if ($certification->management_status === 'Observado') {
-        //     Commitment::create([
-        //         'certification_id' => $certification->id,
-        //         'customer_id' => $certification->customer_id,
-        //     ]);
-        //     $message .= "\nPuede revisar el nuevo compromiso en el módulo COMPROMISOS.";
-        // }
-
         return to_route('certifications.index')->with(compact('message'));
     }
 
@@ -109,27 +111,28 @@ class CertificationController extends Controller
         return to_route('certifications.index')->with(compact('message'));
     }
 
-    // public function changeStatus(StoreCertificationRequest $request)
-    // {
-    //     if ($request->last_validation)
-    //         return "Observado";
-    //     else if (!is_null($request->certification_number) && !is_null($request->amount_to_commit))
-    //         return "Certificado";
-    //     else if (!is_null($request->budget_line) || !is_null($request->assignment_date) || !is_null($request->japc_reassignment_date) || !is_null($request->obligation_type) || !is_null($request->process_type))
-    //         return "En revisión";
-    //     else
-    //         return "Pendiente de revisión";
-    // }
+    protected function paramsControl(UpdateCertificationRequest $request, int $role)
+    {
+        $params = [];
 
-    // public function updateStatus(UpdateCertificationRequest $request)
-    // {
-    //     if ($request->last_validation)
-    //         return "Observado";
-    //     else if (!is_null($request->certification_number) && !is_null($request->amount_to_commit))
-    //         return "Certificado";
-    //     else if (!is_null($request->budget_line) || !is_null($request->assignment_date) || !is_null($request->japc_reassignment_date) || !is_null($request->obligation_type) || !is_null($request->process_type))
-    //         return "En revisión";
-    //     else
-    //         return "Pendiente de revisión";
-    // }
+        if ($role === 1)        $params += ['cgf_date' => now()];
+        else if ($role === 2)   $params += ['assignment_date' => now()];
+        else if ($role === 3)   $params += ['cp_date' => now()];
+
+        if ($role < 3 || $role === 3 && $request->record_status === 3)
+            $params += ['current_management' => $role + 1];
+        else if ($role === 4 && $request->treasury_approved == 'false')
+            $params += ['current_management' => $role - 1];
+        else if ($role === 4 && $request->treasury_approved == 'true')
+            $params += ['current_management' => $role];
+
+        return $params;
+    }
+
+    protected function setRecordStatus(UpdateCertificationRequest $request, int $role)
+    {
+        if ($role === 4 && $request->treasury_approved == 'false')      return 4;
+        else if ($role === 4 && $request->treasury_approved == 'true')  return 5;
+        else return $request->record_status;
+    }
 }

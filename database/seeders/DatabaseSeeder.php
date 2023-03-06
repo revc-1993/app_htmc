@@ -3,12 +3,15 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\BudgetLine;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Department;
 use App\Models\ProcessType;
 use App\Models\ExpenseType;
 use App\Models\Certification;
+use App\Models\RecordStatus;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -91,39 +94,51 @@ class DatabaseSeeder extends Seeder
         // *---- TIPOS DE GASTO ----*
         $expense_type = ExpenseType::factory(3)->create();
 
+        // *---- ITEM PRESUPUESTARIOS ----*
+        $budget_line = BudgetLine::factory(3)->create();
+
+        // *---- ESTADOS ----*
+        $status = RecordStatus::factory(6)->create();
+
         // *---- USUARIOS ----*
         $user_cgf_1 = User::factory()->create([
             'name' => 'Secretario CGF 1',
+            'username' => 'secretariocgf1',
             'email' => 'secretario_cgf_1@gmail.com',
             'department' => 'HTMC',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
         ]);
         $user_japc_1 = User::factory()->create([
             'name' => 'Secretario JAPC 1',
+            'username' => 'secretariojapc1',
             'email' => 'secretario_japc_1@gmail.com',
             'department' => 'HTMC',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
         ]);
         $user_cert_analyst_1 = User::factory()->create([
             'name' => 'Analista de Certificación 1',
+            'username' => 'certif1',
             'email' => 'analista_certificacion_1@gmail.com',
             'department' => 'HTMC',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
         ]);
         $user_cert_analyst_2 = User::factory()->create([
             'name' => 'Analista de Certificación 2',
+            'username' => 'certif2',
             'email' => 'analista_certificacion_2@gmail.com',
             'department' => 'HTMC',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
         ]);
         $user_treasury_1 = User::factory()->create([
             'name' => 'Analista de Tesorería 1',
+            'username' => 'tesorería1',
             'email' => 'analista_tesoreria_1@gmail.com',
             'department' => 'HTMC',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
         ]);
         $user_admin = User::factory()->create([
             'name' => 'Ronny Vera',
+            'username' => 'admin',
             'email' => 'root@gmail.com',
             'department' => 'HTMC',
             'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
@@ -137,6 +152,6 @@ class DatabaseSeeder extends Seeder
         $user_treasury_1->assignRole($treasury_analyst_role);
         $user_admin->assignRole($admin_role);
 
-        Certification::factory(2)->create(['customer_id' => $user_cgf_1->id]);
+        Certification::factory(2)->create();
     }
 }

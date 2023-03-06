@@ -16,7 +16,9 @@ const props = defineProps({
     departments: Object,
     process_types: Object,
     expense_types: Object,
+    budget_lines: Object,
     users: Object,
+    record_statuses: Object,
 });
 
 const getMessage = (operation, message) => {
@@ -44,7 +46,7 @@ const getMessage = (operation, message) => {
     <LayoutAuthenticated>
         <Head title="Certificaciones" />
         <SectionMain>
-            <p>{{ $page.props.auth.user.roles }}</p>
+            <!-- <p>{{ $page.props.auth.user.roles }}</p> -->
             <SectionTitleLineWithButton
                 :icon="mdiCardBulleted"
                 title="Certificaciones"
@@ -57,7 +59,9 @@ const getMessage = (operation, message) => {
                 :departments="departments"
                 :process_types="process_types"
                 :expense_types="expense_types"
+                :budget_lines="budget_lines"
                 :users="users"
+                :record_statuses="record_statuses"
                 @alert="getMessage($event, $page.props.flash.message)"
             />
         </SectionMain>

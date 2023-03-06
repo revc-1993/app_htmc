@@ -4,30 +4,72 @@ import { computed, ref } from "vue";
 
 const props = defineProps({
     operation: String,
-    state: {
-        type: String,
-        default: "",
-    },
+    current_management: Number,
     modelValue: {
         type: [String, Number, Boolean],
         default: null,
     },
 });
 
-const liClass = (isactive) => {
+const liClass = (step) => {
     const base = [
         "flex",
         "items-center",
         "justify-center",
+        "gap-2",
         "p-3",
         "cursor-pointer",
     ];
-    if (isactive) {
-        base.push("bg-sky-700", "text-white");
+    if (props.operation !== 1 && props.current_management === step) {
+        base.push("bg-emerald-600", "text-white");
     } else {
-        base.push("hover:bg-stone-400", "hover:text-white");
+        base.push(
+            // "group",
+            // "peer",
+            "bg-gray-50",
+            "hover:bg-gray-100",
+            "active:bg-gray-300",
+            "focus:bg-gray-200"
+        );
     }
     return base;
+};
+
+const spanClass = (step, position) => {
+    const base = ["absolute"];
+    base.push(position === "left" ? "-left-2" : "-right-2 ");
+    base.push(
+        "top-1/2",
+        "hidden",
+        "h-4",
+        "w-4",
+        "-translate-y-1/2",
+        "rotate-45",
+        "border",
+        "border-b-0",
+        "border-l-0",
+        "sm:block",
+        "cursor-pointer"
+    );
+    if (props.current_management === step) {
+        base.push("bg-emerald-600");
+    } else {
+        base.push(
+            "bg-gray-50"
+            // "hover:bg-gray-200",
+            // position === "right" ? "group-hover:bg-gray-200" : "",
+            // position === "left" ? "peer-hover:bg-gray-200" : ""
+            // "focus:bg-stone-200",
+            // "focus:outline-none",
+            // "focus:ring-2",
+            // "focus:ring-stone-400"
+        );
+    }
+    return base;
+};
+
+const tabindex = (step) => {
+    return step === value.value ? "0" : "1";
 };
 
 const emit = defineEmits(["update:modelValue", "stepping"]);
@@ -48,9 +90,13 @@ const stepping = (step) => {
     <div>
         <div class="py-2">
             <ol
-                class="grid grid-cols-1 divide-x divide-gray-200 overflow-hidden rounded-lg border bg-stone-100 border-stone-400 text-gray-500 sm:grid-cols-4"
+                class="grid grid-cols-1 divide-x divide-gray-100 overflow-hidden rounded-lg border border-stone-400 text-sm text-gray-500 sm:grid-cols-4"
             >
-                <li :class="liClass(value === 1)" @click.prevent="stepping(1)">
+                <li
+                    :class="liClass(1)"
+                    @click.prevent="stepping(1)"
+                    :tabindex="tabindex(1)"
+                >
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
@@ -73,26 +119,18 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 1. </strong>
-                        <strong class="mt-1 text-sm"> Secretaría CGF </strong>
+                        <small class="mt-1"> Secretaría CGF </small>
                     </p>
                 </li>
 
                 <li
                     class="relative"
-                    :class="liClass(value === 2)"
+                    :class="liClass(2)"
                     @click.prevent="stepping(2)"
+                    :tabindex="tabindex(2)"
                 >
-                    <span
-                        class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
-                        :class="{ 'bg-sky-700 text-white': value === 2 }"
-                    >
-                    </span>
-
-                    <span
-                        class="absolute -right-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
-                        :class="{ 'bg-sky-700 text-white': value === 1 }"
-                    >
-                    </span>
+                    <!-- <span :class="spanClass(1, 'left')"> </span>
+                    <span :class="spanClass(2, 'right')"> </span> -->
 
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
@@ -116,24 +154,18 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 2. </strong>
-                        <strong class="mt-1"> Secretaría JAPC - CP </strong>
+                        <small class="mt-1"> Secretaría JAPC - CP </small>
                     </p>
                 </li>
 
                 <li
                     class="relative"
-                    :class="liClass(value === 3)"
+                    :class="liClass(3)"
                     @click.prevent="stepping(3)"
+                    tabindex="1"
                 >
-                    <span
-                        class="absolute -left-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
-                    >
-                    </span>
-
-                    <span
-                        class="absolute -right-2 top-1/2 hidden h-4 w-4 -translate-y-1/2 rotate-45 border border-b-0 border-l-0 border-gray-300 sm:block"
-                    >
-                    </span>
+                    <!-- <span :class="spanClass(2, 'left')" />
+                    <span :class="spanClass(3, 'right')" /> -->
 
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
@@ -160,7 +192,11 @@ const stepping = (step) => {
                         <small class="mt-1"> Analista de Certificación </small>
                     </p>
                 </li>
-                <li :class="liClass(value === 4)" @click.prevent="stepping(4)">
+                <li
+                    :class="liClass(4)"
+                    @click.prevent="stepping(4)"
+                    tabindex="1"
+                >
                     <svg
                         class="mr-2 h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
@@ -185,3 +221,9 @@ const stepping = (step) => {
         </div>
     </div>
 </template>
+
+<style>
+.set-focus:focus {
+    background-color: rgb(229 231 235);
+}
+</style>

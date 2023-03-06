@@ -23,27 +23,55 @@ class UpdateCertificationRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'certification_memo' => ['nullable', 'alpha_dash', 'min:20', 'max:40'],
-            'content' => ['nullable', 'min:10'],
-            'contract_object' => ['required', 'string', 'min:15', 'max:255'],
-            'process_type_id' => ['required'],
-            'expense_type_id' => ['required'],
-            'department_id' => ['required'],
-            'cgf_comments' => ['nullable'],
+        $role = auth()->user()->roles()->first()->id;
 
-            'japc_comments' => ['nullable'],
-            'customer_id' => ['nullable'],
+        $validationRules = [];
 
-            // 'certification_number' => ['nullable', 'alpha_dash', 'min:10'],
-            // 'assignment_date' => ['nullable', 'date', 'after_or_equal:reception_date', 'before_or_equal:today'],
-            // 'japc_reassignment_date' => ['nullable', 'date', 'after_or_equal:assignment_date', 'before_or_equal:today'],
-            // 'budget_line' => ['nullable'],
-            // 'amount_to_commit' => ['nullable', 'numeric', 'min:10'],
-            // 'obligation_type' => ['nullable'],
-            // 'process_type' => ['nullable'],
-            // 'comments' => ['nullable', 'max:255'],
-            // 'last_validation' => ['nullable'],
-        ];
+        if ($role === 1) {
+            $validationRules += [
+                'certification_memo' => [
+                    'nullable',
+                    'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/'
+                ],
+                'content' => ['nullable', 'min:8'],
+                'contract_object' => ['required', 'string', 'min:15', 'max:255'],
+                'process_type_id' => ['required'],
+                'expense_type_id' => ['required'],
+                'department_id' => ['required'],
+                'cgf_comments' => ['nullable'],
+            ];
+        } else if ($role === 2) {
+            $validationRules += [
+                'content' => ['nullable', 'min:10'],
+                'japc_comments' => ['nullable'],
+                'customer_id' => ['required'],
+            ];
+        } else if ($role === 3) {
+            $validationRules += [
+                'process_number' => ['required', 'alphadash', 'string', 'min:15', 'max:100'],
+                'nit_name' => ['required', 'string', 'min:15', 'max:255'],
+                'budget_line_id' => ['required'],
+                'certified_amount' => ['nullable', 'numeric', 'min:10'],
+                'record_status' => $this->treasury_approved === 'false' ? ['sometimes', 'in:1,2,3'] : ['sometimes', 'in:5,6'],
+                'certification_comments' => ['nullable'],
+            ];
+        } else if ($role === 4) {
+            $validationRules += [
+                'record_status' => ['required'],
+                'treasury_approved' => ['required'],
+                // 'returned_document_number' => [
+                //     'required_if:treasury_approved,false',
+                //     'nullable',
+                //     'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/',
+                // ],
+                'returned_document_number' => $this->treasury_approved === 'false' ? [
+                    'sometimes',
+                    'required',
+                    'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/'
+                ] : '',
+            ];
+        }
+
+        return $validationRules;
     }
 }

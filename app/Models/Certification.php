@@ -29,9 +29,8 @@ class Certification extends Model
         'process_number',
         'nit_name',
         'cp_date',
-        'budget_line',
+        'budget_line_id',
         'certified_amount',
-        'certification_status',
         'certification_comments',
 
         // TESORERÍA
@@ -39,6 +38,7 @@ class Certification extends Model
         'returned_document_number',
 
         // CONTROL TOTAL
+        'current_management',
         'record_status',
         'customer_id',
     ];
@@ -64,16 +64,6 @@ class Certification extends Model
     }
 
     /**
-     * Get the Department that owns the Certification
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function recordStatus()
-    {
-        return $this->belongsTo(Department::class, 'record_status');
-    }
-
-    /**
      * Get the ProcessType that owns the Certification
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -93,6 +83,25 @@ class Certification extends Model
         return $this->belongsTo(ExpenseType::class, 'expense_type_id');
     }
 
+    /**
+     * Get the BudgetLine that owns the Certification
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function budgetLine()
+    {
+        return $this->belongsTo(BudgetLine::class, 'budget_line_id');
+    }
+
+    /**
+     * Get the RecordStatus that owns the Certification
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function recordStatus()
+    {
+        return $this->belongsTo(RecordStatus::class, 'record_status');
+    }
 
     /**
      * Get all of the Certifications for the User
@@ -104,10 +113,16 @@ class Certification extends Model
         return $this->hasMany(Commitment::class, 'certification_id');
     }
 
-
-    public function scopePending($query)
+    public function scopeFiltered($query)
     {
-        $query->where('record_status', '<>', 'Observado')->orderBy("certifications.id", "desc");
+        $role = auth()->user()->roles()->first()->id;
+        $user = auth()->user()->id;
+        if ($role === 3)
+            $query->where("certifications.customer_id", "=", $user);
+        else if ($role === 4)
+            $query->where("certifications.current_management", "=", $role);
+
+        $query->orderBy("certifications.id", "desc");
     }
 
     public function scopeNotReviewed($query)

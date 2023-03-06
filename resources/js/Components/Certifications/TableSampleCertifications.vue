@@ -16,7 +16,9 @@ const props = defineProps({
     departments: Object,
     process_types: Object,
     expense_types: Object,
+    budget_lines: Object,
     users: Object,
+    record_statuses: Object,
 });
 
 // ---------------------------------------------------------
@@ -101,6 +103,16 @@ const closeModal = (isconfirm) => {
     isModalActive.value = false;
     operation.value = "";
 };
+
+// --------------------------------------------
+// ESTADO DE CERTIFICACION
+// --------------------------------------------
+const current_managements = {
+    1: "1. Secretaría CGF",
+    2: "2. Secretaría JAPC",
+    3: "3. Analista de Certificación",
+    4: "4. Analista de Tesorería",
+};
 </script>
 
 <template>
@@ -126,8 +138,10 @@ const closeModal = (isconfirm) => {
         :departments="departments"
         :process_types="process_types"
         :expense_types="expense_types"
-        :operation="operation"
+        :budget_lines="budget_lines"
         :users="users"
+        :record_statuses="record_statuses"
+        :operation="operation"
         @confirm="closeModal"
     />
 
@@ -151,11 +165,10 @@ const closeModal = (isconfirm) => {
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-if="checkable" class="text-center" />
                     <th class="text-center">N.</th>
-                    <th class="text-center">Memorando de Certificación</th>
-                    <th class="text-center">Tipo de proceso</th>
                     <th class="text-center">Objeto de contrato</th>
-                    <th class="text-center">Tipo de gasto</th>
-                    <th class="text-center">Fecha de recepción</th>
+                    <th class="text-center">Area requirente</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Monto certificado</th>
                     <th class="text-center">Gestión actual</th>
                     <th class="text-center">Usuario asignado</th>
                     <th class="text-center">Acciones</th>
@@ -178,41 +191,43 @@ const closeModal = (isconfirm) => {
                         class="w-24 h-24 mx-auto lg:w-6 lg:h-6"
                     /> -->
                     </td>
-                    <td
-                        data-label="Memorando de Certificación"
-                        class="text-center"
-                    >
-                        {{ certification.certification_memo }}
-                    </td>
-                    <td data-label="Tipo de proceso" class="text-center">
-                        {{ certification.process_type.process_type }}
-                    </td>
                     <td data-label="Objeto de contrato" class="text-left">
                         {{ certification.contract_object }}
                     </td>
-                    <td data-label="Tipo de gasto" class="text-center">
-                        {{ certification.expense_type.expense_type }}
+                    <td data-label="Area requirente" class="text-left">
+                        {{ certification.department.department }}
                     </td>
-                    <td data-label="Fecha" class="text-center">
-                        {{ certification.cgf_date }}
+                    <td data-label="Estado" class="py-3 px-6 text-center">
+                        <SpanState
+                            v-if="certification.record_status"
+                            :state="certification.record_status"
+                        />
+                        <div v-else>-</div>
                     </td>
-                    <!-- <td data-label="Estado" class="py-3 px-6 text-center">
-                        <SpanState :state="certification.management_status" />
-                    </td> -->
+                    <td data-label="Monto certificado" class="text-center">
+                        <strong v-if="certification.certified_amount"
+                            >$ {{ certification.certified_amount }}</strong
+                        >
+                        <div v-else>-</div>
+                    </td>
                     <td
-                        data-label="Usuario"
+                        data-label="Gestión actual"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
                         <strong>
-                            {{ certification.record_status.department }}
+                            {{
+                                current_managements[
+                                    certification.current_management
+                                ]
+                            }}
                         </strong>
                     </td>
                     <td
-                        data-label="Usuario"
+                        data-label="Usuario asignado"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
                         <strong v-if="certification.user">
-                            {{ certification.user.name }}
+                            @{{ certification.user.username }}
                         </strong>
                         <div v-else>-</div>
                     </td>

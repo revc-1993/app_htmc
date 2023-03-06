@@ -30,7 +30,9 @@ const props = defineProps({
     departments: Object,
     process_types: Object,
     expense_types: Object,
+    budget_lines: Object,
     users: Object,
+    record_statuses: Object,
     modelValue: {
         type: [String, Number, Boolean],
         default: null,
@@ -56,21 +58,16 @@ const confirm = () => confirmCancel("confirm");
 // ---------------------------------------------------------
 const role = usePage().props.auth.user.roles[0].id;
 const activePhase = ref(1);
-activePhase.value === role ? role : 1;
+activePhase.value = role ?? 1;
 
 // ---------------------------------------------------------
 // TRANSACCION A REALIZAR
 // ---------------------------------------------------------
 const transaction = () => {
-    if (props.operation === "1") {
-        create();
-    } else if (props.operation === "3") {
-        update();
-    } else if (props.operation === "4") {
-        destroy();
-    } else {
-        console.log("Error de envío de formulario");
-    }
+    if (props.operation === "1") create();
+    else if (props.operation === "3") update();
+    else if (props.operation === "4") destroy();
+    else console.log("Error de envío de formulario");
 };
 
 // ---------------------------------------------------------
@@ -96,17 +93,15 @@ const button = computed(() => {
     }[props.operation];
 });
 
-const disabled = computed(() => {
-    return props.operation === "2" || activePhase.value !== role;
-});
-
 // ---------------------------------------------------------
 // SELECTS
 // ---------------------------------------------------------
+let departments = [];
 let process_types = [];
 let expense_types = [];
-let departments = [];
 let users = [];
+let budget_lines = [];
+let record_statuses = [];
 
 const optionSelect = (array, newArray) => {
     array.forEach((element) => {
@@ -119,10 +114,12 @@ const optionSelect = (array, newArray) => {
 };
 
 let selectOptions = {
+    requestingArea: optionSelect(props.departments, departments),
     processType: optionSelect(props.process_types, process_types),
     expenseType: optionSelect(props.expense_types, expense_types),
-    requestingArea: optionSelect(props.departments, departments),
+    budgetLine: optionSelect(props.budget_lines, budget_lines),
     users: optionSelect(props.users, users),
+    recordStatus: optionSelect(props.record_statuses, record_statuses),
 };
 
 // ---------------------------------------------------------
@@ -139,17 +136,15 @@ const form = useForm(
               department_id: "",
               cgf_comments: "",
               customer_id: "",
-              //   assignment_date: "",
-              //   japc_reassignment_date: "",
-              //   budget_line: "",
-              //   process_id: "",
-              //   certification_number: "",
-              //   amount_to_commit: "",
-              //   obligation_type: "",
-              //   comments: "",
-              //   customer_id: usePage().props.auth.user.id,
-              //   returned_document_number: "",
-              //   last_validation: "",
+              japc_comments: "",
+              process_number: "",
+              budget_line_id: "",
+              nit_name: "",
+              certified_amount: "",
+              record_status: "",
+              certification_comments: "",
+              treasury_approved: "",
+              returned_document_number: "",
           }
         : {
               certification_memo: props.certification.certification_memo,
@@ -159,41 +154,33 @@ const form = useForm(
               expense_type_id: props.certification.expense_type_id,
               department_id: props.certification.department_id,
               cgf_comments: props.certification.cgf_comments,
-              customer_id:
-                  role.value === "1" ? props.certification.customer_id : "",
-              //   assignment_date: props.certification.assignment_date,
-              //   japc_reassignment_date:
-              //       props.certification.japc_reassignment_date,
-              //   budget_line: {
-              //       id: props.certification.budget_line,
-              //       label: idOptionSelect(
-              //           selectOptions.budgetLine,
-              //           props.certification.budget_line
-              //       ),
-              //   },
-              //   process_id: props.certification.process_id,
-              //   certification_number: props.certification.certification_number,
-              //   amount_to_commit: props.certification.amount_to_commit,
-              //   obligation_type: {
-              //       id: props.certification.obligation_type,
-              //       label: idOptionSelect(
-              //           selectOptions.obligationType,
-              //           props.certification.obligation_type
-              //       ),
-              //   },
-              //   customer_id: usePage().props.auth.user.id,
-              //   department_id: {
-              //       id: props.certification.department_id,
-              //       label: idOptionSelect(
-              //           selectOptions.requestingArea,
-              //           props.certification.department_id
-              //       ),
-              //   },
-              //   returned_document_number:
-              //       props.certification.returned_document_number,
-              //   last_validation: props.certification.last_validation,
+              customer_id: props.certification.customer_id ?? "",
+              japc_comments: props.certification.japc_comments,
+              process_number: props.certification.process_number,
+              budget_line_id: props.certification.budget_line_id,
+              nit_name: props.certification.nit_name,
+              certified_amount: props.certification.certified_amount,
+              record_status: props.certification.record_status
+                  ? props.certification.record_status.id
+                  : "",
+              certification_comments:
+                  props.certification.certification_comments,
+              treasury_approved: props.certification.treasury_approved,
+              returned_document_number:
+                  props.certification.returned_document_number,
           }
 );
+
+const disabled = computed(() => {
+    return (
+        props.operation === "2" ||
+        activePhase.value !== role ||
+        (props.operation === "3" &&
+            props.certification.current_management - role > 2)
+    );
+});
+
+const operations = computed(() => props.operation);
 
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
@@ -203,7 +190,7 @@ const create = () => {
         ...data,
     })).post(route("certifications.store"), {
         preserveScroll: false,
-        onStart: () => console.log("CREATE"),
+        // onStart: () => console.log("CREATE"),
         onSuccess: () => {
             form.reset();
             confirm();
@@ -219,7 +206,7 @@ const update = () => {
         ...data,
     })).put(route("certifications.update", props.certification.id), {
         preserveScroll: false,
-        onStart: () => console.log("UPDATE"),
+        // onStart: () => console.log("UPDATE"),
         onSuccess: () => {
             form.reset();
             confirm();
@@ -248,10 +235,19 @@ const destroy = () => {
         @confirm="transaction"
     >
         <template v-if="operation !== '4'">
-            <Stepper v-model="activePhase" />
+            <Stepper
+                v-model="activePhase"
+                :operation="operations"
+                :current_management="
+                    operations == 1 ? 0 : certification.current_management
+                "
+            />
 
             <!-- STEP 1 -->
-            <div v-show="activePhase === 1">
+            <div
+                v-show="activePhase === 1"
+                class="transition duration-500 ease-in-out"
+            >
                 <FormField
                     label="Objeto de contrato"
                     label-for="contract_object"
@@ -268,7 +264,7 @@ const destroy = () => {
                         :disabled="disabled"
                     />
                 </FormField>
-                <FormField>
+                <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField
                         label="Nro. Memorando de certificación"
                         label-for="certification_memo"
@@ -281,7 +277,7 @@ const destroy = () => {
                             :icon="mdiNumeric"
                             autocomplete="certification_memo"
                             type="text"
-                            placeholder="Ej: IE-RER-CM-43"
+                            placeholder="Ej: IESS-HTMC-JATSGCME-2022-5073-M"
                             :has-errors="form.errors.certification_memo != null"
                             :disabled="disabled"
                         />
@@ -303,8 +299,8 @@ const destroy = () => {
                             :disabled="disabled"
                         />
                     </FormField>
-                </FormField>
-                <FormField>
+                </div>
+                <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField
                         label="Tipo de proceso"
                         label-for="process_type_id"
@@ -339,7 +335,7 @@ const destroy = () => {
                             :disabled="disabled"
                         />
                     </FormField>
-                </FormField>
+                </div>
                 <FormField
                     label="Area requirente"
                     label-for="department_id"
@@ -376,8 +372,11 @@ const destroy = () => {
                 </FormField>
             </div>
             <!-- STEP 2 -->
-            <div v-show="activePhase === 2">
-                <FormField>
+            <div
+                v-show="activePhase === 2"
+                class="transition duration-500 ease-in-out"
+            >
+                <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField
                         label="Contenido"
                         label-for="content"
@@ -412,29 +411,176 @@ const destroy = () => {
                             :disabled="disabled"
                         />
                     </FormField>
-                </FormField>
+                </div>
                 <FormField
                     label="Observaciones"
-                    label-for="cgf_comments"
+                    label-for="japc_comments"
                     help="Máximo 255 caracteres."
-                    :errors="form.errors.cgf_comments"
+                    :errors="form.errors.japc_comments"
                 >
                     <FormControl
-                        v-model="form.cgf_comments"
+                        v-model="form.japc_comments"
                         type="textarea"
-                        id="cgf_comments"
+                        id="japc_comments"
                         :icon="mdiTag"
-                        autocomplete="cgf_comments"
+                        autocomplete="japc_comments"
                         placeholder="Indique las principales observaciones."
-                        :has-errors="form.errors.cgf_comments != null"
+                        :has-errors="form.errors.japc_comments != null"
                         :disabled="disabled"
                     />
                 </FormField>
             </div>
             <!-- STEP 3 -->
-            <div v-show="activePhase === 3"></div>
+            <div
+                v-show="activePhase === 3"
+                class="transition duration-500 ease-in-out"
+            >
+                <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
+                    <FormField
+                        label="Nro. Proceso"
+                        label-for="process_number"
+                        help="Ingrese el Nro. de Proceso"
+                        :errors="form.errors.process_number"
+                    >
+                        <FormControl
+                            v-model="form.process_number"
+                            id="process_number"
+                            :icon="mdiNumeric"
+                            autocomplete="process_number"
+                            type="text"
+                            placeholder="Ej: CE-2023000384849"
+                            :has-errors="form.errors.process_number != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                    <FormField
+                        label="Código presupuestario"
+                        label-for="budget_line_id"
+                        help="Seleccione el código presupuestario"
+                        :errors="form.errors.budget_line_id"
+                    >
+                        <FormControl
+                            v-model="form.budget_line_id"
+                            name="budget_line_id"
+                            id="budget_line_id"
+                            :icon="mdiDomain"
+                            autocomplete="budget_line_id"
+                            :options="selectOptions.budgetLine"
+                            :has-errors="form.errors.budget_line_id != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                </div>
+                <FormField
+                    label="NIT Nombre"
+                    label-for="nit_name"
+                    :errors="form.errors.nit_name"
+                >
+                    <FormControl
+                        v-model="form.nit_name"
+                        id="nit_name"
+                        :icon="mdiCardAccountDetails"
+                        autocomplete="nit_name"
+                        type="text"
+                        placeholder="Detalle la razón social del NIT"
+                        :has-errors="form.errors.nit_name != null"
+                        :disabled="disabled"
+                    />
+                </FormField>
+                <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
+                    <FormField
+                        label="Monto certificado"
+                        label-for="certified_amount"
+                        help="Ingrese el monto certificado"
+                        :errors="form.errors.certified_amount"
+                    >
+                        <FormControl
+                            v-model="form.certified_amount"
+                            id="certified_amount"
+                            :icon="mdiCurrencyUsd"
+                            autocomplete="certified_amount"
+                            type="number"
+                            inputmode="decimal"
+                            placeholder="Ej: 1534.35"
+                            :step="0.0001"
+                            :min="0"
+                            :has-errors="form.errors.certified_amount != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                    <FormField
+                        label="Estado de certificación"
+                        label-for="record_status"
+                        help="Seleccione el estado de la certificación"
+                        :errors="form.errors.record_status"
+                    >
+                        <FormControl
+                            v-model="form.record_status"
+                            name="record_status"
+                            id="record_status"
+                            :icon="mdiDomain"
+                            autocomplete="record_status"
+                            :options="selectOptions.recordStatus"
+                            :has-errors="form.errors.record_status != null"
+                            :disabled="disabled"
+                        />
+                    </FormField>
+                </div>
+                <FormField
+                    label="Observaciones"
+                    label-for="certification_comments"
+                    help="Máximo 255 caracteres."
+                    :errors="form.errors.certification_comments"
+                >
+                    <FormControl
+                        v-model="form.certification_comments"
+                        type="textarea"
+                        id="certification_comments"
+                        :icon="mdiTag"
+                        autocomplete="certification_comments"
+                        placeholder="Indique las principales observaciones."
+                        :has-errors="form.errors.certification_comments != null"
+                        :disabled="disabled"
+                    />
+                </FormField>
+            </div>
             <!-- STEP 4 -->
-            <div v-show="activePhase === 4"></div>
+            <div
+                v-show="activePhase === 4"
+                class="transition duration-500 ease-in-out"
+            >
+                <FormField label="Revisión de certificación">
+                    <FormCheckRadioGroup
+                        v-model="form.treasury_approved"
+                        name="treasury_approved"
+                        type="radio"
+                        :options="{ true: 'Aprobado', false: 'No aprobado' }"
+                        :disabled="disabled"
+                    />
+                </FormField>
+                <FormField
+                    label="Nro. Memorando de Devuelto"
+                    label-for="returned_document_number"
+                    help="Ingrese el Nro. de Memorando de la devolución de Certificación"
+                    :errors="form.errors.returned_document_number"
+                >
+                    <FormControl
+                        v-model="form.returned_document_number"
+                        id="returned_document_number"
+                        :icon="mdiNumeric"
+                        autocomplete="returned_document_number"
+                        type="text"
+                        placeholder="Ej: HTMC-JATSGCME-2022-5073-M"
+                        pattern="/^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/gm"
+                        :has-errors="
+                            form.errors.returned_document_number != null
+                        "
+                        :disabled="
+                            disabled || form.treasury_approved != 'false'
+                        "
+                    />
+                </FormField>
+            </div>
         </template>
         <template v-else>
             <strong>¿Está seguro de continuar con esta acción?</strong>
