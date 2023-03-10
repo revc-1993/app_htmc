@@ -52,7 +52,7 @@ class UpdateCertificationRequest extends FormRequest
                 'nit_name' => ['required', 'string', 'min:15', 'max:255'],
                 'budget_line_id' => ['required'],
                 'certified_amount' => ['nullable', 'numeric', 'min:10'],
-                'record_status' => $this->treasury_approved === 'false' ? ['sometimes', 'in:1,2,3'] : ['sometimes', 'in:5,6'],
+                'record_status' => $this->treasury_approved !== 'true' ? ['sometimes', 'in:1,2,3'] : ['sometimes', 'in:5,6'],
                 'certification_comments' => ['nullable'],
             ];
         } else if ($role === 4) {

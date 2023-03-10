@@ -3,10 +3,13 @@ import BaseIcon from "@/components/BaseIcon.vue";
 import { computed, ref } from "vue";
 
 const props = defineProps({
-    operation: String,
+    operation: {
+        type: [String, Number],
+        default: null,
+    },
     current_management: Number,
     modelValue: {
-        type: [String, Number, Boolean],
+        type: [String, Number, Boolean, Object],
         default: null,
     },
 });

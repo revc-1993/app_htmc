@@ -1,6 +1,14 @@
 <script setup>
 import { computed, ref } from "vue";
-import { mdiEye, mdiPenPlus, mdiTrashCan, mdiFindReplace } from "@mdi/js";
+import {
+    mdiEye,
+    mdiPenPlus,
+    mdiTrashCan,
+    mdiFindReplace,
+    mdiFileExcel,
+    mdiFileDelimited,
+    mdiMagnify,
+} from "@mdi/js";
 import CardBoxComponentEmpty from "@/components/CardBoxComponentEmpty.vue";
 import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
@@ -9,20 +17,96 @@ import BaseButton from "@/components/BaseButton.vue";
 import SpanState from "@/components/SpanState.vue";
 import CardBoxModalCertification from "@/components/certifications/CardBoxModalCertification.vue";
 import CardBox from "@/components/CardBox.vue";
+import FormControl from "@/components/FormControl.vue";
+import exportFromJSON from "export-from-json";
 
 const props = defineProps({
     checkable: Boolean,
     certifications: Object,
     departments: Object,
-    process_types: Object,
-    expense_types: Object,
-    budget_lines: Object,
+    processTypes: Object,
+    expenseTypes: Object,
+    budgetLines: Object,
     users: Object,
-    record_statuses: Object,
+    recordStatuses: Object,
+    instance: {
+        type: String,
+        default: "",
+    },
 });
 
 // ---------------------------------------------------------
-// PAGINACIÓN
+// CONSTANTES
+// ---------------------------------------------------------
+// Objeto Certificación
+const certification = ref({});
+// Modal abierto o cerrado
+const isModalActive = ref(false);
+// Operación escogida para modal
+const currentOperation = ref("");
+// Operaciones
+const operations = {
+    1: "create",
+    2: "show",
+    3: "update",
+    4: "delete",
+};
+
+// Características de botones por operación
+const elementProps = {
+    create: {
+        tag: 1,
+        color: "success",
+        label: "Crear " + props.instance,
+        tooltip: "Crear " + props.instance,
+        icon: mdiPenPlus,
+    },
+    show: {
+        tag: 2,
+        color: "info",
+        label: "Ver " + props.instance,
+        tooltip: "Ver detalles",
+        icon: mdiEye,
+    },
+    update: {
+        tag: 3,
+        color: "warning",
+        label: "Actualizar " + props.instance,
+        tooltip: "Actualizar",
+        icon: mdiEye,
+    },
+    delete: {
+        tag: 4,
+        color: "danger",
+        label: "Eliminar " + props.instance,
+        tooltip: "Eliminar " + props.instance,
+        icon: mdiTrashCan,
+    },
+};
+
+const currentManagements = {
+    1: "1. Secretaría CGF",
+    2: "2. Secretaría JAPC",
+    3: "3. Analista de Certificación",
+    4: "4. Analista de Tesorería",
+};
+
+// --------------------------------------------
+// TABLA: BOTONES DE DESCARGA
+// --------------------------------------------
+const downloadFile = (type) => {
+    const data = props.certifications;
+    const fileName = "np-data";
+    const exportType = {
+        xls: exportFromJSON.types.xls,
+        csv: exportFromJSON.types.csv,
+    }[type];
+
+    if (data) exportFromJSON({ data, fileName, exportType });
+};
+
+// ---------------------------------------------------------
+// TABLA: PAGINACIÓN
 // ---------------------------------------------------------
 const items = computed(() => props.certifications);
 const perPage = ref(5);
@@ -76,72 +160,83 @@ const alerts = (mode, operation) => {
 };
 const alert = (operation) => alerts("alert", operation);
 
-// ---------------------------------------------------------
-// VARIABLES
-// ---------------------------------------------------------
-const certification = ref({});
-const isModalActive = ref(false);
-const operation = ref("");
-
 // --------------------------------------------
 // ABRIR MODAL: 1 Create, 2 Show, 3 Update, 4 Delete
 // --------------------------------------------
-const openModal = (action, certifications = "") => {
-    // console.log(certifications);
-    if (action !== "1") certification.value = certifications;
-    operation.value = action;
+const openModal = (action, certifications = {}) => {
+    certification.value = certifications;
+    currentOperation.value = action;
     isModalActive.value = true;
-    // console.log(certification);
-    // console.log(operation.value);
 };
 
 // --------------------------------------------
 // CERRAR MODAL: CONFIRMAR O CANCELAR
 // --------------------------------------------
-const closeModal = (isconfirm) => {
-    if (isconfirm === "confirm") alert(operation.value);
+const closeModal = (event) => {
+    if (event === "confirm") alert(currentOperation.value);
+    currentOperation.value = "";
     isModalActive.value = false;
-    operation.value = "";
 };
 
 // --------------------------------------------
 // ESTADO DE CERTIFICACION
 // --------------------------------------------
-const current_managements = {
-    1: "1. Secretaría CGF",
-    2: "2. Secretaría JAPC",
-    3: "3. Analista de Certificación",
-    4: "4. Analista de Tesorería",
-};
 </script>
 
 <template>
     <!-- BOTON CREATE (OK) -->
-    <BaseButtons
-        type="justify-end"
-        v-if="$page.props.user.permissions.includes('create_certification')"
-    >
-        <BaseButton
-            color="success"
-            small
-            :icon="mdiPenPlus"
-            label="Crear certificación"
-            @click="openModal('1')"
-        />
-    </BaseButtons>
+    <BaseLevel>
+        <BaseButtons type="justify-start">
+            <BaseButton
+                color="success"
+                small
+                :icon="mdiFileExcel"
+                @click="downloadFile('xls')"
+                tooltip="Exportar a *.xls"
+            />
+            <BaseButton
+                color="contrast"
+                small
+                :icon="mdiFileDelimited"
+                @click="downloadFile('csv')"
+                tooltip="Exportar a *.pdf"
+            />
+            <!-- <FormControl
+                placeholder="Buscar"
+                :icon="mdiMagnify"
+                ctrl-k-focus
+                class="px-1 py-1 text-sm"
+            /> -->
+        </BaseButtons>
+        <BaseButtons type="justify-end">
+            <BaseButton
+                :color="elementProps.create.color"
+                :icon="elementProps.create.icon"
+                :label="elementProps.create.label"
+                :tooltip="elementProps.create.tooltip"
+                @click="openModal(elementProps.create.tag)"
+                small
+                v-if="
+                    $page.props.user.permissions.includes(
+                        'create_certification'
+                    )
+                "
+            />
+        </BaseButtons>
+    </BaseLevel>
 
     <CardBoxModalCertification
         v-if="isModalActive"
         v-model="isModalActive"
-        instance="certificación"
         :certification="certification"
         :departments="departments"
-        :process_types="process_types"
-        :expense_types="expense_types"
-        :budget_lines="budget_lines"
+        :process-types="processTypes"
+        :expense-types="expenseTypes"
+        :budget-lines="budgetLines"
         :users="users"
-        :record_statuses="record_statuses"
-        :operation="operation"
+        :record-statuses="recordStatuses"
+        :element-props="elementProps[operations[currentOperation]]"
+        :current-operation="currentOperation"
         @confirm="closeModal"
     />
 
@@ -216,7 +311,7 @@ const current_managements = {
                     >
                         <strong>
                             {{
-                                current_managements[
+                                currentManagements[
                                     certification.current_management
                                 ]
                             }}
@@ -239,37 +334,55 @@ const current_managements = {
                             no-wrap
                         >
                             <BaseButton
+                                :color="elementProps.show.color"
+                                :icon="elementProps.show.icon"
+                                :tooltip="elementProps.show.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
                                         'show_certification'
                                     )
                                 "
-                                color="info"
-                                :icon="mdiEye"
+                                @click="
+                                    openModal(
+                                        elementProps.show.tag,
+                                        certification
+                                    )
+                                "
                                 small
-                                @click="openModal('2', certification)"
                             />
                             <BaseButton
+                                :color="elementProps.update.color"
+                                :icon="elementProps.update.icon"
+                                :tooltip="elementProps.update.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
                                         'update_certification'
                                     )
                                 "
-                                color="warning"
-                                :icon="mdiFindReplace"
+                                @click="
+                                    openModal(
+                                        elementProps.update.tag,
+                                        certification
+                                    )
+                                "
                                 small
-                                @click="openModal('3', certification)"
                             />
                             <BaseButton
+                                :color="elementProps.delete.color"
+                                :icon="elementProps.delete.icon"
+                                :tooltip="elementProps.delete.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
                                         'delete_certification'
                                     )
                                 "
-                                color="danger"
-                                :icon="mdiTrashCan"
+                                @click="
+                                    openModal(
+                                        elementProps.delete.tag,
+                                        certification
+                                    )
+                                "
                                 small
-                                @click="openModal('4', certification)"
                             />
                         </BaseButtons>
                     </td>
@@ -292,7 +405,7 @@ const current_managements = {
                     />
                 </BaseButtons>
                 <small
-                    >Página {{ currentPageHuman > 0 ? currentPage + 1 : 0 }} de
+                    >Página {{ numPages > 0 ? currentPageHuman : 0 }} de
                     {{ numPages }}</small
                 >
             </BaseLevel>

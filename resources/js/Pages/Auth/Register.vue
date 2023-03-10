@@ -15,7 +15,7 @@ import FormValidationErrors from "@/components/FormValidationErrors.vue";
 
 const props = defineProps({
     departments: Object,
-    roles: Object,
+    role: Object,
 });
 
 const form = useForm({
@@ -40,6 +40,24 @@ const submit = () => {
         onFinish: () => form.reset("password", "password_confirmation"),
     });
 };
+
+let departments = [];
+let role = [];
+
+const optionSelect = (array, newArray) => {
+    array.forEach((element) => {
+        newArray.push({
+            id: Object.values(element)[0],
+            label: Object.values(element)[1],
+        });
+    });
+    return newArray;
+};
+
+let selectOptions = {
+    department: optionSelect(props.departments, departments),
+    role: optionSelect(props.role, role),
+};
 </script>
 
 <template>
@@ -47,18 +65,13 @@ const submit = () => {
         <Head title="Register" />
 
         <SectionFullScreen v-slot="{ cardClass }" bg="slateGray">
-            <CardBox
-                :class="cardClass"
-                class="my-24"
-                is-form
-                @submit.prevent="submit"
-            >
+            <CardBox :class="cardClass" is-form @submit.prevent="submit">
                 <FormValidationErrors v-if="form.hasErrors" />
 
                 <FormField
                     label="Nombres"
                     label-for="name"
-                    help="Por favor ingrese sus nombres"
+                    help="Ingrese sus nombres y apellidos"
                     :errors="form.errors.name"
                 >
                     <FormControl
@@ -75,7 +88,7 @@ const submit = () => {
                 <FormField
                     label="Correo electrónico"
                     label-for="email"
-                    help="Por favor, ingrese su correo electrónico"
+                    help="Ingrese su correo electrónico"
                     :errors="form.errors.email"
                 >
                     <FormControl
@@ -92,7 +105,7 @@ const submit = () => {
                 <FormField
                     label="Departamento"
                     label-for="department"
-                    help="Por favor ingrese el departamento al que pertenece"
+                    help="Escoja el departamento al que pertenece"
                     :errors="form.errors.department"
                 >
                     <FormControl
@@ -101,13 +114,10 @@ const submit = () => {
                         id="department"
                         :icon="mdiAccount"
                         autocomplete="department"
-                        :options="selectOptions.requestingArea"
+                        :options="selectOptions.department"
                         required
                         :has-errors="form.errors.department != null"
                     />
-                    <div v-if="form.errors.department">
-                        {{ form.errors.department }}
-                    </div>
                 </FormField>
 
                 <FormField
@@ -118,67 +128,61 @@ const submit = () => {
                 >
                     <FormControl
                         v-model="form.role"
+                        name="role"
                         id="role"
                         :icon="mdiAccount"
                         autocomplete="role"
-                        type="text"
+                        :options="selectOptions.role"
                         required
+                        :has-errors="form.errors.role != null"
                     />
-                    <div v-if="form.errors.role">
-                        {{ form.errors.role }}
-                    </div>
                 </FormField>
 
-                <FormField
-                    label="Contraseña"
-                    label-for="password"
-                    help="Por favor, ingrese su nueva contraseña"
-                    :errors="form.errors.password"
-                >
-                    <FormControl
-                        v-model="form.password"
-                        id="password"
-                        :icon="mdiFormTextboxPassword"
-                        type="password"
-                        autocomplete="new-password"
-                        required
-                    />
-                    <div v-if="form.errors.password">
-                        {{ form.errors.password }}
-                    </div>
-                </FormField>
+                <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
+                    <FormField
+                        label="Contraseña"
+                        label-for="password"
+                        help="Por favor, ingrese su nueva contraseña"
+                        :errors="form.errors.password"
+                    >
+                        <FormControl
+                            v-model="form.password"
+                            id="password"
+                            :icon="mdiFormTextboxPassword"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                            :has-errors="form.errors.password != null"
+                        />
+                    </FormField>
 
-                <FormField
-                    label="Confirmar contraseña"
-                    label-for="password_confirmation"
-                    help="Por favor, confirme su nueva contraseña"
-                    :errors="form.errors.password_confirmation"
-                >
-                    <FormControl
-                        v-model="form.password_confirmation"
-                        id="password_confirmation"
-                        :icon="mdiFormTextboxPassword"
-                        type="password"
-                        autocomplete="new-password"
-                        required
-                    />
-                    <div v-if="form.errors.password_confirmation">
-                        {{ form.errors.password_confirmation }}
-                    </div>
-                </FormField>
+                    <FormField
+                        label="Confirmar contraseña"
+                        label-for="password_confirmation"
+                        help="Por favor, confirme su nueva contraseña"
+                        :errors="form.errors.password_confirmation"
+                    >
+                        <FormControl
+                            v-model="form.password_confirmation"
+                            id="password_confirmation"
+                            :icon="mdiFormTextboxPassword"
+                            type="password"
+                            autocomplete="new-password"
+                            required
+                            :has-errors="
+                                form.errors.password_confirmation != null
+                            "
+                        />
+                    </FormField>
+                </div>
 
                 <FormCheckRadioGroup
                     v-if="hasTermsAndPrivacyPolicyFeature"
                     v-model="form.terms"
                     name="remember"
                     :options="{ agree: 'Acepto las condiciones' }"
+                    :has-errors="form.errors.terms != null"
                 />
-                <div
-                    v-if="form.errors.terms"
-                    class="text-sm text-red-500 dark:text-red-400 mt-1"
-                >
-                    * {{ form.errors.terms }}
-                </div>
 
                 <BaseDivider />
 

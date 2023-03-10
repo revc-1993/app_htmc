@@ -46,6 +46,10 @@ const props = defineProps({
     active: Boolean,
     disabled: Boolean,
     roundedFull: Boolean,
+    tooltip: {
+        type: String,
+        default: "",
+    },
 });
 
 const is = computed(() => {
@@ -121,6 +125,7 @@ const componentClass = computed(() => {
         :type="computedType"
         :target="target"
         :disabled="disabled"
+        v-tooltip="tooltip"
     >
         <BaseIcon v-if="icon" :path="icon" :size="iconSize" />
         <span v-if="label" :class="labelClass">{{ label }}</span>

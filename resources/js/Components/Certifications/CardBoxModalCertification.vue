@@ -24,20 +24,43 @@ import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
 // PROPS
 // ---------------------------------------------------------
 const props = defineProps({
-    instance: String,
     certification: Object,
-    operation: String,
     departments: Object,
-    process_types: Object,
-    expense_types: Object,
-    budget_lines: Object,
+    processTypes: Object,
+    expenseTypes: Object,
+    budgetLines: Object,
     users: Object,
-    record_statuses: Object,
+    recordStatuses: Object,
+    currentOperation: {
+        type: [String, Number, Boolean],
+        default: null,
+    },
+    elementProps: Object,
     modelValue: {
         type: [String, Number, Boolean],
         default: null,
     },
 });
+
+// ---------------------------------------------------------
+// CONSTANTES
+// ---------------------------------------------------------
+const operations = {
+    create: 1,
+    show: 2,
+    update: 3,
+    destroy: 4,
+};
+
+const role = computed(() => usePage().props.auth.user.roles[0].id);
+const activePhase = ref(1);
+activePhase.value = role.value ?? 1;
+
+const disabled = computed(
+    () =>
+        props.currentOperation === operations.show ||
+        activePhase.value !== role.value
+);
 
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
@@ -54,56 +77,10 @@ const confirmCancel = (mode) => {
 const confirm = () => confirmCancel("confirm");
 
 // ---------------------------------------------------------
-// STEPPER Y ROLES
-// ---------------------------------------------------------
-const role = usePage().props.auth.user.roles[0].id;
-const activePhase = ref(1);
-activePhase.value = role ?? 1;
-
-// ---------------------------------------------------------
-// TRANSACCION A REALIZAR
-// ---------------------------------------------------------
-const transaction = () => {
-    if (props.operation === "1") create();
-    else if (props.operation === "3") update();
-    else if (props.operation === "4") destroy();
-    else console.log("Error de envío de formulario");
-};
-
-// ---------------------------------------------------------
-// CARACTERISTICAS DE MODAL
-// ---------------------------------------------------------
-const title = computed(() => {
-    return (
-        {
-            1: "Crear ",
-            2: "Ver ",
-            3: "Actualizar ",
-            4: "Eliminar ",
-        }[props.operation] + props.instance
-    );
-});
-
-const button = computed(() => {
-    return {
-        1: "success",
-        2: "info",
-        3: "success",
-        4: "danger",
-    }[props.operation];
-});
-
-// ---------------------------------------------------------
 // SELECTS
 // ---------------------------------------------------------
-let departments = [];
-let process_types = [];
-let expense_types = [];
-let users = [];
-let budget_lines = [];
-let record_statuses = [];
-
-const optionSelect = (array, newArray) => {
+const optionSelect = (array = []) => {
+    let newArray = [];
     array.forEach((element) => {
         newArray.push({
             id: Object.values(element)[0],
@@ -114,19 +91,19 @@ const optionSelect = (array, newArray) => {
 };
 
 let selectOptions = {
-    requestingArea: optionSelect(props.departments, departments),
-    processType: optionSelect(props.process_types, process_types),
-    expenseType: optionSelect(props.expense_types, expense_types),
-    budgetLine: optionSelect(props.budget_lines, budget_lines),
-    users: optionSelect(props.users, users),
-    recordStatus: optionSelect(props.record_statuses, record_statuses),
+    requestingArea: optionSelect(props.departments),
+    processType: optionSelect(props.processTypes),
+    expenseType: optionSelect(props.expenseTypes),
+    budgetLine: optionSelect(props.budgetLines),
+    users: optionSelect(props.users),
+    recordStatus: optionSelect(props.recordStatuses),
 };
 
 // ---------------------------------------------------------
 // FORM
 // ---------------------------------------------------------
 const form = useForm(
-    props.operation === "1"
+    props.currentOperation === operations.create
         ? {
               certification_memo: "",
               content: "",
@@ -171,17 +148,6 @@ const form = useForm(
           }
 );
 
-const disabled = computed(() => {
-    return (
-        props.operation === "2" ||
-        activePhase.value !== role ||
-        (props.operation === "3" &&
-            props.certification.current_management - role > 2)
-    );
-});
-
-const operations = computed(() => props.operation);
-
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
 // ---------------------------------------------------------
@@ -190,7 +156,7 @@ const create = () => {
         ...data,
     })).post(route("certifications.store"), {
         preserveScroll: false,
-        // onStart: () => console.log("CREATE"),
+        onStart: () => console.log("CREATE"),
         onSuccess: () => {
             form.reset();
             confirm();
@@ -222,24 +188,36 @@ const destroy = () => {
         onSuccess: () => confirm(),
     });
 };
+
+const transaction = () => {
+    return props.currentOperation === operations.create
+        ? create()
+        : props.currentOperation === operations.update
+        ? update()
+        : props.currentOperation === operations.delete
+        ? destroy()
+        : "";
+};
 </script>
 
 <template>
     <CardBoxModal
         v-model="value"
-        :title="title"
-        :button="button"
-        :button-label="title"
+        :title="elementProps.label"
+        :button="elementProps.color"
+        :button-label="elementProps.label"
         has-cancel
         is-form
         @confirm="transaction"
     >
-        <template v-if="operation !== '4'">
+        <template v-if="currentOperation !== operations.delete">
             <Stepper
                 v-model="activePhase"
-                :operation="operations"
+                :operation="currentOperation"
                 :current_management="
-                    operations == 1 ? 0 : certification.current_management
+                    currentOperation !== operations.create
+                        ? certification.current_management
+                        : null
                 "
             />
 

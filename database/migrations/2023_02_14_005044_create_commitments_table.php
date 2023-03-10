@@ -15,14 +15,21 @@ return new class extends Migration
     {
         Schema::create('commitments', function (Blueprint $table) {
             $table->id();
-            $table->string("process_code")->nullable();
-            $table->string("vendor_name")->nullable();
+            //Buscar certificación
+            $table->string('commitment_memo')->nullable();
             $table->string("contract_administrator")->nullable();
-            $table->string("amount_to_commit")->nullable();
-            $table->string("comments")->nullable();
-            $table->string('management_status')->default("Pendiente de revisión");  // Considerar posibilidad de FK a tabla ESTADOS
+            $table->date('assignment_date')->nullable();
+
+            $table->date('commitment_date')->nullable();
+            $table->string("nit_name")->nullable();
+            $table->float('commitment_amount')->unsigned()->nullable();
+            $table->string('commitment_comments')->nullable();
+
+
+            $table->integer('current_management')->default(2);
+            $table->string('record_status')->default();
             $table->unsignedBigInteger("certification_id");
-            $table->unsignedBigInteger('customer_id')->nullable();  // Considerar posibilidad de FK a tabla USERS
+            $table->unsignedBigInteger('customer_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
 

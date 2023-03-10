@@ -78,7 +78,7 @@ const inputElClass = computed(() => {
         "dark:placeholder-gray-400",
         computedType.value === "textarea" ? "h-24 resize-none" : "h-12",
         props.borderless ? "border-0" : "border",
-        props.transparent ? "bg-transparent" : "bg-white dark:bg-slate-800",
+        props.transparent ? "bg-transparent" : "bg-white dark:bg-slate-700",
     ];
 
     if (props.icon) {
@@ -199,6 +199,7 @@ if (props.ctrlKFocus) {
 
 .select-style .vs__dropdown-toggle:disabled,
 .select-style .vs__dropdown-menu:disabled,
+.select-style .vs__search:disabled,
 .select-style .vs__search::placeholder:disabled {
     color: rgb(107 114 128);
     background: rgba(255, 255, 255, 0);

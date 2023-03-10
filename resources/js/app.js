@@ -9,10 +9,14 @@ import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers";
 import { ZiggyVue } from "../../vendor/tightenco/ziggy/dist/vue.m";
-import Toast from "vue-toastification";
+
 import "vue-toastification/dist/index.css";
-import vSelect from "vue-select";
 import "vue-select/dist/vue-select.css";
+import "floating-vue/dist/style.css";
+
+import Toast from "vue-toastification";
+import vSelect from "vue-select";
+import FloatingVue from "floating-vue";
 
 const appName =
     window.document.getElementsByTagName("title")[0]?.innerText || "Laravel";
@@ -34,6 +38,7 @@ createInertiaApp({
             .use(Toast, {
                 transition: "Vue-Toastification__fade",
             })
+            .use(FloatingVue)
             .component("v-select", vSelect)
             .mount(el);
     },

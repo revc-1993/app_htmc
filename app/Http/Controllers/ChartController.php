@@ -12,7 +12,7 @@ class ChartController extends Controller
     public function dashboard()
     {
         $ncertifications = Certification::count();
-        $ncertificationsOk = Certification::where('certification_status', '=', 'Observado')->count();
+        $ncertificationsOk = Certification::where('record_status', '=', 6)->count();
         $certifications_percent = $ncertifications > 0 ? ceil($ncertificationsOk / $ncertifications * 100) : 0;
         // $ncommitments = Commitment::count();
         // $ncommitmentsOk = Commitment::where('certification_status', '=', 'Observado')->count();

@@ -20,4 +20,9 @@ class Department extends Model
     {
         return $this->hasMany(Certification::class, 'department_id'); //->withPivot();
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'department');
+    }
 }

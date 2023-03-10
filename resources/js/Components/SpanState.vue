@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import PillTag from "@/components/PillTag.vue";
 import { mdiTrendingDown, mdiTrendingUp, mdiTrendingNeutral } from "@mdi/js";
+import { useStyleStore } from "@/stores/style.js";
 
 const props = defineProps({
     state: {
@@ -9,13 +10,15 @@ const props = defineProps({
     },
 });
 
+const styleStore = useStyleStore();
+
 const colorState = computed(() => {
     return {
         1: "danger",
         2: "warning",
-        3: "success",
+        3: "green",
         4: "violet",
-        5: "teal",
+        5: "success",
         6: "teal",
     }[props.state.id];
 });
@@ -37,7 +40,7 @@ const pillIcon = computed(() => {
         :color="colorState"
         :label="state.status"
         :small="true"
-        :outline="false"
+        :outline="styleStore.darkMode"
         :icon="pillIcon"
     />
 </template>

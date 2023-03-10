@@ -28,7 +28,7 @@ const getMessage = (operation, message) => {
         4: "danger-class",
     };
     const messages = computed(() => {
-        return `${message}`;
+        return `${message.response} \n${message.comments ?? ""}`;
     });
 
     const toast = useToast();
@@ -57,11 +57,12 @@ const getMessage = (operation, message) => {
             <TableSampleCertifications
                 :certifications="certifications"
                 :departments="departments"
-                :process_types="process_types"
-                :expense_types="expense_types"
-                :budget_lines="budget_lines"
+                :process-types="process_types"
+                :expense-types="expense_types"
+                :budget-lines="budget_lines"
                 :users="users"
-                :record_statuses="record_statuses"
+                :record-statuses="record_statuses"
+                instance="certificación"
                 @alert="getMessage($event, $page.props.flash.message)"
             />
         </SectionMain>

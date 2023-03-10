@@ -15,16 +15,18 @@ const props = defineProps({
 // --------------------------------------------
 // MOSTRAR MENSAJES DE ALERTA
 // --------------------------------------------
-const getMessage = (operation, message, state) => {
+const getMessage = (operation, message) => {
     const colors = {
         1: "success-class",
         3: "warning-class",
         4: "danger-class",
     };
-    const messages = `${message}. \nEstado: ${state}`;
+    const messages = computed(() => {
+        return `${message}`;
+    });
 
     const toast = useToast();
-    toast(messages, {
+    toast(messages.value, {
         position: "top-center",
         timeout: 3500,
         toastClassName: ["height-class", colors[operation] || "blue-class"],
@@ -47,13 +49,7 @@ const getMessage = (operation, message, state) => {
 
             <TableSampleCommitments
                 :commitments="commitments"
-                @alert="
-                    getMessage(
-                        $event,
-                        $page.props.flash.message,
-                        $page.props.flash.state
-                    )
-                "
+                @alert="getMessage($event, $page.props.flash.message)"
             />
         </SectionMain>
     </LayoutAuthenticated>

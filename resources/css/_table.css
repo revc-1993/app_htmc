@@ -1,6 +1,6 @@
 @layer base {
   table {
-    @apply w-full;
+    @apply w-full text-sm;
   }
   
   thead {
@@ -43,6 +43,6 @@
   
   td:before {
     content: attr(data-label);
-    @apply font-semibold pr-3 text-left text-sm lg:hidden;
+    @apply font-semibold pr-3 text-left lg:hidden;
   }
 }

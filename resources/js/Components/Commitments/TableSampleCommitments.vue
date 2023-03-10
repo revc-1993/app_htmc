@@ -1,6 +1,13 @@
 <script setup>
 import { computed, ref } from "vue";
-import { mdiEye, mdiPenPlus, mdiTrashCan, mdiFindReplace } from "@mdi/js";
+import {
+    mdiEye,
+    mdiPenPlus,
+    mdiTrashCan,
+    mdiFindReplace,
+    mdiFileDelimited,
+    mdiFileExcel,
+} from "@mdi/js";
 import CardBoxComponentEmpty from "@/components/CardBoxComponentEmpty.vue";
 import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
@@ -15,8 +22,22 @@ const props = defineProps({
     commitments: Object,
 });
 
+// --------------------------------------------
+// TABLA: BOTONES DE DESCARGA
+// --------------------------------------------
+const downloadFile = (type) => {
+    const data = props.commitments;
+    const fileName = "np-data";
+    const exportType = {
+        xls: exportFromJSON.types.xls,
+        csv: exportFromJSON.types.csv,
+    }[type];
+
+    if (data) exportFromJSON({ data, fileName, exportType });
+};
+
 // ---------------------------------------------------------
-// PAGINACIÓN
+// TABLA: PAGINACIÓN
 // ---------------------------------------------------------
 const items = computed(() => props.commitments);
 const perPage = ref(5);
@@ -73,7 +94,7 @@ const alert = (operation) => alerts("alert", operation);
 // ---------------------------------------------------------
 // VARIABLES
 // ---------------------------------------------------------
-let commitment;
+const commitment = ref({});
 const isModalActive = ref(false);
 const operation = ref("");
 
@@ -82,7 +103,7 @@ const operation = ref("");
 // --------------------------------------------
 const openModal = (action, commitments = "") => {
     // console.log(commitments);
-    if (action !== "1") commitment = commitments;
+    if (action !== "1") commitment.value = commitments;
     operation.value = action;
     isModalActive.value = true;
     // console.log(commitment);
@@ -97,6 +118,15 @@ const closeModal = (isconfirm) => {
     isModalActive.value = false;
     operation.value = "";
 };
+
+// --------------------------------------------
+// ESTADO DE CERTIFICACION
+// --------------------------------------------
+const current_managements = {
+    1: "1. Secretaría JAPC",
+    2: "2. Analista de Certificación",
+    3: "3. Analista de Tesorería",
+};
 </script>
 
 <template>
@@ -110,6 +140,46 @@ const closeModal = (isconfirm) => {
             @click="openModal('1')"
         />
     </BaseButtons> -->
+
+    <BaseLevel>
+        <BaseButtons type="justify-start">
+            <BaseButton
+                color="success"
+                small
+                :icon="mdiFileExcel"
+                @click="downloadFile('xls')"
+                tooltip="Exportar a *.xls"
+            />
+            <BaseButton
+                color="contrast"
+                small
+                :icon="mdiFileDelimited"
+                @click="downloadFile('csv')"
+                tooltip="Exportar a *.pdf"
+            />
+            <!-- <FormControl
+                placeholder="Buscar"
+                :icon="mdiMagnify"
+                ctrl-k-focus
+                class="px-1 py-1 text-sm"
+            /> -->
+        </BaseButtons>
+        <BaseButtons type="justify-end">
+            <BaseButton
+                color="success"
+                :icon="mdiPenPlus"
+                label="Crear compromiso"
+                tooltip="Crear compromiso"
+                small
+                v-if="
+                    $page.props.user.permissions.includes(
+                        'create_certification'
+                    )
+                "
+                @click="openModal('1')"
+            />
+        </BaseButtons>
+    </BaseLevel>
 
     <CardBoxModalCommitment
         v-if="isModalActive"
@@ -140,13 +210,12 @@ const closeModal = (isconfirm) => {
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-if="checkable" class="text-center" />
                     <th class="text-center">N.</th>
-                    <th class="text-center">N. Certificación</th>
-                    <th class="text-center">Cod. Proceso</th>
+                    <th class="text-center">N. Proceso</th>
+                    <th class="text-center">Administrador de contrato</th>
                     <th class="text-center">Nombre de Proveedor</th>
-                    <th class="text-center">Administrador de Contrato</th>
-                    <th class="text-center">Monto a comprometer</th>
-                    <th class="text-center">Estado</th>
-                    <th class="text-center">Usuario actual</th>
+                    <th class="text-center">Monto</th>
+                    <th class="text-center">Gestión actual</th>
+                    <th class="text-center">Usuario asignado</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -172,14 +241,8 @@ const closeModal = (isconfirm) => {
                         class="w-24 h-24 mx-auto lg:w-6 lg:h-6"
                     /> -->
                     </td>
-                    <td data-label="N. Certificación" class="text-center">
-                        {{ commitment.certification.certification_number }}
-                    </td>
-                    <td data-label="Cod. Proceso" class="text-center">
-                        {{ commitment.process_code }}
-                    </td>
-                    <td data-label="Proveedor" class="text-center">
-                        {{ commitment.vendor_name }}
+                    <td data-label="N. Proceso" class="text-center">
+                        {{ commitment.certification.process_number }}
                     </td>
                     <td
                         data-label="Administrador de contrato"
@@ -187,22 +250,42 @@ const closeModal = (isconfirm) => {
                     >
                         {{ commitment.contract_administrator }}
                     </td>
-                    <td
-                        data-label="Monto a comprometer"
-                        class="text-center text-sm"
-                    >
-                        <strong v-if="commitment.amount_to_commit"
-                            >$ {{ commitment.amount_to_commit }}</strong
+                    <td data-label="Proveedor" class="text-center">
+                        {{ commitment.nit_name }}
+                    </td>
+                    <td data-label="Monto" class="text-center">
+                        <strong v-if="commitment.commitment_amount"
+                            >$ {{ commitment.commitment_amount }}</strong
                         >
+                        <div v-else>-</div>
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
-                        <SpanState :state="commitment.management_status" />
+                        <SpanState
+                            v-if="commitment.record_status"
+                            :state="commitment.record_status"
+                        />
+                        <div v-else>-</div>
                     </td>
                     <td
-                        data-label="Usuario"
+                        data-label="Gestión actual"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        <strong> {{ commitment.user.name }} </strong>
+                        <strong>
+                            {{
+                                current_managements[
+                                    commitment.current_management
+                                ]
+                            }}
+                        </strong>
+                    </td>
+                    <td
+                        data-label="Usuario asignado"
+                        class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
+                    >
+                        <strong v-if="commitment.user">
+                            @{{ commitment.user.username }}
+                        </strong>
+                        <div v-else>-</div>
                     </td>
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"

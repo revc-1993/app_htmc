@@ -11,12 +11,17 @@ class Commitment extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        "process_code",
-        "vendor_name",
+        "commitment_memo",
         "contract_administrator",
-        "amount_to_commit",
-        'comments',
-        'management_status',  // Considerar posibilidad de FK a tabla ESTADOS
+        "assignment_date",
+
+        "commitment_date",
+        'nit_name',
+        'commitment_amount',
+        "commitment_comments",
+
+        "current_management",
+        "record_status",
         "certification_id",
         "customer_id",
     ];

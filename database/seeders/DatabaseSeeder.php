@@ -105,43 +105,46 @@ class DatabaseSeeder extends Seeder
             'name' => 'Secretario CGF 1',
             'username' => 'secretariocgf1',
             'email' => 'secretario_cgf_1@gmail.com',
-            'department' => 'HTMC',
-            'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
+            'department' => 1,
+            'password' => '$2y$10$gwXUxw.oG9eVVSIjezbU3u4.U17Q.2zNt7H3iusa399BkaDgjvGOq',
         ]);
         $user_japc_1 = User::factory()->create([
             'name' => 'Secretario JAPC 1',
             'username' => 'secretariojapc1',
             'email' => 'secretario_japc_1@gmail.com',
-            'department' => 'HTMC',
-            'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
+            'department' => 2,
+            'password' => '$2y$10$gwXUxw.oG9eVVSIjezbU3u4.U17Q.2zNt7H3iusa399BkaDgjvGOq',
+
         ]);
         $user_cert_analyst_1 = User::factory()->create([
             'name' => 'Analista de Certificación 1',
             'username' => 'certif1',
             'email' => 'analista_certificacion_1@gmail.com',
-            'department' => 'HTMC',
-            'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
+            'department' => 3,
+            'password' => '$2y$10$gwXUxw.oG9eVVSIjezbU3u4.U17Q.2zNt7H3iusa399BkaDgjvGOq',
+
         ]);
         $user_cert_analyst_2 = User::factory()->create([
             'name' => 'Analista de Certificación 2',
             'username' => 'certif2',
             'email' => 'analista_certificacion_2@gmail.com',
-            'department' => 'HTMC',
-            'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
+            'department' => 2,
+            'password' => '$2y$10$gwXUxw.oG9eVVSIjezbU3u4.U17Q.2zNt7H3iusa399BkaDgjvGOq',
+
         ]);
         $user_treasury_1 = User::factory()->create([
             'name' => 'Analista de Tesorería 1',
             'username' => 'tesorería1',
             'email' => 'analista_tesoreria_1@gmail.com',
-            'department' => 'HTMC',
-            'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
+            'department' => 1,
+            'password' => '$2y$10$gwXUxw.oG9eVVSIjezbU3u4.U17Q.2zNt7H3iusa399BkaDgjvGOq',
         ]);
         $user_admin = User::factory()->create([
             'name' => 'Ronny Vera',
             'username' => 'admin',
             'email' => 'root@gmail.com',
-            'department' => 'HTMC',
-            'password' => '$2y$10$i8bR6d58xUikIQiBu.MT..px1q70ZewUuz9PMembnh9dDCvR6ud7u',
+            'department' => 2,
+            'password' => '$2y$10$gwXUxw.oG9eVVSIjezbU3u4.U17Q.2zNt7H3iusa399BkaDgjvGOq',
         ]);
 
         // *---- ASIGNA ROLES A USUARIOS ----*
@@ -152,6 +155,6 @@ class DatabaseSeeder extends Seeder
         $user_treasury_1->assignRole($treasury_analyst_role);
         $user_admin->assignRole($admin_role);
 
-        Certification::factory(2)->create();
+        // Certification::factory(2)->create();
     }
 }

@@ -118,9 +118,9 @@ class Certification extends Model
         $role = auth()->user()->roles()->first()->id;
         $user = auth()->user()->id;
         if ($role === 3)
-            $query->where("certifications.customer_id", "=", $user);
+            $query->where("certifications.customer_id", $user);
         else if ($role === 4)
-            $query->where("certifications.current_management", "=", $role);
+            $query->where("certifications.current_management", $role);
 
         $query->orderBy("certifications.id", "desc");
     }

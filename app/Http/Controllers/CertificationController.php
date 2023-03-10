@@ -47,7 +47,7 @@ class CertificationController extends Controller
                     },
                 ])
                 ->filtered()
-                ->get(),
+                ->get(),    // Aquí se puede especificar los campos especificos a extraer
             'departments' => Department::all(['id', 'department']),
             'process_types' => ProcessType::all(['id', 'process_type']),
             'expense_types' => ExpenseType::all(['id', 'expense_type']),
@@ -65,14 +65,20 @@ class CertificationController extends Controller
      */
     public function store(StoreCertificationRequest $request)
     {
+        dd($request);
+
         $paramsControl = [
-            'current_management' => auth()->user()->roles()->first()->id + 1,
+            'current_management' => $this->getRole() + 1,
             'cgf_date' => now(),
         ];
 
         $certification = Certification::create($request->validated() + $paramsControl);
+        $message = ["response" => "Registro creado correctamente."];
 
-        $message = "Registro creado correctamente.";
+        if ($certification->certification_memo === null)
+            $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de certificación."];
+
+
         return to_route('certifications.index')->with(compact('message'));
     }
 
@@ -85,7 +91,7 @@ class CertificationController extends Controller
      */
     public function update(UpdateCertificationRequest $request, Certification $certification)
     {
-        $role = auth()->user()->roles()->first()->id;
+        $role = $this->getRole();
 
         $paramsControl = $this->paramsControl($request, $role);
         $adjustedRequest = $request->validated();
@@ -94,7 +100,10 @@ class CertificationController extends Controller
 
         $certification->update($adjustedRequest + $paramsControl);
 
-        $message = "Registro actualizado correctamente.";
+        $message = ["response" => "Registro actualizado correctamente."];
+        if ($certification->certification_memo === null)
+            $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de certificación."];
+
         return to_route('certifications.index')->with(compact('message'));
     }
 
@@ -134,5 +143,10 @@ class CertificationController extends Controller
         if ($role === 4 && $request->treasury_approved == 'false')      return 4;
         else if ($role === 4 && $request->treasury_approved == 'true')  return 5;
         else return $request->record_status;
+    }
+
+    protected function getRole()
+    {
+        return auth()->user()->roles()->first()->id;
     }
 }

@@ -39,7 +39,7 @@ const componentClass = computed(() => {
         base.push("hover:shadow-lg transition-shadow duration-500");
     }
 
-    if (props.isModal) {
+    if (props.isModal || props.isForm) {
         base.push("overflow-y-auto");
         base.push(
             styleStore.darkMode
@@ -47,7 +47,6 @@ const componentClass = computed(() => {
                 : "aside-scrollbars-[light]"
         );
     }
-    //
     return base;
 });
 

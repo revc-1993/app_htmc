@@ -55,6 +55,17 @@ class User extends Authenticatable
     ];
 
     /**
+     * Get all of the Department for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department');
+    }
+
+
+    /**
      * Get all of the Certifications for the User
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany

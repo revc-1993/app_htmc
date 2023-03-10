@@ -19,7 +19,7 @@ class CommitmentController extends Controller
             'commitments' => Commitment
                 ::with([
                     'certification' => function ($query) {
-                        $query->select('id', 'certification_number');
+                        $query->select('id', 'process_number');
                     },
                     'user' => function ($query) {
                         $query->select('id', 'name');
