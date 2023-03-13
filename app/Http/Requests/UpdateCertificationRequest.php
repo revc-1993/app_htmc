@@ -23,6 +23,8 @@ class UpdateCertificationRequest extends FormRequest
      */
     public function rules()
     {
+        // dd($this->expense_type_id);
+
         $role = auth()->user()->roles()->first()->id;
 
         $validationRules = [];
@@ -48,11 +50,12 @@ class UpdateCertificationRequest extends FormRequest
             ];
         } else if ($role === 3) {
             $validationRules += [
-                'process_number' => ['required', 'alphadash', 'string', 'min:15', 'max:100'],
-                'nit_name' => ['required', 'string', 'min:15', 'max:255'],
+                'process_number' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']) + ['alphadash', 'string', 'min:15', 'max:100'],
+                'nit_name' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']) + ['string', 'min:15', 'max:255'],
                 'budget_line_id' => ['required'],
                 'certified_amount' => ['nullable', 'numeric', 'min:10'],
-                'record_status' => $this->treasury_approved !== 'true' ? ['sometimes', 'in:1,2,3'] : ['sometimes', 'in:5,6'],
+                'certification_number' => ['required_if:' . $this->record_status . ',3', 'numeric', 'min:1', 'nullable'],
+                'record_status' => ['sometimes', 'in:1,2,3'],
                 'certification_comments' => ['nullable'],
             ];
         } else if ($role === 4) {

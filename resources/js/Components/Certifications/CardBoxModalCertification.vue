@@ -112,14 +112,17 @@ const form = useForm(
               expense_type_id: "",
               department_id: "",
               cgf_comments: "",
+              cgf_date: new Date().toLocaleDateString(),
               customer_id: "",
               japc_comments: "",
+              japc_date: new Date().toLocaleDateString(),
               process_number: "",
               budget_line_id: "",
               nit_name: "",
               certified_amount: "",
               record_status: "",
               certification_comments: "",
+              cp_date: new Date().toLocaleDateString(),
               treasury_approved: "",
               returned_document_number: "",
           }
@@ -131,8 +134,10 @@ const form = useForm(
               expense_type_id: props.certification.expense_type_id,
               department_id: props.certification.department_id,
               cgf_comments: props.certification.cgf_comments,
+              cgf_date: props.certification.cgf_date,
               customer_id: props.certification.customer_id ?? "",
               japc_comments: props.certification.japc_comments,
+              japc_date: props.certification.japc_date,
               process_number: props.certification.process_number,
               budget_line_id: props.certification.budget_line_id,
               nit_name: props.certification.nit_name,
@@ -142,6 +147,7 @@ const form = useForm(
                   : "",
               certification_comments:
                   props.certification.certification_comments,
+              cp_date: props.certification.cp_date,
               treasury_approved: props.certification.treasury_approved,
               returned_document_number:
                   props.certification.returned_document_number,
@@ -226,6 +232,22 @@ const transaction = () => {
                 v-show="activePhase === 1"
                 class="transition duration-500 ease-in-out"
             >
+                <FormField
+                    label="Fecha de ingreso"
+                    label-for="cgf_date"
+                    help="Fecha de ingreso de secretaría CGF"
+                    :errors="form.errors.cgf_date"
+                >
+                    <FormControl
+                        v-model="form.cgf_date"
+                        id="cgf_date"
+                        :icon="mdiCalendarRange"
+                        autocomplete="cgf_date"
+                        type="date"
+                        :has-errors="form.errors.cgf_date != null"
+                        disabled
+                    />
+                </FormField>
                 <FormField
                     label="Objeto de contrato"
                     label-for="contract_object"
@@ -354,6 +376,22 @@ const transaction = () => {
                 v-show="activePhase === 2"
                 class="transition duration-500 ease-in-out"
             >
+                <FormField
+                    label="Fecha de asignación JAPC"
+                    label-for="japc_date"
+                    help="Fecha de asignación de secretaría JAPC"
+                    :errors="form.errors.japc_date"
+                >
+                    <FormControl
+                        v-model="form.japc_date"
+                        id="japc_date"
+                        :icon="mdiCalendarRange"
+                        autocomplete="japc_date"
+                        type="date"
+                        :has-errors="form.errors.japc_date != null"
+                        disabled
+                    />
+                </FormField>
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField
                         label="Contenido"
@@ -413,6 +451,23 @@ const transaction = () => {
                 v-show="activePhase === 3"
                 class="transition duration-500 ease-in-out"
             >
+                <FormField
+                    label="Fecha de certificación"
+                    label-for="certified_date"
+                    help="Fecha del actualización de la certificación"
+                    :errors="form.errors.certified_date"
+                >
+                    <FormControl
+                        v-model="form.certified_date"
+                        id="certified_date"
+                        :icon="mdiCalendarRange"
+                        autocomplete="certified_date"
+                        type="date"
+                        :has-errors="form.errors.certified_date != null"
+                        disabled
+                    />
+                </FormField>
+
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField
                         label="Nro. Proceso"

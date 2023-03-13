@@ -23,8 +23,8 @@ return new class extends Migration
             $table->unsignedBigInteger('process_type_id')->nullable();
             $table->unsignedBigInteger('expense_type_id')->nullable();
             $table->unsignedBigInteger('department_id')->nullable();
-            $table->string('cgf_comments')->nullable();
-            $table->date('cgf_date');
+            $table->string('sec_cgf_comments')->nullable();
+            $table->date('sec_cgf_date');
 
             // SECRETARÍA JAPC-CP
             $table->date('assignment_date')->nullable();
@@ -33,14 +33,17 @@ return new class extends Migration
             // ANALISTA DE CERTIFICACIÓN
             $table->string('process_number')->nullable();
             $table->string('nit_name')->nullable();
-            $table->date('cp_date')->nullable();
             $table->unsignedBigInteger('budget_line_id')->nullable();
             $table->float('certified_amount')->unsigned()->nullable();
+            $table->integer('certification_number')->nullable();
+            $table->date('cp_date')->nullable();
             $table->string('certification_comments')->nullable();
 
-            // TESORERÍA
+            // COORDINACION GENERAL FINANCIERA
             $table->string('treasury_approved')->nullable();
             $table->string('returned_document_number')->nullable();
+            $table->date('coord_cgf_date')->nullable();
+            $table->string('coord_cgf_comments')->nullable();
 
             // CONTROL TOTAL
             $table->integer('current_management')->default(2);

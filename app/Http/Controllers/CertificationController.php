@@ -65,7 +65,7 @@ class CertificationController extends Controller
      */
     public function store(StoreCertificationRequest $request)
     {
-        dd($request);
+        // dd($request);
 
         $paramsControl = [
             'current_management' => $this->getRole() + 1,
@@ -73,6 +73,7 @@ class CertificationController extends Controller
         ];
 
         $certification = Certification::create($request->validated() + $paramsControl);
+
         $message = ["response" => "Registro creado correctamente."];
 
         if ($certification->certification_memo === null)
@@ -93,15 +94,17 @@ class CertificationController extends Controller
     {
         $role = $this->getRole();
 
+        // dd($request);
+
         $paramsControl = $this->paramsControl($request, $role);
         $adjustedRequest = $request->validated();
         $adjustedRequest['record_status'] =
-            $this->setRecordStatus($request, $role);
+            $this->manageRecordStatus($request, $role);
 
         $certification->update($adjustedRequest + $paramsControl);
 
         $message = ["response" => "Registro actualizado correctamente."];
-        if ($certification->certification_memo === null)
+        if ($certification->certification_memo === null && $certification->current_management <= 2)
             $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de certificación."];
 
         return to_route('certifications.index')->with(compact('message'));
@@ -120,33 +123,43 @@ class CertificationController extends Controller
         return to_route('certifications.index')->with(compact('message'));
     }
 
-    protected function paramsControl(UpdateCertificationRequest $request, int $role)
+    protected function getRole()
     {
-        $params = [];
-
-        if ($role === 1)        $params += ['cgf_date' => now()];
-        else if ($role === 2)   $params += ['assignment_date' => now()];
-        else if ($role === 3)   $params += ['cp_date' => now()];
-
-        if ($role < 3 || $role === 3 && $request->record_status === 3)
-            $params += ['current_management' => $role + 1];
-        else if ($role === 4 && $request->treasury_approved == 'false')
-            $params += ['current_management' => $role - 1];
-        else if ($role === 4 && $request->treasury_approved == 'true')
-            $params += ['current_management' => $role];
-
-        return $params;
+        return auth()->user()->roles()->first()->id;
     }
 
-    protected function setRecordStatus(UpdateCertificationRequest $request, int $role)
+    protected function paramsControl(UpdateCertificationRequest $request, int $role)
+    {
+        return
+            $this->manageDate($role) +
+            $this->manageAssignment($role, $request->record_status, $request->treasury_approved);
+    }
+
+    protected function manageRecordStatus(UpdateCertificationRequest $request, int $role)
     {
         if ($role === 4 && $request->treasury_approved == 'false')      return 4;
         else if ($role === 4 && $request->treasury_approved == 'true')  return 5;
         else return $request->record_status;
     }
 
-    protected function getRole()
+    protected function manageDate(int $role)
     {
-        return auth()->user()->roles()->first()->id;
+        if ($role === 1)        return  ['sec_cgf_date' => now()];
+        else if ($role === 2)   return  ['assignment_date' => now()];
+        else if ($role === 3)   return  ['cp_date' => now()];
+        else if ($role === 4)   return  ['coord_cgf_date' => now()];
+        else return                     [];
+    }
+
+    protected function manageAssignment(int $role, $record_status, $treasury_approved)
+    {
+        if ($role < 3 || $role === 3 && $record_status === 3)
+            return ['current_management' => $role + 1];
+        else if ($role === 4 && $treasury_approved == 'false')
+            return ['current_management' => $role - 1];
+        else if ($role === 4 && $treasury_approved == 'true')
+            return ['current_management' => $role];
+        else
+            return [];
     }
 }

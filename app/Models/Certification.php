@@ -18,8 +18,8 @@ class Certification extends Model
         'process_type_id',
         'expense_type_id',
         'department_id',
-        'cgf_comments',
-        'cgf_date',
+        'sec_cgf_date',
+        'sec_cgf_comments',
 
         // SECRETARÍA JAPC-CP
         'assignment_date',
@@ -31,11 +31,14 @@ class Certification extends Model
         'cp_date',
         'budget_line_id',
         'certified_amount',
+        'certification_number',
         'certification_comments',
 
-        // TESORERÍA
+        //  COORDINACION GENERAL FINANCIERA
         'treasury_approved',
         'returned_document_number',
+        'coord_cgf_date',
+        'coord_cgf_comments',
 
         // CONTROL TOTAL
         'current_management',
