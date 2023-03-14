@@ -217,7 +217,7 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 4. </strong>
-                        <small class="mt-1"> Tesorería. </small>
+                        <small class="mt-1"> Coordinación General Financiera. </small>
                     </p>
                 </li>
             </ol>

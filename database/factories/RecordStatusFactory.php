@@ -20,9 +20,9 @@ class RecordStatusFactory extends Factory
             'status' => $this->faker->unique()->randomElement([
                 "PENDIENTE DE REVISIÓN",
                 "EN REVISIÓN",
-                "APROBADO",
+                "REGISTRADO",
                 "DEVUELTO",
-                "OBSERVADO",
+                "APROBADO",
                 "LIQUIDADO",
             ]),
         ];

@@ -17,4 +17,21 @@ class RecordStatus extends Model
     {
         return $this->hasMany(Certification::class, 'record_status'); //->withPivot();
     }
+
+    public function scopeGetRecordStatus($query)
+    {
+        $role = $this->getRole();
+
+        if ($role === 3 || $role === 4) {
+            $operator = $role === 3 ? "<=" : ">";
+            $query->where('id', $operator, 3);
+        } else {
+            $query;
+        }
+    }
+
+    protected function getRole()
+    {
+        return auth()->user()->roles()->first()->id;
+    }
 }

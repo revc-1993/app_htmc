@@ -128,8 +128,8 @@ class Certification extends Model
 
     public function scopeFiltered($query)
     {
-        $role = auth()->user()->roles()->first()->id;
-        $user = auth()->user()->id;
+        $role = $this->getRole();
+        $user = $this->getUser();
         if ($role === 3)
             $query->where("certifications.customer_id", $user);
         else if ($role === 4)
@@ -146,5 +146,15 @@ class Certification extends Model
     public function scopeAmountOrdered($query)
     {
         $query->where('record_status', '=', 'Certificado')->orderBy("certifications.certified_amount", "desc");
+    }
+
+    protected function getRole()
+    {
+        return auth()->user()->roles()->first()->id;
+    }
+
+    protected function getUser()
+    {
+        return auth()->user()->id;
     }
 }

@@ -7,7 +7,7 @@ import {
     mdiFindReplace,
     mdiFileExcel,
     mdiFileDelimited,
-    mdiMagnify,
+    mdiUpdate,
 } from "@mdi/js";
 import CardBoxComponentEmpty from "@/components/CardBoxComponentEmpty.vue";
 import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
@@ -73,7 +73,7 @@ const elementProps = {
         color: "warning",
         label: "Actualizar " + props.instance,
         tooltip: "Actualizar",
-        icon: mdiEye,
+        icon: mdiUpdate,
     },
     delete: {
         tag: 4,
@@ -88,7 +88,7 @@ const currentManagements = {
     1: "1. Secretaría CGF",
     2: "2. Secretaría JAPC",
     3: "3. Analista de Certificación",
-    4: "4. Analista de Tesorería",
+    4: "4. Coordinación General Financiera",
 };
 
 // --------------------------------------------

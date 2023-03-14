@@ -8,7 +8,7 @@ import {
     mdiNumeric,
     mdiCurrencyUsd,
     mdiCalendarRange,
-    mdiBackspaceOutline,
+    mdiMagnify,
     mdiCardAccountDetails,
 } from "@mdi/js";
 import CardBoxModal from "@/components/CardBoxModal.vue";
@@ -19,6 +19,7 @@ import Stepper from "@/components/Stepper.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
+import BaseLevel from "../BaseLevel.vue";
 
 // ---------------------------------------------------------
 // PROPS
@@ -59,7 +60,8 @@ activePhase.value = role.value ?? 1;
 const disabled = computed(
     () =>
         props.currentOperation === operations.show ||
-        activePhase.value !== role.value
+        activePhase.value !== role.value ||
+        props.certification.record_status === 6
 );
 
 // ---------------------------------------------------------
@@ -121,10 +123,13 @@ const form = useForm(
               vendor_id: "",
               certified_amount: "",
               record_status: "",
+              certification_number: "",
               certification_comments: "",
               cp_date: new Date().toLocaleDateString(),
               treasury_approved: "",
               returned_document_number: "",
+              coord_cgf_comments: "",
+              coord_cgf_date: new Date().toLocaleDateString(),
           }
         : {
               certification_memo: props.certification.certification_memo,
@@ -142,15 +147,20 @@ const form = useForm(
               budget_line_id: props.certification.budget_line_id,
               vendor_id: props.certification.vendor_id,
               certified_amount: props.certification.certified_amount,
-              record_status: props.certification.record_status
-                  ? props.certification.record_status.id
-                  : "",
+              certification_number: props.certification.certification_number,
+              record_status:
+                  props.certification.record_status &&
+                  props.certification.record_status.id <= 3
+                      ? props.certification.record_status.id
+                      : "",
               certification_comments:
                   props.certification.certification_comments,
               cp_date: props.certification.cp_date,
               treasury_approved: props.certification.treasury_approved,
               returned_document_number:
                   props.certification.returned_document_number,
+              coord_cgf_comments: props.certification.coord_cgf_comments,
+              coord_cgf_date: props.certification.coord_cgf_date,
           }
 );
 
@@ -459,17 +469,17 @@ const search = () => {
             >
                 <FormField
                     label="Fecha de certificación"
-                    label-for="certified_date"
+                    label-for="cp_date"
                     help="Fecha del actualización de la certificación"
-                    :errors="form.errors.certified_date"
+                    :errors="form.errors.cp_date"
                 >
                     <FormControl
-                        v-model="form.certified_date"
-                        id="certified_date"
+                        v-model="form.cp_date"
+                        id="cp_date"
                         :icon="mdiCalendarRange"
-                        autocomplete="certified_date"
+                        autocomplete="cp_date"
                         type="date"
-                        :has-errors="form.errors.certified_date != null"
+                        :has-errors="form.errors.cp_date != null"
                         disabled
                     />
                 </FormField>
@@ -489,7 +499,9 @@ const search = () => {
                             type="text"
                             placeholder="Ej: CE-2023000384849"
                             :has-errors="form.errors.process_number != null"
-                            :disabled="disabled"
+                            :disabled="
+                                disabled || certification.expense_type_id === 1
+                            "
                         />
                     </FormField>
                     <FormField
@@ -510,36 +522,37 @@ const search = () => {
                         />
                     </FormField>
                 </div>
-                <FormField
-                    label="NIT de Proveedor"
-                    label-for="vendor_nit"
-                    :errors="formSearch.errors.vendor_nit"
-                >
-                    <BaseButtons>
-                        <form>
-                            <FormControl
-                                v-model="formSearch.vendor_nit"
-                                id="vendor_nit"
-                                :icon="mdiCardAccountDetails"
-                                autocomplete="vendor_nit"
-                                type="text"
-                                placeholder="Detalle el NIT del Proveedor"
-                                :has-errors="
-                                    formSearch.errors.vendor_nit != null
-                                "
-                                :disabled="disabled"
-                            />
-                            <BaseButton
-                                color="info"
-                                icon="mdiMagnify"
-                                tooltip="Buscar"
-                                small
-                                @click.prevent="search"
-                            />
-                        </form>
-                    </BaseButtons>
-                </FormField>
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
+                    <form>
+                        <FormField
+                            label="NIT de Proveedor"
+                            label-for="vendor_nit"
+                            :errors="formSearch.errors.vendor_nit"
+                        >
+                            <BaseLevel>
+                                <FormControl
+                                    v-model="formSearch.vendor_nit"
+                                    id="vendor_nit"
+                                    :icon="mdiCardAccountDetails"
+                                    autocomplete="vendor_nit"
+                                    type="text"
+                                    placeholder="Detalle el NIT del Proveedor"
+                                    :has-errors="
+                                        formSearch.errors.vendor_nit != null
+                                    "
+                                    :disabled="disabled"
+                                >
+                                </FormControl>
+                                <BaseButton
+                                    color="info"
+                                    :icon="mdiMagnify"
+                                    tooltip="Buscar"
+                                    small
+                                    @click.prevent="search"
+                                />
+                            </BaseLevel>
+                        </FormField>
+                    </form>
                     <FormField
                         label="Monto certificado"
                         label-for="certified_amount"
@@ -560,6 +573,23 @@ const search = () => {
                             :disabled="disabled"
                         />
                     </FormField>
+                </div>
+                <FormField
+                    label="Proveedor"
+                    label-for="process_number"
+                    :errors="form.errors.process_number"
+                >
+                    <FormControl
+                        v-model="form.process_number"
+                        id="process_number"
+                        :icon="mdiNumeric"
+                        autocomplete="process_number"
+                        type="text"
+                        :has-errors="form.errors.process_number != null"
+                        disabled
+                    />
+                </FormField>
+                <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField
                         label="Estado de certificación"
                         label-for="record_status"
@@ -574,7 +604,28 @@ const search = () => {
                             autocomplete="record_status"
                             :options="selectOptions.recordStatus"
                             :has-errors="form.errors.record_status != null"
-                            :disabled="disabled"
+                            :disabled="
+                                disabled ||
+                                props.certification.record_status.id > 4
+                            "
+                        />
+                    </FormField>
+                    <FormField
+                        label="Número de Certificación"
+                        label-for="certification_number"
+                        help="Digite el número de certificación"
+                        :errors="form.errors.certification_number"
+                    >
+                        <FormControl
+                            v-model="form.certification_number"
+                            id="certification_number"
+                            :icon="mdiNumeric"
+                            autocomplete="certification_number"
+                            type="text"
+                            :has-errors="
+                                form.errors.certification_number != null
+                            "
+                            :disabled="disabled || form.record_status !== 3"
                         />
                     </FormField>
                 </div>
@@ -601,19 +652,39 @@ const search = () => {
                 v-show="activePhase === 4"
                 class="transition duration-500 ease-in-out"
             >
+                <FormField
+                    label="Fecha de revisión"
+                    label-for="coord_cgf_date"
+                    :errors="form.errors.coord_cgf_date"
+                >
+                    <FormControl
+                        v-model="form.coord_cgf_date"
+                        id="coord_cgf_date"
+                        :icon="mdiCalendarRange"
+                        autocomplete="coord_cgf_date"
+                        type="date"
+                        :has-errors="form.errors.coord_cgf_date != null"
+                        disabled
+                    />
+                </FormField>
+
                 <FormField label="Revisión de certificación">
                     <FormCheckRadioGroup
                         v-model="form.treasury_approved"
                         name="treasury_approved"
                         type="radio"
-                        :options="{ true: 'Aprobado', false: 'No aprobado' }"
+                        :options="{
+                            approved: 'Aprobado',
+                            returned: 'Devuelto',
+                            liquidated: 'Liquidado',
+                        }"
                         :disabled="disabled"
                     />
                 </FormField>
                 <FormField
-                    label="Nro. Memorando de Devuelto"
+                    label="Nro. Memorando"
                     label-for="returned_document_number"
-                    help="Ingrese el Nro. de Memorando de la devolución de Certificación"
+                    help="Ingrese el Nro. de Memorando de la revisión de Certificación"
                     :errors="form.errors.returned_document_number"
                 >
                     <FormControl
@@ -627,9 +698,24 @@ const search = () => {
                         :has-errors="
                             form.errors.returned_document_number != null
                         "
-                        :disabled="
-                            disabled || form.treasury_approved != 'false'
-                        "
+                        :disabled="disabled"
+                    />
+                </FormField>
+                <FormField
+                    label="Observaciones"
+                    label-for="coord_cgf_comments"
+                    help="Máximo 255 caracteres."
+                    :errors="form.errors.coord_cgf_comments"
+                >
+                    <FormControl
+                        v-model="form.coord_cgf_comments"
+                        type="textarea"
+                        id="coord_cgf_comments"
+                        :icon="mdiTag"
+                        autocomplete="coord_cgf_comments"
+                        placeholder="Indique las principales observaciones."
+                        :has-errors="form.errors.coord_cgf_comments != null"
+                        :disabled="disabled"
                     />
                 </FormField>
             </div>

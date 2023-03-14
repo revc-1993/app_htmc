@@ -18,7 +18,7 @@ class ExpenseTypeFactory extends Factory
     {
         return [
             'expense_type' => $this->faker->unique()->randomElement([
-                'CONVALIDACION', 'PROCESO 2023', 'DEUDA DE AÑOS ANTERIORES'
+                'PROCESO 2023', 'CONVALIDACION', 'DEUDA DE AÑOS ANTERIORES'
             ]),
         ];
     }

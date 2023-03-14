@@ -53,7 +53,7 @@ class CertificationController extends Controller
             'expense_types' => ExpenseType::all(['id', 'expense_type']),
             'budget_lines' => BudgetLine::all(['id', 'budget_line']),
             'users' => User::analystCertification()->get(),
-            'record_statuses' => RecordStatus::all(['id', 'status']),
+            'record_statuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
         ]);
     }
 
@@ -65,8 +65,6 @@ class CertificationController extends Controller
      */
     public function store(StoreCertificationRequest $request)
     {
-        // dd($request);
-
         $paramsControl = [
             'current_management' => $this->getRole() + 1,
             'sec_cgf_date' => now(),
@@ -93,8 +91,6 @@ class CertificationController extends Controller
     public function update(UpdateCertificationRequest $request, Certification $certification)
     {
         $role = $this->getRole();
-
-        // dd($request);
 
         $paramsControl = $this->paramsControl($request, $role);
         $adjustedRequest = $request->validated();
@@ -137,9 +133,18 @@ class CertificationController extends Controller
 
     protected function manageRecordStatus(UpdateCertificationRequest $request, int $role)
     {
-        if ($role === 4 && $request->treasury_approved == 'false')      return 4;
-        else if ($role === 4 && $request->treasury_approved == 'true')  return 5;
-        else return $request->record_status;
+        if ($role === 4) {
+            if ($request->treasury_approved === "returned")
+                return 4;
+            else if ($request->treasury_approved === "approved")
+                return 5;
+            else if ($request->treasury_approved === "liquidated")
+                return 6;
+            else
+                return $request->record_status;
+        } else {
+            return $request->record_status;
+        }
     }
 
     protected function manageDate(int $role)
@@ -153,13 +158,15 @@ class CertificationController extends Controller
 
     protected function manageAssignment(int $role, $record_status, $treasury_approved)
     {
-        if ($role < 3 || $role === 3 && $record_status === 3)
+        if ($role < 3 || $role === 3 && $record_status === 3) {
             return ['current_management' => $role + 1];
-        else if ($role === 4 && $treasury_approved == 'false')
-            return ['current_management' => $role - 1];
-        else if ($role === 4 && $treasury_approved == 'true')
-            return ['current_management' => $role];
-        else
+        } else if ($role === 4) {
+            if ($treasury_approved === "returned")
+                return ['current_management' => $role - 1];
+            else
+                return ['current_management' => $role];
+        } else {
             return [];
+        }
     }
 }

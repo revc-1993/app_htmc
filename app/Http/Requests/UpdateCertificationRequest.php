@@ -54,24 +54,18 @@ class UpdateCertificationRequest extends FormRequest
                 'nit_name' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']) + ['string', 'min:15', 'max:255'],
                 'budget_line_id' => ['required'],
                 'certified_amount' => ['nullable', 'numeric', 'min:10'],
-                'certification_number' => ['required_if:' . $this->record_status . ',3', 'numeric', 'min:1', 'nullable'],
-                'record_status' => ['sometimes', 'in:1,2,3'],
+                'certification_number' => ['required_if:record_status,3', 'numeric', 'min:1', 'nullable'],
+                'record_status' => ['required', 'in:1,2,3'],
                 'certification_comments' => ['nullable'],
             ];
         } else if ($role === 4) {
             $validationRules += [
                 'record_status' => ['required'],
                 'treasury_approved' => ['required'],
-                // 'returned_document_number' => [
-                //     'required_if:treasury_approved,false',
-                //     'nullable',
-                //     'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/',
-                // ],
-                'returned_document_number' => $this->treasury_approved === 'false' ? [
-                    'sometimes',
+                'returned_document_number' => [
                     'required',
                     'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/'
-                ] : '',
+                ],
             ];
         }
 
