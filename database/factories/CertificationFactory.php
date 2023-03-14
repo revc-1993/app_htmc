@@ -24,7 +24,7 @@ class CertificationFactory extends Factory
             'expense_type_id' => $this->faker->randomElement([1, 2, 3]),
             'department_id' => $this->faker->randomElement([1, 2, 3]),
             // 'process_type' => $this->faker->randomElement([1, 2, 3, 4]),
-            'cgf_date' => now(),
+            'sec_cgf_date' => now(),
 
         ];
     }

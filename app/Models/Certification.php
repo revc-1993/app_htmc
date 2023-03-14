@@ -27,7 +27,7 @@ class Certification extends Model
 
         // ANALISTA DE CERTIFICACIÓN
         'process_number',
-        'nit_name',
+        'vendor_id',
         'cp_date',
         'budget_line_id',
         'certified_amount',
@@ -107,6 +107,16 @@ class Certification extends Model
     }
 
     /**
+     * Get the RecordStatus that owns the Certification
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
+
+    /**
      * Get all of the Certifications for the User
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
@@ -130,7 +140,7 @@ class Certification extends Model
 
     public function scopeNotReviewed($query)
     {
-        $query->where('record_status', '<>', 'Observado')->orderBy("certifications.cgf_date", "asc");
+        $query->where('record_status', '<>', 'Observado')->orderBy("certifications.sec_cgf_date", "asc");
     }
 
     public function scopeAmountOrdered($query)

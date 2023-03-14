@@ -16,8 +16,8 @@ import FormValidationErrors from "@/components/FormValidationErrors.vue";
 import FormField from "@/components/FormField.vue";
 import FormControl from "@/components/FormControl.vue";
 import Stepper from "@/components/Stepper.vue";
-import StepperComponent from "@/components/StepperComponent.vue";
-import BaseDivider from "@/components/BaseDivider.vue";
+import BaseButton from "@/components/BaseButton.vue";
+import BaseButtons from "@/components/BaseButtons.vue";
 import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
 
 // ---------------------------------------------------------
@@ -112,13 +112,13 @@ const form = useForm(
               expense_type_id: "",
               department_id: "",
               cgf_comments: "",
-              cgf_date: new Date().toLocaleDateString(),
+              sec_cgf_date: new Date().toLocaleDateString(),
               customer_id: "",
               japc_comments: "",
               japc_date: new Date().toLocaleDateString(),
               process_number: "",
               budget_line_id: "",
-              nit_name: "",
+              vendor_id: "",
               certified_amount: "",
               record_status: "",
               certification_comments: "",
@@ -134,13 +134,13 @@ const form = useForm(
               expense_type_id: props.certification.expense_type_id,
               department_id: props.certification.department_id,
               cgf_comments: props.certification.cgf_comments,
-              cgf_date: props.certification.cgf_date,
+              sec_cgf_date: props.certification.sec_cgf_date,
               customer_id: props.certification.customer_id ?? "",
               japc_comments: props.certification.japc_comments,
               japc_date: props.certification.japc_date,
               process_number: props.certification.process_number,
               budget_line_id: props.certification.budget_line_id,
-              nit_name: props.certification.nit_name,
+              vendor_id: props.certification.vendor_id,
               certified_amount: props.certification.certified_amount,
               record_status: props.certification.record_status
                   ? props.certification.record_status.id
@@ -153,6 +153,8 @@ const form = useForm(
                   props.certification.returned_document_number,
           }
 );
+
+const formSearch = useForm({ vendor_nit: "" });
 
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
@@ -204,6 +206,10 @@ const transaction = () => {
         ? destroy()
         : "";
 };
+
+const search = () => {
+    router.get(`/vendors/${formSearch.vendor_nit}`);
+};
 </script>
 
 <template>
@@ -234,17 +240,17 @@ const transaction = () => {
             >
                 <FormField
                     label="Fecha de ingreso"
-                    label-for="cgf_date"
+                    label-for="sec_cgf_date"
                     help="Fecha de ingreso de secretaría CGF"
-                    :errors="form.errors.cgf_date"
+                    :errors="form.errors.sec_cgf_date"
                 >
                     <FormControl
-                        v-model="form.cgf_date"
-                        id="cgf_date"
+                        v-model="form.sec_cgf_date"
+                        id="sec_cgf_date"
                         :icon="mdiCalendarRange"
-                        autocomplete="cgf_date"
+                        autocomplete="sec_cgf_date"
                         type="date"
-                        :has-errors="form.errors.cgf_date != null"
+                        :has-errors="form.errors.sec_cgf_date != null"
                         disabled
                     />
                 </FormField>
@@ -505,20 +511,33 @@ const transaction = () => {
                     </FormField>
                 </div>
                 <FormField
-                    label="NIT Nombre"
-                    label-for="nit_name"
-                    :errors="form.errors.nit_name"
+                    label="NIT de Proveedor"
+                    label-for="vendor_nit"
+                    :errors="formSearch.errors.vendor_nit"
                 >
-                    <FormControl
-                        v-model="form.nit_name"
-                        id="nit_name"
-                        :icon="mdiCardAccountDetails"
-                        autocomplete="nit_name"
-                        type="text"
-                        placeholder="Detalle la razón social del NIT"
-                        :has-errors="form.errors.nit_name != null"
-                        :disabled="disabled"
-                    />
+                    <BaseButtons>
+                        <form>
+                            <FormControl
+                                v-model="formSearch.vendor_nit"
+                                id="vendor_nit"
+                                :icon="mdiCardAccountDetails"
+                                autocomplete="vendor_nit"
+                                type="text"
+                                placeholder="Detalle el NIT del Proveedor"
+                                :has-errors="
+                                    formSearch.errors.vendor_nit != null
+                                "
+                                :disabled="disabled"
+                            />
+                            <BaseButton
+                                color="info"
+                                icon="mdiMagnify"
+                                tooltip="Buscar"
+                                small
+                                @click.prevent="search"
+                            />
+                        </form>
+                    </BaseButtons>
                 </FormField>
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField

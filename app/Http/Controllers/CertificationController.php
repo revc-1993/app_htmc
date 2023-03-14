@@ -69,7 +69,7 @@ class CertificationController extends Controller
 
         $paramsControl = [
             'current_management' => $this->getRole() + 1,
-            'cgf_date' => now(),
+            'sec_cgf_date' => now(),
         ];
 
         $certification = Certification::create($request->validated() + $paramsControl);
