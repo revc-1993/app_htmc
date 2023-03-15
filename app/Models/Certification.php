@@ -132,8 +132,6 @@ class Certification extends Model
         $user = $this->getUser();
         if ($role === 3)
             $query->where("certifications.customer_id", $user);
-        else if ($role === 4)
-            $query->where("certifications.current_management", $role);
 
         $query->orderBy("certifications.id", "desc");
     }

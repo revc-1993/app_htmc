@@ -60,7 +60,6 @@ class UpdateCertificationRequest extends FormRequest
             ];
         } else if ($role === 4) {
             $validationRules += [
-                'record_status' => ['required'],
                 'treasury_approved' => ['required'],
                 'returned_document_number' => [
                     'required',

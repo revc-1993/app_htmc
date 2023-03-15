@@ -57,13 +57,6 @@ const role = computed(() => usePage().props.auth.user.roles[0].id);
 const activePhase = ref(1);
 activePhase.value = role.value ?? 1;
 
-const disabled = computed(
-    () =>
-        props.currentOperation === operations.show ||
-        activePhase.value !== role.value ||
-        props.certification.record_status === 6
-);
-
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
 // ---------------------------------------------------------
@@ -165,6 +158,38 @@ const form = useForm(
 );
 
 const formSearch = useForm({ vendor_nit: "" });
+
+// ---------------------------------------------------------
+// DISABLED
+// ---------------------------------------------------------
+const disabled = {
+    global: computed(
+        () =>
+            props.currentOperation === operations.show ||
+            activePhase.value !== role.value ||
+            props.certification.record_status === 6
+    ),
+    expense_type: computed(
+        () =>
+            typeof props.certification.expense_type_id &&
+            props.certification.expense_type_id === 1
+    ),
+    record_status: computed(
+        () =>
+            props.certification.record_status &&
+            props.certification.record_status.id > 4
+    ),
+    certification_number: computed(() => form.record_status !== 3),
+};
+
+console.log(props.certification.record_status);
+
+const disableds = computed(
+    () =>
+        props.currentOperation === operations.show ||
+        activePhase.value !== role.value ||
+        props.certification.record_status === 6
+);
 
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
@@ -277,7 +302,7 @@ const search = () => {
                         type="text"
                         placeholder="Detalle el objeto de contrato"
                         :has-errors="form.errors.contract_object != null"
-                        :disabled="disabled"
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
@@ -295,7 +320,7 @@ const search = () => {
                             type="text"
                             placeholder="Ej: IESS-HTMC-JATSGCME-2022-5073-M"
                             :has-errors="form.errors.certification_memo != null"
-                            :disabled="disabled"
+                            :disabled="disabled.global.value"
                         />
                     </FormField>
                     <FormField
@@ -312,7 +337,7 @@ const search = () => {
                             type="text"
                             placeholder="Ej: 01 EXPEDIENTE CON VINCHA"
                             :has-errors="form.errors.content != null"
-                            :disabled="disabled"
+                            :disabled="disabled.global.value"
                         />
                     </FormField>
                 </div>
@@ -331,7 +356,7 @@ const search = () => {
                             autocomplete="process_type_id"
                             :options="selectOptions.processType"
                             :has-errors="form.errors.process_type_id != null"
-                            :disabled="disabled"
+                            :disabled="disabled.global.value"
                         />
                     </FormField>
                     <FormField
@@ -348,7 +373,7 @@ const search = () => {
                             autocomplete="expense_type_id"
                             :options="selectOptions.expenseType"
                             :has-errors="form.errors.expense_type_id != null"
-                            :disabled="disabled"
+                            :disabled="disabled.global.value"
                         />
                     </FormField>
                 </div>
@@ -366,7 +391,7 @@ const search = () => {
                         autocomplete="department_id"
                         :options="selectOptions.requestingArea"
                         :has-errors="form.errors.department_id != null"
-                        :disabled="disabled"
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
                 <FormField
@@ -383,7 +408,7 @@ const search = () => {
                         autocomplete="cgf_comments"
                         placeholder="Indique las principales observaciones."
                         :has-errors="form.errors.cgf_comments != null"
-                        :disabled="disabled"
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
             </div>
@@ -423,7 +448,7 @@ const search = () => {
                             type="text"
                             placeholder="Ej: 01 EXPEDIENTE CON VINCHA"
                             :has-errors="form.errors.content != null"
-                            :disabled="disabled"
+                            :disabled="disabled.global.value"
                         />
                     </FormField>
                     <FormField
@@ -440,7 +465,7 @@ const search = () => {
                             autocomplete="customer_id"
                             :options="selectOptions.users"
                             :has-errors="form.errors.customer_id != null"
-                            :disabled="disabled"
+                            :disabled="disabled.global.value"
                         />
                     </FormField>
                 </div>
@@ -458,7 +483,7 @@ const search = () => {
                         autocomplete="japc_comments"
                         placeholder="Indique las principales observaciones."
                         :has-errors="form.errors.japc_comments != null"
-                        :disabled="disabled"
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
             </div>
@@ -500,7 +525,8 @@ const search = () => {
                             placeholder="Ej: CE-2023000384849"
                             :has-errors="form.errors.process_number != null"
                             :disabled="
-                                disabled || certification.expense_type_id === 1
+                                disabled.global.value ||
+                                disabled.expense_type.value
                             "
                         />
                     </FormField>
@@ -518,7 +544,7 @@ const search = () => {
                             autocomplete="budget_line_id"
                             :options="selectOptions.budgetLine"
                             :has-errors="form.errors.budget_line_id != null"
-                            :disabled="disabled"
+                            :disabled="disabled.global.value"
                         />
                     </FormField>
                 </div>
@@ -540,7 +566,7 @@ const search = () => {
                                     :has-errors="
                                         formSearch.errors.vendor_nit != null
                                     "
-                                    :disabled="disabled"
+                                    :disabled="disabled.global.value"
                                 >
                                 </FormControl>
                                 <BaseButton
@@ -570,7 +596,7 @@ const search = () => {
                             :step="0.0001"
                             :min="0"
                             :has-errors="form.errors.certified_amount != null"
-                            :disabled="disabled"
+                            :disabled="disabled.global.value"
                         />
                     </FormField>
                 </div>
@@ -605,8 +631,8 @@ const search = () => {
                             :options="selectOptions.recordStatus"
                             :has-errors="form.errors.record_status != null"
                             :disabled="
-                                disabled ||
-                                props.certification.record_status.id > 4
+                                disabled.global.value ||
+                                disabled.record_status.value
                             "
                         />
                     </FormField>
@@ -625,7 +651,10 @@ const search = () => {
                             :has-errors="
                                 form.errors.certification_number != null
                             "
-                            :disabled="disabled || form.record_status !== 3"
+                            :disabled="
+                                disabled.global.value ||
+                                disabled.certification_number.value
+                            "
                         />
                     </FormField>
                 </div>
@@ -643,7 +672,7 @@ const search = () => {
                         autocomplete="certification_comments"
                         placeholder="Indique las principales observaciones."
                         :has-errors="form.errors.certification_comments != null"
-                        :disabled="disabled"
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
             </div>
@@ -678,7 +707,7 @@ const search = () => {
                             returned: 'Devuelto',
                             liquidated: 'Liquidado',
                         }"
-                        :disabled="disabled"
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
                 <FormField
@@ -698,7 +727,7 @@ const search = () => {
                         :has-errors="
                             form.errors.returned_document_number != null
                         "
-                        :disabled="disabled"
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
                 <FormField
@@ -715,7 +744,7 @@ const search = () => {
                         autocomplete="coord_cgf_comments"
                         placeholder="Indique las principales observaciones."
                         :has-errors="form.errors.coord_cgf_comments != null"
-                        :disabled="disabled"
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
             </div>

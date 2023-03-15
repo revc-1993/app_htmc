@@ -53,7 +53,7 @@ const props = defineProps({
     transparent: Boolean,
     ctrlKFocus: Boolean,
     hasErrors: Boolean,
-    disabled: Boolean,
+    disabled: Boolean || Object,
     pattern: String,
 });
 
