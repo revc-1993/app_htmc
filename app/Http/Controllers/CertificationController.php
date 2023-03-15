@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Inertia\Inertia;
-use App\Models\Certification;
-use App\Http\Requests\StoreCertificationRequest;
-use App\Http\Requests\UpdateCertificationRequest;
+use App\Models\Vendor;
+use Faker\Core\Number;
 use App\Models\BudgetLine;
 use App\Models\Commitment;
 use App\Models\Department;
-use App\Models\ProcessType;
 use App\Models\ExpenseType;
+use App\Models\ProcessType;
 use App\Models\RecordStatus;
-use App\Models\User;
-use Faker\Core\Number;
+use App\Models\Certification;
+use App\Http\Requests\StoreCertificationRequest;
+use App\Http\Requests\UpdateCertificationRequest;
 
 class CertificationController extends Controller
 {
@@ -45,6 +46,9 @@ class CertificationController extends Controller
                     'recordStatus' => function ($query) {
                         $query->select('id', 'status');
                     },
+                    'vendor' => function ($query) {
+                        $query->select('id', 'nit', 'name');
+                    },
                 ])
                 ->filtered()
                 ->get(),    // Aquí se puede especificar los campos especificos a extraer
@@ -54,6 +58,7 @@ class CertificationController extends Controller
             'budget_lines' => BudgetLine::all(['id', 'budget_line']),
             'users' => User::analystCertification()->get(),
             'record_statuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
+            'vendors' => Vendor::all(['id', 'nit', 'name']),
         ]);
     }
 
@@ -158,8 +163,11 @@ class CertificationController extends Controller
 
     protected function manageAssignment(int $role, $record_status, $treasury_approved)
     {
-        if ($role < 3 || $role === 3 && $record_status === 3) {
-            return ['current_management' => $role + 1];
+        if ($role < 3 || $role === 3) {
+            if ($record_status < 3)
+                return ['current_management' => 3];
+            else
+                return ['current_management' => $role + 1];
         } else if ($role === 4) {
             if ($treasury_approved === "returned")
                 return ['current_management' => $role - 1];

@@ -32,7 +32,7 @@ return new class extends Migration
 
             // ANALISTA DE CERTIFICACIÓN
             $table->string('process_number')->nullable();
-            $table->string('nit_name')->nullable();
+            $table->unsignedBigInteger('vendor_id')->nullable();
             $table->unsignedBigInteger('budget_line_id')->nullable();
             $table->float('certified_amount')->unsigned()->nullable();
             $table->integer('certification_number')->nullable();
@@ -59,6 +59,7 @@ return new class extends Migration
             $table->foreign('budget_line_id')->references('id')->on('budget_lines');
             $table->foreign('department_id')->references('id')->on('departments');
             $table->foreign('record_status')->references('id')->on('record_statuses');
+            $table->foreign('vendor_id')->references('id')->on('vendors');
         });
     }
 

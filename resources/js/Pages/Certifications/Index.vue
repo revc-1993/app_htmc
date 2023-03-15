@@ -19,6 +19,7 @@ const props = defineProps({
     budget_lines: Object,
     users: Object,
     record_statuses: Object,
+    vendors: Object,
 });
 
 const getMessage = (operation, message) => {
@@ -51,8 +52,7 @@ const getMessage = (operation, message) => {
                 :icon="mdiCardBulleted"
                 title="Certificaciones"
                 main
-            >
-            </SectionTitleLineWithButton>
+            />
 
             <TableSampleCertifications
                 :certifications="certifications"
@@ -62,6 +62,7 @@ const getMessage = (operation, message) => {
                 :budget-lines="budget_lines"
                 :users="users"
                 :record-statuses="record_statuses"
+                :vendors="vendors"
                 instance="certificación"
                 @alert="getMessage($event, $page.props.flash.message)"
             />

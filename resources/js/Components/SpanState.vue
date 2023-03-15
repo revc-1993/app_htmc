@@ -27,6 +27,7 @@ const pillIcon = computed(() => {
     return {
         success: mdiTrendingUp,
         warning: mdiTrendingNeutral,
+        green: mdiTrendingUp,
         danger: mdiTrendingDown,
         teal: mdiTrendingUp,
         violet: mdiTrendingDown,

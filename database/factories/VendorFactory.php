@@ -17,7 +17,12 @@ class VendorFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'name' => $this->faker->unique()->randomElement([
+                'PROVEEDOR A', 'PROVEEDOR B', 'PROVEEDOR C'
+            ]),
+            'nit' => $this->faker->unique()->randomElement([
+                '0912345678', '0987654321', '0900111222'
+            ]),
         ];
     }
 }

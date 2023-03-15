@@ -25,14 +25,17 @@ const liClass = (step) => {
     ];
     if (props.operation !== 1 && props.current_management === step) {
         base.push("bg-emerald-600", "text-white");
+    } else if (step === value.value) {
+        base.push("bg-stone-300");
     } else {
         base.push(
             // "group",
             // "peer",
-            "bg-gray-50",
-            "hover:bg-gray-100",
-            "active:bg-gray-300",
-            "focus:bg-gray-200"
+            "bg-gray-100",
+            "hover:bg-stone-200",
+            "active:bg-stone-500",
+            "active:text-white",
+            "focus:bg-stone-300"
         );
     }
     return base;
@@ -134,9 +137,8 @@ const stepping = (step) => {
                 >
                     <!-- <span :class="spanClass(1, 'left')"> </span>
                     <span :class="spanClass(2, 'right')"> </span> -->
-
                     <svg
-                        class="mr-2 h-7 w-7 flex-shrink-0"
+                        class="h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -146,12 +148,7 @@ const stepping = (step) => {
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
                         />
                     </svg>
 
@@ -171,7 +168,7 @@ const stepping = (step) => {
                     <span :class="spanClass(3, 'right')" /> -->
 
                     <svg
-                        class="mr-2 h-7 w-7 flex-shrink-0"
+                        class="h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -181,15 +178,9 @@ const stepping = (step) => {
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                         />
                     </svg>
-
                     <p class="leading-none">
                         <strong class="block font-medium"> 3. </strong>
                         <small class="mt-1"> Analista de Certificación </small>
@@ -217,7 +208,9 @@ const stepping = (step) => {
 
                     <p class="leading-none">
                         <strong class="block font-medium"> 4. </strong>
-                        <small class="mt-1"> Coordinación General Financiera. </small>
+                        <small class="mt-1">
+                            Coordinación General Financiera.
+                        </small>
                     </p>
                 </li>
             </ol>

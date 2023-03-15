@@ -51,7 +51,7 @@ class UpdateCertificationRequest extends FormRequest
         } else if ($role === 3) {
             $validationRules += [
                 'process_number' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']) + ['alphadash', 'string', 'min:15', 'max:100'],
-                'nit_name' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']) + ['string', 'min:15', 'max:255'],
+                'vendor_id' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']),
                 'budget_line_id' => ['required'],
                 'certified_amount' => ['nullable', 'numeric', 'min:10'],
                 'certification_number' => ['required_if:record_status,3', 'numeric', 'min:1', 'nullable'],
@@ -63,7 +63,7 @@ class UpdateCertificationRequest extends FormRequest
                 'treasury_approved' => ['required'],
                 'returned_document_number' => [
                     'required',
-                    'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/'
+                    'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/',
                 ],
             ];
         }

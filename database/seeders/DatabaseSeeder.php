@@ -12,6 +12,7 @@ use App\Models\ProcessType;
 use App\Models\ExpenseType;
 use App\Models\Certification;
 use App\Models\RecordStatus;
+use App\Models\Vendor;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -88,6 +89,12 @@ class DatabaseSeeder extends Seeder
         $expense_types = ['PROCESO 2023', 'CONVALIDACION', 'DEUDA DE AÑOS ANTERIORES'];
         foreach ($expense_types as $expense_type) {
             ExpenseType::create(['expense_type' => $expense_type]);
+        }
+
+        // *---- PROVEEDORES ----*
+        $vendors = ['PROVEEDOR 1', 'PROVEEDOR 2', 'PROVEEDOR 3'];
+        foreach ($vendors as $vendor) {
+            Vendor::create(['name' => $vendor, 'nit' => '09800000000']);
         }
 
         // *---- ITEM PRESUPUESTARIOS ----*

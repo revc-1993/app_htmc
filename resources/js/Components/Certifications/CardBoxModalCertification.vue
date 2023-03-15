@@ -32,6 +32,7 @@ const props = defineProps({
     budgetLines: Object,
     users: Object,
     recordStatuses: Object,
+    vendors: Object,
     currentOperation: {
         type: [String, Number, Boolean],
         default: null,
@@ -85,6 +86,18 @@ const optionSelect = (array = []) => {
     return newArray;
 };
 
+const optionSelect2 = (array = []) => {
+    let newArray = [];
+    array.forEach((element) => {
+        newArray.push({
+            id: Object.values(element)[0],
+            label:
+                Object.values(element)[1] + " - " + Object.values(element)[2],
+        });
+    });
+    return newArray;
+};
+
 let selectOptions = {
     requestingArea: optionSelect(props.departments),
     processType: optionSelect(props.processTypes),
@@ -92,6 +105,7 @@ let selectOptions = {
     budgetLine: optionSelect(props.budgetLines),
     users: optionSelect(props.users),
     recordStatus: optionSelect(props.recordStatuses),
+    vendors: optionSelect2(props.vendors),
 };
 
 // ---------------------------------------------------------
@@ -181,15 +195,6 @@ const disabled = {
     ),
     certification_number: computed(() => form.record_status !== 3),
 };
-
-console.log(props.certification.record_status);
-
-const disableds = computed(
-    () =>
-        props.currentOperation === operations.show ||
-        activePhase.value !== role.value ||
-        props.certification.record_status === 6
-);
 
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
@@ -549,7 +554,7 @@ const search = () => {
                     </FormField>
                 </div>
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
-                    <form>
+                    <!-- <form>
                         <FormField
                             label="NIT de Proveedor"
                             label-for="vendor_nit"
@@ -578,7 +583,25 @@ const search = () => {
                                 />
                             </BaseLevel>
                         </FormField>
-                    </form>
+                    </form> -->
+                    <FormField
+                        label="Proveedor"
+                        label-for="vendor_id"
+                        help="Escoja el tipo de proceso"
+                        :errors="form.errors.vendor_id"
+                    >
+                        <FormControl
+                            v-model="form.vendor_id"
+                            name="vendor_id"
+                            id="vendor_id"
+                            :icon="mdiFormatListBulletedType"
+                            autocomplete="vendor_id"
+                            :options="selectOptions.vendors"
+                            :has-errors="form.errors.vendor_id != null"
+                            :disabled="disabled.global.value"
+                        />
+                    </FormField>
+
                     <FormField
                         label="Monto certificado"
                         label-for="certified_amount"
@@ -600,7 +623,7 @@ const search = () => {
                         />
                     </FormField>
                 </div>
-                <FormField
+                <!-- <FormField
                     label="Proveedor"
                     label-for="process_number"
                     :errors="form.errors.process_number"
@@ -614,7 +637,7 @@ const search = () => {
                         :has-errors="form.errors.process_number != null"
                         disabled
                     />
-                </FormField>
+                </FormField> -->
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField
                         label="Estado de certificación"
@@ -723,7 +746,6 @@ const search = () => {
                         autocomplete="returned_document_number"
                         type="text"
                         placeholder="Ej: HTMC-JATSGCME-2022-5073-M"
-                        pattern="/^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/gm"
                         :has-errors="
                             form.errors.returned_document_number != null
                         "

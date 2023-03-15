@@ -29,6 +29,7 @@ const props = defineProps({
     budgetLines: Object,
     users: Object,
     recordStatuses: Object,
+    vendors: Object,
     instance: {
         type: String,
         default: "",
@@ -192,14 +193,14 @@ const closeModal = (event) => {
                 small
                 :icon="mdiFileExcel"
                 @click="downloadFile('xls')"
-                tooltip="Exportar a *.xls"
+                tooltip="Exportar a Excel"
             />
             <BaseButton
                 color="contrast"
                 small
                 :icon="mdiFileDelimited"
                 @click="downloadFile('csv')"
-                tooltip="Exportar a *.pdf"
+                tooltip="Exportar a PDF"
             />
             <!-- <FormControl
                 placeholder="Buscar"
@@ -235,6 +236,7 @@ const closeModal = (event) => {
         :budget-lines="budgetLines"
         :users="users"
         :record-statuses="recordStatuses"
+        :vendors="vendors"
         :element-props="elementProps[operations[currentOperation]]"
         :current-operation="currentOperation"
         @confirm="closeModal"
