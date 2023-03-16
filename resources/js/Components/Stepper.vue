@@ -32,8 +32,8 @@ const liClass = (step) => {
             // "group",
             // "peer",
             "bg-gray-100",
-            "hover:bg-stone-200",
-            "active:bg-stone-500",
+            "hover:bg-slate-200",
+            "active:bg-slate-500",
             "active:text-white",
             "focus:bg-stone-300"
         );

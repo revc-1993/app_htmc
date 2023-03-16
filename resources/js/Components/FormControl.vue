@@ -73,7 +73,7 @@ const inputElClass = computed(() => {
             ? "text-slate-500 dark:text-slate-300 border-slate-400"
             : " border-slate-700 focus:ring-blue-600",
         props.hasErrors
-            ? "border-red-700 focus:border-red-700 focus:ring-red-600 dark:focus:ring-red-600"
+            ? "border-red-700 focus:border-red-700 focus:ring-red-600 dark:focus:ring-red-600 placeholder-red-500"
             : "border-gray-700",
         "dark:placeholder-gray-400",
         computedType.value === "textarea" ? "h-24 resize-none" : "h-12",

@@ -178,7 +178,9 @@ return [
 
     'attributes' => [
         'contract_object' => 'Objeto contrato',
-        // 'requesting_area' => 'Area requirente',
+        'process_type' => 'Tipo de proceso',
+        'expense_type' => 'Tipo de gasto',
+        'department_id' => 'Area requirente',
         'reception_date' => 'Fecha recepcion',
         'amount' => 'Monto',
         // ANALISTA FINANCIERA
