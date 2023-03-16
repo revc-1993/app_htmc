@@ -7,7 +7,7 @@ const props = defineProps({
         type: [String, Number],
         default: null,
     },
-    current_management: Number,
+    currentManagement: Number,
     modelValue: {
         type: [String, Number, Boolean, Object],
         default: null,

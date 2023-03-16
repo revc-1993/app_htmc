@@ -15,6 +15,7 @@ export const colorsBgLight = {
     green: "bg-green-500 border-green-500 text-white",
     teal: "bg-teal-500 border-teal-500 text-white",
     violet: "bg-violet-500 border-violet-500 text-white",
+    orange: "bg-orange-500 border-orange-500 text-white",
 };
 
 export const colorsText = {
@@ -28,6 +29,7 @@ export const colorsText = {
     green: "text-green-500",
     teal: "text-teal-500",
     violet: "text-violet-500",
+    orange: "text-orange-500",
 };
 
 export const colorsOutline = {
@@ -41,6 +43,7 @@ export const colorsOutline = {
     green: [colorsText.green, "border-green-500"],
     teal: [colorsText.teal, "border-teal-500"],
     violet: [colorsText.violet, "border-violet-500"],
+    orange: [colorsText.orange, "border-orange-500"],
 };
 
 export const getButtonColor = (
@@ -59,6 +62,10 @@ export const getButtonColor = (
             danger: "ring-red-300 dark:ring-red-700",
             warning: "ring-yellow-300 dark:ring-yellow-700",
             info: "ring-blue-300 dark:ring-blue-700",
+            green: "ring-green-300 dark:ring-green-700",
+            teal: "ring-teal-300 dark:ring-teal-700",
+            violet: "ring-violet-300 dark:ring-violet-700",
+            orange: "ring-orange-300 dark:ring-orange-700",
         },
         active: {
             white: "bg-gray-100",
@@ -69,6 +76,10 @@ export const getButtonColor = (
             danger: "bg-red-700 dark:bg-red-600",
             warning: "bg-yellow-700 dark:bg-yellow-600",
             info: "bg-blue-700 dark:bg-blue-600",
+            green: "bg-green-700 dark:bg-green-700",
+            teal: "bg-teal-700 dark:bg-teal-700",
+            violet: "bg-violet-700 dark:bg-violet-700",
+            orange: "bg-orange-700 dark:bg-orange-700",
         },
         bg: {
             white: "bg-white text-black",
@@ -80,6 +91,10 @@ export const getButtonColor = (
             danger: "bg-red-600 dark:bg-red-500 text-white",
             warning: "bg-yellow-600 dark:bg-yellow-500 text-white",
             info: "bg-blue-600 dark:bg-blue-500 text-white",
+            green: "bg-green-600 dark:bg-green-500 text-white",
+            teal: "bg-teal-600 dark:bg-teal-500 text-white",
+            violet: "bg-violet-600 dark:bg-violet-500 text-white",
+            orange: "bg-orange-600 dark:bg-orange-500 text-white",
         },
         bgHover: {
             white: "hover:bg-gray-100",
@@ -92,6 +107,10 @@ export const getButtonColor = (
             warning:
                 "hover:bg-yellow-700 hover:border-yellow-700 hover:dark:bg-yellow-600 hover:dark:border-yellow-600",
             info: "hover:bg-blue-700 hover:border-blue-700 hover:dark:bg-blue-600 hover:dark:border-blue-600",
+            green: "hover:bg-green-700 hover:border-green-700 hover:dark:bg-green-600 hover:dark:border-green-600",
+            teal: "hover:bg-teal-700 hover:border-teal-700 hover:dark:bg-teal-600 hover:dark:border-teal-600",
+            violet: "hover:bg-violet-700 hover:border-violet-700 hover:dark:bg-violet-600 hover:dark:border-violet-600",
+            orange: "hover:bg-orange-700 hover:border-orange-700 hover:dark:bg-orange-600 hover:dark:border-orange-600",
         },
         borders: {
             white: "border-white",
@@ -102,6 +121,10 @@ export const getButtonColor = (
             danger: "border-red-600 dark:border-red-500",
             warning: "border-yellow-600 dark:border-yellow-500",
             info: "border-blue-600 dark:border-blue-500",
+            green: "border-green-600 dark:border-green-500",
+            teal: "border-teal-600 dark:border-teal-500",
+            violet: "border-violet-600 dark:border-violet-500",
+            orange: "border-orange-600 dark:border-orange-500",
         },
         text: {
             contrast: "dark:text-slate-100",
@@ -109,6 +132,10 @@ export const getButtonColor = (
             danger: "text-red-600 dark:text-red-500",
             warning: "text-yellow-600 dark:text-yellow-500",
             info: "text-blue-600 dark:text-blue-500",
+            green: "text-green-600 dark:text-green-500",
+            teal: "text-teal-600 dark:text-teal-500",
+            violet: "text-violet-600 dark:text-violet-500",
+            orange: "text-orange-600 dark:text-orange-500",
         },
         outlineHover: {
             contrast:
@@ -119,6 +146,10 @@ export const getButtonColor = (
             warning:
                 "hover:bg-yellow-600 hover:text-white hover:text-white hover:dark:text-white hover:dark:border-yellow-600",
             info: "hover:bg-blue-600 hover:text-white hover:dark:text-white hover:dark:border-blue-600",
+            green: "hover:bg-green-600 hover:text-white hover:dark:text-white hover:dark:border-green-600",
+            teal: "hover:bg-teal-600 hover:text-white hover:dark:text-white hover:dark:border-teal-600",
+            violet: "hover:bg-violet-600 hover:text-white hover:dark:text-white hover:dark:border-violet-600",
+            orange: "hover:bg-orange-600 hover:text-white hover:dark:text-white hover:dark:border-orange-600",
         },
     };
 

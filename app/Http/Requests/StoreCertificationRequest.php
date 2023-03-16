@@ -33,7 +33,7 @@ class StoreCertificationRequest extends FormRequest
             'process_type_id' => ['required'],
             'expense_type_id' => ['required'],
             'department_id' => ['required'],
-            'cgf_comments' => ['nullable'],
+            'sec_cgf_comments' => ['nullable'],
         ];
     }
 }

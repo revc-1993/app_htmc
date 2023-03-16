@@ -40,7 +40,7 @@ class UpdateCertificationRequest extends FormRequest
                 'process_type_id' => ['required'],
                 'expense_type_id' => ['required'],
                 'department_id' => ['required'],
-                'cgf_comments' => ['nullable'],
+                'sec_cgf_comments' => ['nullable'],
             ];
         } else if ($role === 2) {
             $validationRules += [
@@ -54,8 +54,8 @@ class UpdateCertificationRequest extends FormRequest
                 'vendor_id' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']),
                 'budget_line_id' => ['required'],
                 'certified_amount' => ['nullable', 'numeric', 'min:10'],
-                'certification_number' => ['required_if:record_status,3', 'numeric', 'min:1', 'nullable'],
-                'record_status' => ['required', 'in:1,2,3'],
+                'certification_number' => ['required_if:record_status,4', 'numeric', 'min:1', 'nullable'],
+                'record_status' => ['required', 'in:1,2,3,4'],
                 'certification_comments' => ['nullable'],
             ];
         } else if ($role === 4) {
@@ -65,6 +65,7 @@ class UpdateCertificationRequest extends FormRequest
                     'required',
                     'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/',
                 ],
+                'coord_cgf_comments' => ['nullable'],
             ];
         }
 

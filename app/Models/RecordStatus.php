@@ -24,7 +24,7 @@ class RecordStatus extends Model
 
         if ($role === 3 || $role === 4) {
             $operator = $role === 3 ? "<=" : ">";
-            $query->where('id', $operator, 3);
+            $query->where('id', $operator, 4);
         } else {
             $query;
         }

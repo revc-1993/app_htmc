@@ -104,6 +104,7 @@ class DatabaseSeeder extends Seeder
         $statuses = [
             "PENDIENTE DE REVISIÓN",
             "EN REVISIÓN",
+            "OBSERVADO",
             "REGISTRADO",
             "DEVUELTO",
             "APROBADO",

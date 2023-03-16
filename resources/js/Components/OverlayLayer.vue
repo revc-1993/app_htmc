@@ -27,10 +27,10 @@ const styleStore = useStyleStore();
         class="items-center flex-col justify-center overflow-hidden fixed inset-0"
     >
         <transition
-            enter-active-class="transition duration-300 ease-in"
+            enter-active-class="transition duration-400 ease-in"
             enter-from-class="opacity-0"
             enter-to-class="opacity-100"
-            leave-active-class="transition duration-300 ease-in"
+            leave-active-class="transition duration-400 ease-out"
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
@@ -41,7 +41,7 @@ const styleStore = useStyleStore();
             />
         </transition>
         <transition
-            enter-active-class="transition duration-100 ease-out"
+            enter-active-class="transition duration-300 ease-out"
             enter-from-class="transform scale-95 opacity-0"
             enter-to-class="transform scale-100 opacity-100"
             leave-active-class="animate-fade-out"

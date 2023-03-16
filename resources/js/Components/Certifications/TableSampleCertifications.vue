@@ -165,9 +165,9 @@ const alert = (operation) => alerts("alert", operation);
 // ABRIR MODAL: 1 Create, 2 Show, 3 Update, 4 Delete
 // --------------------------------------------
 const openModal = (action, certifications = {}) => {
-    certification.value = certifications;
-    currentOperation.value = action;
     isModalActive.value = true;
+    currentOperation.value = action;
+    certification.value = certifications;
 };
 
 // --------------------------------------------
@@ -178,10 +178,6 @@ const closeModal = (event) => {
     currentOperation.value = "";
     isModalActive.value = false;
 };
-
-// --------------------------------------------
-// ESTADO DE CERTIFICACION
-// --------------------------------------------
 </script>
 
 <template>
@@ -227,9 +223,8 @@ const closeModal = (event) => {
     </BaseLevel>
 
     <CardBoxModalCertification
-        v-if="isModalActive"
         v-model="isModalActive"
-        :certification="certification"
+        v-model:certification="certification"
         :departments="departments"
         :process-types="processTypes"
         :expense-types="expenseTypes"

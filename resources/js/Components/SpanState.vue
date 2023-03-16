@@ -15,23 +15,25 @@ const styleStore = useStyleStore();
 const colorState = computed(() => {
     return {
         1: "danger",
-        2: "warning",
-        3: "green",
-        4: "violet",
-        5: "success",
-        6: "teal",
+        2: "orange",
+        3: "warning",
+        4: "green",
+        5: "violet",
+        6: "success",
+        7: "teal",
     }[props.state.id];
 });
 
 const pillIcon = computed(() => {
     return {
-        success: mdiTrendingUp,
+        danger: mdiTrendingDown,
+        orange: mdiTrendingDown,
         warning: mdiTrendingNeutral,
         green: mdiTrendingUp,
-        danger: mdiTrendingDown,
-        teal: mdiTrendingUp,
         violet: mdiTrendingDown,
-        info: null,
+        success: mdiTrendingUp,
+        teal: mdiTrendingUp,
+        info: mdiTrendingNeutral,
     }[colorState.value];
 });
 </script>

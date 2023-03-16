@@ -37,7 +37,12 @@ const props = defineProps({
         type: [String, Number, Boolean],
         default: null,
     },
-    elementProps: Object,
+    elementProps: {
+        type: Object,
+        default: {
+            label: "",
+        },
+    },
     modelValue: {
         type: [String, Number, Boolean],
         default: null,
@@ -47,11 +52,23 @@ const props = defineProps({
 // ---------------------------------------------------------
 // CONSTANTES
 // ---------------------------------------------------------
+const certification = computed(() => props.certification);
+
 const operations = {
     create: 1,
     show: 2,
     update: 3,
     destroy: 4,
+};
+
+const statuses = {
+    pendingReview: 1,
+    reviewing: 2,
+    observed: 3,
+    registered: 4,
+    returned: 5,
+    approved: 6,
+    liquidated: 7,
 };
 
 const role = computed(() => usePage().props.auth.user.roles[0].id);
@@ -120,7 +137,7 @@ const form = useForm(
               process_type_id: "",
               expense_type_id: "",
               department_id: "",
-              cgf_comments: "",
+              sec_cgf_comments: "",
               sec_cgf_date: new Date().toLocaleDateString(),
               customer_id: "",
               japc_comments: "",
@@ -139,35 +156,35 @@ const form = useForm(
               coord_cgf_date: new Date().toLocaleDateString(),
           }
         : {
-              certification_memo: props.certification.certification_memo,
-              content: props.certification.content,
-              contract_object: props.certification.contract_object,
-              process_type_id: props.certification.process_type_id,
-              expense_type_id: props.certification.expense_type_id,
-              department_id: props.certification.department_id,
-              cgf_comments: props.certification.cgf_comments,
-              sec_cgf_date: props.certification.sec_cgf_date,
-              customer_id: props.certification.customer_id ?? "",
-              japc_comments: props.certification.japc_comments,
-              japc_date: props.certification.japc_date,
-              process_number: props.certification.process_number,
-              budget_line_id: props.certification.budget_line_id,
-              vendor_id: props.certification.vendor_id,
-              certified_amount: props.certification.certified_amount,
-              certification_number: props.certification.certification_number,
+              certification_memo: certification.value.certification_memo,
+              content: certification.value.content,
+              contract_object: certification.value.contract_object,
+              process_type_id: certification.value.process_type_id,
+              expense_type_id: certification.value.expense_type_id,
+              department_id: certification.value.department_id,
+              sec_cgf_comments: certification.value.sec_cgf_comments,
+              sec_cgf_date: certification.value.sec_cgf_date,
+              customer_id: certification.value.customer_id ?? "",
+              japc_comments: certification.value.japc_comments,
+              japc_date: certification.value.japc_date,
+              process_number: certification.value.process_number,
+              budget_line_id: certification.value.budget_line_id,
+              vendor_id: certification.value.vendor_id,
+              certified_amount: certification.value.certified_amount,
+              certification_number: certification.value.certification_number,
               record_status:
-                  props.certification.record_status &&
-                  props.certification.record_status.id <= 3
-                      ? props.certification.record_status.id
+                  certification.value.record_status &&
+                  certification.value.record_status.id <= statuses.registered
+                      ? certification.value.record_status.id
                       : "",
               certification_comments:
-                  props.certification.certification_comments,
-              cp_date: props.certification.cp_date,
-              treasury_approved: props.certification.treasury_approved,
+                  certification.value.certification_comments,
+              cp_date: certification.value.cp_date,
+              treasury_approved: certification.value.treasury_approved,
               returned_document_number:
-                  props.certification.returned_document_number,
-              coord_cgf_comments: props.certification.coord_cgf_comments,
-              coord_cgf_date: props.certification.coord_cgf_date,
+                  certification.value.returned_document_number,
+              coord_cgf_comments: certification.value.coord_cgf_comments,
+              coord_cgf_date: certification.value.coord_cgf_date,
           }
 );
 
@@ -181,7 +198,8 @@ const disabled = {
         () =>
             props.currentOperation === operations.show ||
             activePhase.value !== role.value ||
-            props.certification.record_status === 6
+            (props.certification.record_status &&
+                props.certification.record_status.id >= statuses.approved)
     ),
     expense_type: computed(
         () =>
@@ -191,9 +209,11 @@ const disabled = {
     record_status: computed(
         () =>
             props.certification.record_status &&
-            props.certification.record_status.id > 4
+            props.certification.record_status.id >= statuses.approved
     ),
-    certification_number: computed(() => form.record_status !== 3),
+    certification_number: computed(
+        () => form.record_status !== statuses.registered
+    ),
 };
 
 // ---------------------------------------------------------
@@ -203,8 +223,7 @@ const create = () => {
     form.transform((data) => ({
         ...data,
     })).post(route("certifications.store"), {
-        preserveScroll: false,
-        onStart: () => console.log("CREATE"),
+        onStart: () => console.log(props.certification),
         onSuccess: () => {
             form.reset();
             confirm();
@@ -219,8 +238,11 @@ const update = () => {
     form.transform((data) => ({
         ...data,
     })).put(route("certifications.update", props.certification.id), {
-        preserveScroll: false,
-        // onStart: () => console.log("UPDATE"),
+        onStart: () => {
+            console.log(props.certification.contract_object);
+            console.log(props.currentOperation);
+            console.log(form);
+        },
         onSuccess: () => {
             form.reset();
             confirm();
@@ -266,7 +288,7 @@ const search = () => {
             <Stepper
                 v-model="activePhase"
                 :operation="currentOperation"
-                :current_management="
+                :current-management="
                     currentOperation !== operations.create
                         ? certification.current_management
                         : null
@@ -401,18 +423,18 @@ const search = () => {
                 </FormField>
                 <FormField
                     label="Observaciones"
-                    label-for="cgf_comments"
+                    label-for="sec_cgf_comments"
                     help="Máximo 255 caracteres."
-                    :errors="form.errors.cgf_comments"
+                    :errors="form.errors.sec_cgf_comments"
                 >
                     <FormControl
-                        v-model="form.cgf_comments"
+                        v-model="form.sec_cgf_comments"
                         type="textarea"
-                        id="cgf_comments"
+                        id="sec_cgf_comments"
                         :icon="mdiTag"
-                        autocomplete="cgf_comments"
+                        autocomplete="sec_cgf_comments"
                         placeholder="Indique las principales observaciones."
-                        :has-errors="form.errors.cgf_comments != null"
+                        :has-errors="form.errors.sec_cgf_comments != null"
                         :disabled="disabled.global.value"
                     />
                 </FormField>
@@ -598,7 +620,10 @@ const search = () => {
                             autocomplete="vendor_id"
                             :options="selectOptions.vendors"
                             :has-errors="form.errors.vendor_id != null"
-                            :disabled="disabled.global.value"
+                            :disabled="
+                                disabled.global.value ||
+                                disabled.expense_type.value
+                            "
                         />
                     </FormField>
 

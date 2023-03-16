@@ -136,22 +136,6 @@ class CertificationController extends Controller
             $this->manageAssignment($role, $request->record_status, $request->treasury_approved);
     }
 
-    protected function manageRecordStatus(UpdateCertificationRequest $request, int $role)
-    {
-        if ($role === 4) {
-            if ($request->treasury_approved === "returned")
-                return 4;
-            else if ($request->treasury_approved === "approved")
-                return 5;
-            else if ($request->treasury_approved === "liquidated")
-                return 6;
-            else
-                return $request->record_status;
-        } else {
-            return $request->record_status;
-        }
-    }
-
     protected function manageDate(int $role)
     {
         if ($role === 1)        return  ['sec_cgf_date' => now()];
@@ -163,8 +147,10 @@ class CertificationController extends Controller
 
     protected function manageAssignment(int $role, $record_status, $treasury_approved)
     {
-        if ($role < 3 || $role === 3) {
-            if ($record_status < 3)
+        if ($role < 3) {
+            return ['current_management' => $role + 1];
+        } else if ($role === 3) {
+            if ($record_status < 4)
                 return ['current_management' => 3];
             else
                 return ['current_management' => $role + 1];
@@ -175,6 +161,22 @@ class CertificationController extends Controller
                 return ['current_management' => $role];
         } else {
             return [];
+        }
+    }
+
+    protected function manageRecordStatus(UpdateCertificationRequest $request, int $role)
+    {
+        if ($role === 4) {
+            if ($request->treasury_approved === "returned")
+                return 5;
+            else if ($request->treasury_approved === "approved")
+                return 6;
+            else if ($request->treasury_approved === "liquidated")
+                return 7;
+            else
+                return $request->record_status;
+        } else {
+            return $request->record_status;
         }
     }
 }
