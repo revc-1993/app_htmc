@@ -223,8 +223,9 @@ const closeModal = (event) => {
     </BaseLevel>
 
     <CardBoxModalCertification
+        v-if="isModalActive"
         v-model="isModalActive"
-        v-model:certification="certification"
+        :certification="certification"
         :departments="departments"
         :process-types="processTypes"
         :expense-types="expenseTypes"

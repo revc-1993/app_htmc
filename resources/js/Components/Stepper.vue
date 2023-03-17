@@ -23,7 +23,7 @@ const liClass = (step) => {
         "p-3",
         "cursor-pointer",
     ];
-    if (props.operation !== 1 && props.current_management === step) {
+    if (props.operation !== 1 && props.currentManagement === step) {
         base.push("bg-emerald-600", "text-white");
     } else if (step === value.value) {
         base.push("bg-stone-300");
@@ -57,7 +57,7 @@ const spanClass = (step, position) => {
         "sm:block",
         "cursor-pointer"
     );
-    if (props.current_management === step) {
+    if (props.currentManagement === step) {
         base.push("bg-emerald-600");
     } else {
         base.push(

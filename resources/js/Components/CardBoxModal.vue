@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { mdiClose, mdiCheckBold, mdiBackspace } from "@mdi/js";
+import { mdiClose, mdiContentSaveAll, mdiBackspace } from "@mdi/js";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import CardBox from "@/components/CardBox.vue";
@@ -34,6 +34,10 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    disabled: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const emit = defineEmits(["update:modelValue", "cancel", "confirm"]);
@@ -59,9 +63,9 @@ window.addEventListener("keydown", (e) => {
 </script>
 
 <template>
-    <OverlayLayer v-show="value" @overlay-click="cancel">
+    <OverlayLayer v-if="value" @overlay-click="cancel">
         <CardBox
-            v-show="value"
+            v-if="value"
             class="shadow-lg max-h-modal h-7/12 w-11/12 z-50"
             :class="
                 button === 'danger'
@@ -86,20 +90,20 @@ window.addEventListener("keydown", (e) => {
                 <slot />
             </div>
 
-            <template #footer>
+            <template #footer v-if="withButton">
                 <BaseButtons>
                     <BaseButton
-                        v-if="button !== 'info'"
+                        :disabled="disabled"
                         type="submit"
                         :label="buttonLabel"
-                        :color="button"
-                        @click="confirm"
-                        :icon="mdiCheckBold"
+                        :color="disabled ? 'contrast' : button"
+                        @click.prevent="confirm"
+                        :icon="mdiContentSaveAll"
                     />
                     <BaseButton
                         v-if="hasCancel"
                         label="Regresar"
-                        :color="button === 'info' ? 'info' : 'lightDark'"
+                        color="lightDark"
                         @click="cancel"
                         :icon="mdiBackspace"
                     />

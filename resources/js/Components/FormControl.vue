@@ -68,9 +68,9 @@ const computedValue = computed({
 
 const inputElClass = computed(() => {
     const base = [
-        "px-3 py-2 max-w-full rounded w-full focus:outline-none focus:ring",
+        "px-3 py-2 max-w-full rounded w-full focus:outline-none focus:ring placeholder-slate-400",
         props.disabled
-            ? "text-slate-500 dark:text-slate-300 border-slate-400"
+            ? "text-slate-800 dark:text-slate-300 border-slate-400"
             : " border-slate-700 focus:ring-blue-600",
         props.hasErrors
             ? "border-red-700 focus:border-red-700 focus:ring-red-600 dark:focus:ring-red-600 placeholder-red-500"
@@ -201,7 +201,7 @@ if (props.ctrlKFocus) {
 .select-style .vs__dropdown-menu:disabled,
 .select-style .vs__search:disabled,
 .select-style .vs__search::placeholder:disabled {
-    color: rgb(107 114 128);
+    color: rgb(148 163 184);
     background: rgba(255, 255, 255, 0);
 }
 </style>

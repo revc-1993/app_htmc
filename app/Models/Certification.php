@@ -130,7 +130,10 @@ class Certification extends Model
     {
         $role = $this->getRole();
         $user = $this->getUser();
-        if ($role === 3)
+        if ($role < 3)
+            $query->where("certifications.record_status", "<=", 5)
+                ->orWhereNull("certifications.record_status");
+        else if ($role === 3)
             $query->where("certifications.customer_id", $user);
 
         $query->orderBy("certifications.id", "desc");

@@ -52,7 +52,7 @@ const props = defineProps({
 // ---------------------------------------------------------
 // CONSTANTES
 // ---------------------------------------------------------
-const certification = computed(() => props.certification);
+const certifications = computed(() => props.certification);
 
 const operations = {
     create: 1,
@@ -156,35 +156,35 @@ const form = useForm(
               coord_cgf_date: new Date().toLocaleDateString(),
           }
         : {
-              certification_memo: certification.value.certification_memo,
-              content: certification.value.content,
-              contract_object: certification.value.contract_object,
-              process_type_id: certification.value.process_type_id,
-              expense_type_id: certification.value.expense_type_id,
-              department_id: certification.value.department_id,
-              sec_cgf_comments: certification.value.sec_cgf_comments,
-              sec_cgf_date: certification.value.sec_cgf_date,
-              customer_id: certification.value.customer_id ?? "",
-              japc_comments: certification.value.japc_comments,
-              japc_date: certification.value.japc_date,
-              process_number: certification.value.process_number,
-              budget_line_id: certification.value.budget_line_id,
-              vendor_id: certification.value.vendor_id,
-              certified_amount: certification.value.certified_amount,
-              certification_number: certification.value.certification_number,
+              certification_memo: props.certification.certification_memo,
+              content: props.certification.content,
+              contract_object: props.certification.contract_object,
+              process_type_id: props.certification.process_type_id,
+              expense_type_id: props.certification.expense_type_id,
+              department_id: props.certification.department_id,
+              sec_cgf_comments: props.certification.sec_cgf_comments,
+              sec_cgf_date: props.certification.sec_cgf_date,
+              customer_id: props.certification.customer_id ?? "",
+              japc_comments: props.certification.japc_comments,
+              japc_date: props.certification.japc_date,
+              process_number: props.certification.process_number,
+              budget_line_id: props.certification.budget_line_id,
+              vendor_id: props.certification.vendor_id,
+              certified_amount: props.certification.certified_amount,
+              certification_number: props.certification.certification_number,
               record_status:
-                  certification.value.record_status &&
-                  certification.value.record_status.id <= statuses.registered
-                      ? certification.value.record_status.id
+                  props.certification.record_status &&
+                  props.certification.record_status.id <= statuses.registered
+                      ? props.certification.record_status.id
                       : "",
               certification_comments:
-                  certification.value.certification_comments,
-              cp_date: certification.value.cp_date,
-              treasury_approved: certification.value.treasury_approved,
+                  props.certification.certification_comments,
+              cp_date: props.certification.cp_date,
+              treasury_approved: props.certification.treasury_approved,
               returned_document_number:
-                  certification.value.returned_document_number,
-              coord_cgf_comments: certification.value.coord_cgf_comments,
-              coord_cgf_date: certification.value.coord_cgf_date,
+                  props.certification.returned_document_number,
+              coord_cgf_comments: props.certification.coord_cgf_comments,
+              coord_cgf_date: props.certification.coord_cgf_date,
           }
 );
 
@@ -199,7 +199,7 @@ const disabled = {
             props.currentOperation === operations.show ||
             activePhase.value !== role.value ||
             (props.certification.record_status &&
-                props.certification.record_status.id >= statuses.approved)
+                props.certification.record_status.id === statuses.liquidated)
     ),
     expense_type: computed(
         () =>
@@ -215,6 +215,17 @@ const disabled = {
         () => form.record_status !== statuses.registered
     ),
 };
+
+const disabledButton = ref(false);
+
+disabledButton.value =
+    (role.value <= 3 &&
+        props.certification.record_status &&
+        props.certification.record_status.id >= statuses.approved) ||
+    (role.value === 4 &&
+        props.certification.record_status &&
+        props.certification.record_status.id >= statuses.liquidated) ||
+    form.processing;
 
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
@@ -277,8 +288,13 @@ const search = () => {
 <template>
     <CardBoxModal
         v-model="value"
+        v-model:disabled="disabledButton"
         :title="elementProps.label"
-        :button="elementProps.color"
+        :button="
+            props.currentOperation === operations.update
+                ? 'success'
+                : elementProps.color
+        "
         :button-label="elementProps.label"
         has-cancel
         is-form

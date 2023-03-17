@@ -36,4 +36,17 @@ class StoreCertificationRequest extends FormRequest
             'sec_cgf_comments' => ['nullable'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            // 'name.required' => __('El campo nombre es obligatorio.'),
+            // 'name.string' => __('El campo nombre debe ser una cadena de texto.'),
+            // 'name.max' => __('El campo nombre no debe ser mayor a :max caracteres.'),
+            // 'name.unique' => __('El campo nombre ya está en uso.'),
+            // 'description.required' => __('El campo descripción es obligatorio.'),
+            // 'description.string' => __('El campo descripción debe ser una cadena de texto.'),
+            // 'description.max' => __('El campo descripción no debe ser mayor a :max caracteres.'),
+        ];
+    }
 }

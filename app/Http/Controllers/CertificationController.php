@@ -62,6 +62,11 @@ class CertificationController extends Controller
         ]);
     }
 
+    public function show(Certification $certification)
+    {
+        // return json_encode(['data'])
+    }
+
     /**
      * Store a newly created resource in storage.
      *
