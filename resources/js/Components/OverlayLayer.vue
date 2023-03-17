@@ -30,7 +30,7 @@ const styleStore = useStyleStore();
             enter-active-class="transition duration-400 ease-in"
             enter-from-class="opacity-0"
             enter-to-class="opacity-100"
-            leave-active-class="transition duration-400 ease-out"
+            leave-active-class="transition duration-400 ease-in"
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >

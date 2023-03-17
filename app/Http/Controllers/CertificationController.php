@@ -12,7 +12,9 @@ use App\Models\Department;
 use App\Models\ExpenseType;
 use App\Models\ProcessType;
 use App\Models\RecordStatus;
+use Illuminate\Http\Request;
 use App\Models\Certification;
+use Illuminate\Support\Facades\Redirect;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
 
@@ -183,5 +185,19 @@ class CertificationController extends Controller
         } else {
             return $request->record_status;
         }
+    }
+
+    public function getVendor(Request $request)
+    {
+        $vendor = Vendor::where('nit', $request->get('nit'))
+            ->first(['id', 'nit', 'name']);
+
+        return Inertia::render(
+            'Certifications/Index'
+        )->with(compact('vendor'));
+
+        // dd($vendor);
+
+        // return back()->with(compact('vendor'));
     }
 }

@@ -25,17 +25,10 @@ import BaseLevel from "../BaseLevel.vue";
 // PROPS
 // ---------------------------------------------------------
 const props = defineProps({
-    certification: {
+    vendor: {
         type: Object,
         default: {},
     },
-    departments: Object,
-    processTypes: Object,
-    expenseTypes: Object,
-    budgetLines: Object,
-    users: Object,
-    recordStatuses: Object,
-    vendors: Object,
     currentOperation: {
         type: [String, Number, Boolean],
         default: null,
@@ -55,29 +48,12 @@ const props = defineProps({
 // ---------------------------------------------------------
 // CONSTANTES
 // ---------------------------------------------------------
-const certifications = ref({});
-certifications.value = props.certification;
-
 const operations = {
     create: 1,
     show: 2,
     update: 3,
     destroy: 4,
 };
-
-const statuses = {
-    pendingReview: 1,
-    reviewing: 2,
-    observed: 3,
-    registered: 4,
-    returned: 5,
-    approved: 6,
-    liquidated: 7,
-};
-
-const role = computed(() => usePage().props.auth.user.roles[0].id);
-const activePhase = ref(1);
-activePhase.value = role.value ?? 1;
 
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
@@ -192,9 +168,7 @@ const form = useForm(
           }
 );
 
-const formSearchVendor = useForm({
-    nit: "",
-});
+const formSearch = useForm({ vendor_nit: "" });
 
 // ---------------------------------------------------------
 // DISABLED
@@ -255,6 +229,11 @@ const update = () => {
     form.transform((data) => ({
         ...data,
     })).put(route("certifications.update", props.certification.id), {
+        onStart: () => {
+            // console.log(props.certification.contract_object);
+            // console.log(props.currentOperation);
+            // console.log(form);
+        },
         onSuccess: () => {
             form.reset();
             confirm();
@@ -282,21 +261,13 @@ const transaction = () => {
 };
 
 const search = () => {
-    // router.get('vendors.getVendor',);
-    // router.get(`/vendors/${formSearchVendor.vendor_nit}`);
-    formSearchVendor.get(route("certifications.getVendor"), {
-        onSuccess: (response) => {
-            console.log(response.props.vendor);
-            // formSearchVendor.id = response.props.vendor.id;
-            // formSearchVendor.nit = response.props.vendor.nit;
-            // formSearchVendor.name = response.props.vendor.name;
-        },
-    });
+    router.get(`/vendors/${formSearch.vendor_nit}`);
 };
 </script>
 
 <template>
     <CardBoxModal
+        v-if="value"
         v-model="value"
         v-model:disabled="disabledButton"
         :title="elementProps.label"
@@ -606,37 +577,57 @@ const search = () => {
                     </FormField>
                 </div>
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
-                    <FormField
-                        label="NIT de Proveedor"
-                        label-for="nit"
-                        :errors="formSearchVendor.errors.nit"
-                    >
-                        <form @submit.prevent="search">
+                    <!-- <form>
+                        <FormField
+                            label="NIT de Proveedor"
+                            label-for="vendor_nit"
+                            :errors="formSearch.errors.vendor_nit"
+                        >
                             <BaseLevel>
                                 <FormControl
-                                    v-model="formSearchVendor.nit"
-                                    id="nit"
-                                    name="nit"
+                                    v-model="formSearch.vendor_nit"
+                                    id="vendor_nit"
                                     :icon="mdiCardAccountDetails"
-                                    autocomplete="nit"
+                                    autocomplete="vendor_nit"
                                     type="text"
                                     placeholder="Detalle el NIT del Proveedor"
                                     :has-errors="
-                                        formSearchVendor.errors.nit != null
+                                        formSearch.errors.vendor_nit != null
                                     "
                                     :disabled="disabled.global.value"
                                 >
                                 </FormControl>
                                 <BaseButton
-                                    type="submit"
                                     color="info"
                                     :icon="mdiMagnify"
                                     tooltip="Buscar"
                                     small
+                                    @click.prevent="search"
                                 />
                             </BaseLevel>
-                        </form>
+                        </FormField>
+                    </form> -->
+                    <FormField
+                        label="Proveedor"
+                        label-for="vendor_id"
+                        help="Escoja el tipo de proceso"
+                        :errors="form.errors.vendor_id"
+                    >
+                        <FormControl
+                            v-model="form.vendor_id"
+                            name="vendor_id"
+                            id="vendor_id"
+                            :icon="mdiFormatListBulletedType"
+                            autocomplete="vendor_id"
+                            :options="selectOptions.vendors"
+                            :has-errors="form.errors.vendor_id != null"
+                            :disabled="
+                                disabled.global.value ||
+                                disabled.expense_type.value
+                            "
+                        />
                     </FormField>
+
                     <FormField
                         label="Monto certificado"
                         label-for="certified_amount"
@@ -658,22 +649,21 @@ const search = () => {
                         />
                     </FormField>
                 </div>
-                <FormField
-                    label="Nombre de proveedor"
-                    label-for="name"
-                    :errors="formSearchVendor.errors.name"
+                <!-- <FormField
+                    label="Proveedor"
+                    label-for="process_number"
+                    :errors="form.errors.process_number"
                 >
                     <FormControl
-                        v-model="formSearchVendor.name"
-                        id="name"
-                        name="name"
-                        :icon="mdiCardAccountDetails"
-                        autocomplete="name"
+                        v-model="form.process_number"
+                        id="process_number"
+                        :icon="mdiNumeric"
+                        autocomplete="process_number"
                         type="text"
-                        :has-errors="formSearchVendor.errors.name != null"
-                        :disabled="disabled.global.value"
+                        :has-errors="form.errors.process_number != null"
+                        disabled
                     />
-                </FormField>
+                </FormField> -->
                 <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
                     <FormField
                         label="Estado de certificación"

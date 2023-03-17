@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { mdiClose, mdiContentSaveAll, mdiBackspace } from "@mdi/js";
+import { mdiClose, mdiContentSaveAll, mdiBackspace, mdiPrinter } from "@mdi/js";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import CardBox from "@/components/CardBox.vue";
@@ -63,9 +63,9 @@ window.addEventListener("keydown", (e) => {
 </script>
 
 <template>
-    <OverlayLayer v-if="value" @overlay-click="cancel">
+    <OverlayLayer v-show="value" @overlay-click="cancel">
         <CardBox
-            v-if="value"
+            v-show="value"
             class="shadow-lg max-h-modal h-7/12 w-11/12 z-50"
             :class="
                 button === 'danger'
@@ -98,7 +98,11 @@ window.addEventListener("keydown", (e) => {
                         :label="buttonLabel"
                         :color="disabled ? 'contrast' : button"
                         @click.prevent="confirm"
-                        :icon="mdiContentSaveAll"
+                        :icon="
+                            buttonLabel === 'Imprimir'
+                                ? mdiPrinter
+                                : mdiContentSaveAll
+                        "
                     />
                     <BaseButton
                         v-if="hasCancel"

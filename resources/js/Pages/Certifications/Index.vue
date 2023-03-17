@@ -20,6 +20,7 @@ const props = defineProps({
     users: Object,
     record_statuses: Object,
     vendors: Object,
+    vendor: Object,
 });
 
 const getMessage = (operation, message) => {

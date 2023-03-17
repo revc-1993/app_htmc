@@ -4,6 +4,7 @@ use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CommitmentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VendorController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -40,8 +41,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/vendors/{vendor}', [Vendor::class, 'getVendor'])->name('vendors.getVendor');
 
+    Route::get('certifications/get-vendor', [CertificationController::class, 'getVendor'])->name('certifications.getVendor');
     Route::resource('certifications', CertificationController::class);
     Route::resource('commitments', CommitmentController::class);
 });

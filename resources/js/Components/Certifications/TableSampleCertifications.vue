@@ -165,9 +165,9 @@ const alert = (operation) => alerts("alert", operation);
 // ABRIR MODAL: 1 Create, 2 Show, 3 Update, 4 Delete
 // --------------------------------------------
 const openModal = (action, certifications = {}) => {
-    isModalActive.value = true;
-    currentOperation.value = action;
     certification.value = certifications;
+    currentOperation.value = action;
+    isModalActive.value = true;
 };
 
 // --------------------------------------------
