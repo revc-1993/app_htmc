@@ -62,11 +62,11 @@ const create = () => {
     form.transform((data) => ({
         ...data,
     })).post(route("certifications.setVendor"), {
-        onSuccess: (response) => {
+        onError: (error) => console.log(error),
+        onSuccess: () => {
             newVendor.value = {
-                id: response.props.vendor.id,
-                nit: response.props.vendor.nit,
-                name: response.props.vendor.name,
+                nit: form.nit,
+                name: form.name,
             };
             form.reset();
             confirm();

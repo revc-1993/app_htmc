@@ -129,7 +129,7 @@ const form = useForm(
               sec_cgf_date: new Date().toLocaleDateString(),
               customer_id: "",
               japc_comments: "",
-              japc_date: new Date().toLocaleDateString(),
+              assignment_date: new Date().toLocaleDateString(),
               process_number: "",
               budget_line_id: "",
               vendor_id: "",
@@ -156,8 +156,8 @@ const form = useForm(
                   new Date().toLocaleDateString(),
               customer_id: props.certification.customer_id ?? "",
               japc_comments: props.certification.japc_comments,
-              japc_date:
-                  props.certification.japc_date ??
+              assignment_date:
+                  props.certification.assignment_date ??
                   new Date().toLocaleDateString(),
               process_number: props.certification.process_number,
               budget_line_id: props.certification.budget_line_id,
@@ -271,7 +271,7 @@ const messageOperation = ref(null);
 const toast = ref(false);
 const messageVendor = ref("");
 
-const searchVendorByNit = () => {
+const searchVendorByNit = (alert = "") => {
     axios
         .get("/certifications/getVendorByNit?nit=" + formSearchVendor.nit)
         .then((response) => {
@@ -281,13 +281,15 @@ const searchVendorByNit = () => {
                 formSearchVendor.nit = response.data.vendor.nit;
                 vendor.value = response.data.vendor.name;
 
-                toast.value = true;
-                messageVendor.value = {
-                    response:
-                        "Se encontró el proveedor con NIT " +
-                        formSearchVendor.nit,
-                    operation: 1,
-                };
+                if (alert === "alert") {
+                    toast.value = true;
+                    messageVendor.value = {
+                        response:
+                            "Se encontró el proveedor con NIT " +
+                            formSearchVendor.nit,
+                        operation: 1,
+                    };
+                }
             }
         })
         .catch((error) => {
@@ -297,11 +299,13 @@ const searchVendorByNit = () => {
             vendor.value = "";
             console.log(error);
 
-            toast.value = true;
-            messageVendor.value = {
-                response: "No se encontró el NIT digitado",
-                operation: 4,
-            };
+            if (alert === "alert") {
+                toast.value = true;
+                messageVendor.value = {
+                    response: "No se encontró el NIT digitado",
+                    operation: 4,
+                };
+            }
         });
 };
 
@@ -340,10 +344,9 @@ const openModal = () => {
 };
 
 const closeModal = (event) => {
-    form.vendor_id = newVendor.value.id;
-    formSearchVendor.nit = newVendor.value.nit;
-    vendor.value = newVendor.value.name;
     if (event === "confirm") {
+        formSearchVendor.nit = newVendor.value.nit;
+        searchVendorByNit();
         toast.value = true;
         messageVendor.value = {
             response: "Proveedor creado exitosamente.",
@@ -520,7 +523,7 @@ const closeModal = (event) => {
         >
             <div class="gap-x-3 mb-4 text-right">
                 <strong>Fecha de asignación JAPC: </strong>
-                {{ form.japc_date }}
+                {{ form.assignment_date }}
             </div>
 
             <div
@@ -658,7 +661,7 @@ const closeModal = (event) => {
                     label-for="nit"
                     :errors="form.errors.vendor_id"
                 >
-                    <form @submit.prevent="searchVendorByNit">
+                    <form @submit.prevent="searchVendorByNit('alert')">
                         <BaseLevel>
                             <FormControl
                                 v-model="formSearchVendor.nit"

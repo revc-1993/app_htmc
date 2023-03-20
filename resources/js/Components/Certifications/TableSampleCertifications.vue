@@ -12,10 +12,10 @@ import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import SpanState from "@/components/SpanState.vue";
 import CardBoxModalCertification from "@/components/certifications/CardBoxModalCertification.vue";
 import CardBox from "@/components/CardBox.vue";
-import exportFromJSON from "export-from-json";
 
 const props = defineProps({
     checkable: Boolean,
@@ -85,16 +85,6 @@ const currentManagements = {
 // --------------------------------------------
 // TABLA: BOTONES DE DESCARGA
 // --------------------------------------------
-const downloadFile = (type) => {
-    const data = props.certifications;
-    const fileName = "np-data";
-    const exportType = {
-        xls: exportFromJSON.types.xls,
-        csv: exportFromJSON.types.csv,
-    }[type];
-
-    if (data) exportFromJSON({ data, fileName, exportType });
-};
 
 // ---------------------------------------------------------
 // TABLA: PAGINACIÓN
@@ -174,19 +164,19 @@ const closeModal = (event) => {
     <!-- BOTON CREATE (OK) -->
     <BaseLevel>
         <BaseButtons type="justify-start">
-            <BaseButton
+            <ExportButton
+                :data="certifications"
+                type="xls"
                 color="success"
-                small
                 :icon="mdiFileExcel"
-                @click="downloadFile('xls')"
-                tooltip="Exportar a Excel"
+                :tooltip="'Exportar a Excel'"
             />
-            <BaseButton
-                color="contrast"
-                small
+            <ExportButton
+                :data="certifications"
+                type="csv"
+                color="lightDark"
                 :icon="mdiFileDelimited"
-                @click="downloadFile('csv')"
-                tooltip="Exportar a PDF"
+                :tooltip="'Exportar a CSV'"
             />
             <!-- <FormControl
                 placeholder="Buscar"

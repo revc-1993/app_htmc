@@ -15,6 +15,7 @@ use App\Models\RecordStatus;
 use Illuminate\Http\Request;
 use App\Models\Certification;
 use App\Http\Requests\VendorRequest;
+use Illuminate\Support\Facades\Redirect;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
 
@@ -249,9 +250,22 @@ class CertificationController extends Controller
             "operation" => 1,
         ];
 
-        return Inertia::render(
-            'Certifications/Edit',
-            compact('message', 'vendor')
-        );
+        // dd(redirect()->getUrlGenerator()->previous());
+
+        // return Redirect::back()
+
+        return redirect()->back();
+        //  'vendor_id', $vendor->id);;
+
+        // return redirect(redirect()->getUrlGenerator()->previous())->with('vendor', $vendor);
+
+
+        // return Inertia::render(
+        //     'Certifications/Edit',
+        //     [
+        //         'vendor' => Inertia::lazy(fn () => $vendor),
+        //     ]
+        // );
+        // redirect()->back();
     }
 }
