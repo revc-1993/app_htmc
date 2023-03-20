@@ -14,7 +14,7 @@ use App\Models\ProcessType;
 use App\Models\RecordStatus;
 use Illuminate\Http\Request;
 use App\Models\Certification;
-use Illuminate\Support\Facades\Redirect;
+use App\Http\Requests\VendorRequest;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
 
@@ -54,13 +54,6 @@ class CertificationController extends Controller
                 ])
                 ->filtered()
                 ->get(),    // Aquí se puede especificar los campos especificos a extraer
-            'departments' => Department::all(['id', 'department']),
-            'process_types' => ProcessType::all(['id', 'process_type']),
-            'expense_types' => ExpenseType::all(['id', 'expense_type']),
-            'budget_lines' => BudgetLine::all(['id', 'budget_line']),
-            'users' => User::analystCertification()->get(),
-            'record_statuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
-            'vendors' => Vendor::all(['id', 'nit', 'name']),
         ]);
     }
 
@@ -68,6 +61,24 @@ class CertificationController extends Controller
     {
         // return json_encode(['data'])
     }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return Inertia::render('Certifications/Create', [
+            'departments' => Department::all(['id', 'department']),
+            'processTypes' => ProcessType::all(['id', 'process_type']),
+            'expenseTypes' => ExpenseType::all(['id', 'expense_type']),
+            'budgetLines' => BudgetLine::all(['id', 'budget_line']),
+            'users' => User::analystCertification()->get(),
+            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
+        ]);
+    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -84,13 +95,35 @@ class CertificationController extends Controller
 
         $certification = Certification::create($request->validated() + $paramsControl);
 
-        $message = ["response" => "Registro creado correctamente."];
+        $message = [
+            "response" => "Registro creado correctamente.",
+            "operation" => 1,
+        ];
 
         if ($certification->certification_memo === null)
             $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de certificación."];
 
-
         return to_route('certifications.index')->with(compact('message'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Certification $certification
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Certification $certification)
+    {
+        // dd($certification);
+        return Inertia::render('Certifications/Edit', [
+            'certification' => $certification,
+            'departments' => Department::all(['id', 'department']),
+            'processTypes' => ProcessType::all(['id', 'process_type']),
+            'expenseTypes' => ExpenseType::all(['id', 'expense_type']),
+            'budgetLines' => BudgetLine::all(['id', 'budget_line']),
+            'users' => User::analystCertification()->get(),
+            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
+        ]);
     }
 
     /**
@@ -106,12 +139,15 @@ class CertificationController extends Controller
 
         $paramsControl = $this->paramsControl($request, $role);
         $adjustedRequest = $request->validated();
-        $adjustedRequest['record_status'] =
+        $adjustedRequest['record_status_id'] =
             $this->manageRecordStatus($request, $role);
 
         $certification->update($adjustedRequest + $paramsControl);
 
-        $message = ["response" => "Registro actualizado correctamente."];
+        $message = [
+            "response" => "Registro actualizado correctamente.",
+            "operation" => 3,
+        ];
         if ($certification->certification_memo === null && $certification->current_management <= 2)
             $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de certificación."];
 
@@ -127,7 +163,10 @@ class CertificationController extends Controller
     public function destroy(Certification $certification)
     {
         $certification->delete();
-        $message = "Registro eliminado correctamente.";
+        $message = [
+            "response" => "Registro eliminado correctamente.",
+            "operation" => 4,
+        ];
         return to_route('certifications.index')->with(compact('message'));
     }
 
@@ -140,7 +179,7 @@ class CertificationController extends Controller
     {
         return
             $this->manageDate($role) +
-            $this->manageAssignment($role, $request->record_status, $request->treasury_approved);
+            $this->manageAssignment($role, $request->record_status_id, $request->treasury_approved);
     }
 
     protected function manageDate(int $role)
@@ -152,12 +191,12 @@ class CertificationController extends Controller
         else return                     [];
     }
 
-    protected function manageAssignment(int $role, $record_status, $treasury_approved)
+    protected function manageAssignment(int $role, $record_status_id, $treasury_approved)
     {
         if ($role < 3) {
             return ['current_management' => $role + 1];
         } else if ($role === 3) {
-            if ($record_status < 4)
+            if ($record_status_id < 4)
                 return ['current_management' => 3];
             else
                 return ['current_management' => $role + 1];
@@ -181,23 +220,38 @@ class CertificationController extends Controller
             else if ($request->treasury_approved === "liquidated")
                 return 7;
             else
-                return $request->record_status;
+                return $request->record_status_id;
         } else {
-            return $request->record_status;
+            return $request->record_status_id;
         }
     }
 
-    public function getVendor(Request $request)
+    public function getVendorByNit(Request $request)
     {
         $vendor = Vendor::where('nit', $request->get('nit'))
             ->first(['id', 'nit', 'name']);
+        return response()->json(compact('vendor'), 200);
+    }
+
+    public function getVendorById(Request $request)
+    {
+        $vendor = Vendor::where('id', $request->get('id'))
+            ->first(['id', 'nit', 'name']);
+        return response()->json(compact('vendor'), 200);
+    }
+
+    public function setVendor(VendorRequest $request)
+    {
+        $vendor = Vendor::create($request->validated());
+
+        $message = [
+            "response" => "Registro creado correctamente.",
+            "operation" => 1,
+        ];
 
         return Inertia::render(
-            'Certifications/Index'
-        )->with(compact('vendor'));
-
-        // dd($vendor);
-
-        // return back()->with(compact('vendor'));
+            'Certifications/Edit',
+            compact('message', 'vendor')
+        );
     }
 }

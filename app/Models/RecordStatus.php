@@ -15,17 +15,17 @@ class RecordStatus extends Model
 
     public function certifications()
     {
-        return $this->hasMany(Certification::class, 'record_status'); //->withPivot();
+        return $this->hasMany(Certification::class, 'record_status_id'); //->withPivot();
     }
 
     public function scopeGetRecordStatus($query)
     {
         $role = $this->getRole();
 
-        if ($role === 3 || $role === 4) {
+        if ($role === 3) {
             $operator = $role === 3 ? "<=" : ">";
             $query->where('id', $operator, 4);
-        } else {
+        } else if ($role === 4) {
             $query;
         }
     }

@@ -26,16 +26,16 @@ const liClass = (step) => {
     if (props.operation !== 1 && props.currentManagement === step) {
         base.push("bg-emerald-600", "text-white");
     } else if (step === value.value) {
-        base.push("bg-stone-300");
+        base.push("bg-slate-200");
     } else {
         base.push(
             // "group",
             // "peer",
-            "bg-gray-100",
-            "hover:bg-slate-200",
-            "active:bg-slate-500",
+            "bg-white",
+            "hover:bg-slate-100",
+            "active:bg-slate-300",
             "active:text-white",
-            "focus:bg-stone-300"
+            "focus:bg-slate-200"
         );
     }
     return base;
@@ -94,9 +94,9 @@ const stepping = (step) => {
 
 <template>
     <div>
-        <div class="py-2">
+        <div class="mb-6">
             <ol
-                class="grid grid-cols-1 divide-x divide-gray-100 overflow-hidden rounded-lg border border-stone-400 text-sm text-gray-500 sm:grid-cols-4"
+                class="grid grid-cols-1 divide-x divide-gray-200 overflow-hidden rounded-lg border border-stone-400 text-sm text-gray-500 sm:grid-cols-4"
             >
                 <li
                     :class="liClass(1)"

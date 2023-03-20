@@ -42,9 +42,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
 
-    Route::get('certifications/get-vendor', [CertificationController::class, 'getVendor'])->name('certifications.getVendor');
+    Route::get('/certifications/getVendorByNit', [CertificationController::class, 'getVendorByNit'])->name('certifications.getVendorByNit');
+    Route::get('/certifications/getVendorById', [CertificationController::class, 'getVendorById'])->name('certifications.getVendorById');
+    Route::post('/certifications/setVendor', [CertificationController::class, 'setVendor'])->name('certifications.setVendor');
     Route::resource('certifications', CertificationController::class);
     Route::resource('commitments', CommitmentController::class);
+    // Route::resource('vendors', VendorController::class);
 });
 
 require __DIR__ . '/auth.php';

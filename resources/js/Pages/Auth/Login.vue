@@ -1,6 +1,11 @@
 <script setup>
 import { useForm, Head, Link } from "@inertiajs/vue3";
-import { mdiAccount, mdiAsterisk } from "@mdi/js";
+import {
+    mdiAccount,
+    mdiAsterisk,
+    mdiLoginVariant,
+    mdiLockReset,
+} from "@mdi/js";
 import LayoutGuest from "@/layouts/LayoutGuest.vue";
 import SectionFullScreen from "@/components/SectionFullScreen.vue";
 import CardBox from "@/components/CardBox.vue";
@@ -66,6 +71,7 @@ const submit = () => {
                         id="email"
                         autocomplete="email"
                         type="email"
+                        placeholder="user@dominio.com"
                         :has-errors="form.errors.email != null"
                     />
                 </FormField>
@@ -80,6 +86,7 @@ const submit = () => {
                         :icon="mdiAsterisk"
                         type="password"
                         id="password"
+                        placeholder="Contraseña"
                         autocomplete="current-password"
                         :has-errors="form.errors.email != null"
                     />
@@ -97,20 +104,25 @@ const submit = () => {
                     <BaseButtons>
                         <BaseButton
                             type="submit"
-                            color="info"
+                            color="success"
                             label="Iniciar sesión"
                             :class="{ 'opacity-25': form.processing }"
                             :disabled="form.processing"
+                            :icon="mdiLoginVariant"
                         />
                         <BaseButton
                             v-if="canResetPassword"
                             route-name="password.request"
-                            color="info"
-                            outline
+                            color="lightDark"
                             label="Recuperar contraseña"
+                            :icon="mdiLockReset"
                         />
+                        <!-- <BaseButton
+                            route-name="register"
+                            color="info"
+                            label="Crear cuenta"
+                        /> -->
                     </BaseButtons>
-                    <Link :href="route('register')"> Crear cuenta </Link>
                 </BaseLevel>
             </CardBox>
         </SectionFullScreen>

@@ -27,7 +27,7 @@ return new class extends Migration
 
 
             $table->integer('current_management')->default(2);
-            $table->string('record_status')->default();
+            $table->string('record_status_id')->default();
             $table->unsignedBigInteger("certification_id");
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->softDeletes();

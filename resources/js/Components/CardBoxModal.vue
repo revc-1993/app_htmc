@@ -38,6 +38,21 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    z: {
+        type: String,
+        default: "z-50",
+    },
+});
+
+const elementClass = computed(() => {
+    const base = [
+        "shadow-lg max-h-modal h-7/12 w-11/12",
+        props.z ?? "",
+        props.button === "danger"
+            ? "md:w-2/5 lg:w-2/5 xl:w-4/12"
+            : "md:w-3/5 lg:w-3/5 xl:w-7/12",
+    ];
+    return base;
 });
 
 const emit = defineEmits(["update:modelValue", "cancel", "confirm"]);
@@ -66,12 +81,7 @@ window.addEventListener("keydown", (e) => {
     <OverlayLayer v-show="value" @overlay-click="cancel">
         <CardBox
             v-show="value"
-            class="shadow-lg max-h-modal h-7/12 w-11/12 z-50"
-            :class="
-                button === 'danger'
-                    ? 'md:w-2/5 lg:w-2/5 xl:w-4/12'
-                    : 'md:w-3/5 lg:w-3/5 xl:w-7/12'
-            "
+            :class="elementClass"
             is-modal
             :is-form="isForm"
         >

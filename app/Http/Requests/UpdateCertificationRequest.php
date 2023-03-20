@@ -54,8 +54,8 @@ class UpdateCertificationRequest extends FormRequest
                 'vendor_id' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']),
                 'budget_line_id' => ['required'],
                 'certified_amount' => ['nullable', 'numeric', 'min:10'],
-                'certification_number' => ['required_if:record_status,4', 'numeric', 'min:1', 'nullable'],
-                'record_status' => ['required', 'in:1,2,3,4'],
+                'certification_number' => ['required_if:record_status_id,4', 'numeric', 'min:1', 'nullable'],
+                'record_status_id' => ['required', 'in:1,2,3,4'],
                 'certification_comments' => ['nullable'],
             ];
         } else if ($role === 4) {

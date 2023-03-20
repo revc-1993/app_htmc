@@ -42,7 +42,7 @@ class Certification extends Model
 
         // CONTROL TOTAL
         'current_management',
-        'record_status',
+        'record_status_id',
         'customer_id',
     ];
 
@@ -103,7 +103,7 @@ class Certification extends Model
      */
     public function recordStatus()
     {
-        return $this->belongsTo(RecordStatus::class, 'record_status');
+        return $this->belongsTo(RecordStatus::class, 'record_status_id');
     }
 
     /**
@@ -131,8 +131,8 @@ class Certification extends Model
         $role = $this->getRole();
         $user = $this->getUser();
         if ($role < 3)
-            $query->where("certifications.record_status", "<=", 5)
-                ->orWhereNull("certifications.record_status");
+            $query->where("certifications.record_status_id", "<=", 5)
+                ->orWhereNull("certifications.record_status_id");
         else if ($role === 3)
             $query->where("certifications.customer_id", $user);
 
@@ -141,12 +141,12 @@ class Certification extends Model
 
     public function scopeNotReviewed($query)
     {
-        $query->where('record_status', '<>', 'Observado')->orderBy("certifications.sec_cgf_date", "asc");
+        $query->where('record_status_id', '<>', 'Observado')->orderBy("certifications.sec_cgf_date", "asc");
     }
 
     public function scopeAmountOrdered($query)
     {
-        $query->where('record_status', '=', 'Certificado')->orderBy("certifications.certified_amount", "desc");
+        $query->where('record_status_id', '=', 'Certificado')->orderBy("certifications.certified_amount", "desc");
     }
 
     protected function getRole()

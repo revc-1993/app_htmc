@@ -4,12 +4,10 @@ import {
     mdiEye,
     mdiPenPlus,
     mdiTrashCan,
-    mdiFindReplace,
     mdiFileExcel,
     mdiFileDelimited,
     mdiUpdate,
 } from "@mdi/js";
-import CardBoxComponentEmpty from "@/components/CardBoxComponentEmpty.vue";
 import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
@@ -17,19 +15,11 @@ import BaseButton from "@/components/BaseButton.vue";
 import SpanState from "@/components/SpanState.vue";
 import CardBoxModalCertification from "@/components/certifications/CardBoxModalCertification.vue";
 import CardBox from "@/components/CardBox.vue";
-import FormControl from "@/components/FormControl.vue";
 import exportFromJSON from "export-from-json";
 
 const props = defineProps({
     checkable: Boolean,
     certifications: Object,
-    departments: Object,
-    processTypes: Object,
-    expenseTypes: Object,
-    budgetLines: Object,
-    users: Object,
-    recordStatuses: Object,
-    vendors: Object,
     instance: {
         type: String,
         default: "",
@@ -206,12 +196,27 @@ const closeModal = (event) => {
             /> -->
         </BaseButtons>
         <BaseButtons type="justify-end">
-            <BaseButton
+            <!-- BUTTON CON CRUD MODAL -->
+            <!-- <BaseButton
                 :color="elementProps.create.color"
                 :icon="elementProps.create.icon"
                 :label="elementProps.create.label"
                 :tooltip="elementProps.create.tooltip"
                 @click="openModal(elementProps.create.tag)"
+                small
+                v-if="
+                    $page.props.user.permissions.includes(
+                        'create_certification'
+                    )
+                "
+            /> -->
+            <!-- BUTTON HACIA OTRA PAGINA -->
+            <BaseButton
+                :color="elementProps.create.color"
+                :icon="elementProps.create.icon"
+                :label="elementProps.create.label"
+                :tooltip="elementProps.create.tooltip"
+                route-name="certifications.create"
                 small
                 v-if="
                     $page.props.user.permissions.includes(
@@ -232,7 +237,6 @@ const closeModal = (event) => {
         :budget-lines="budgetLines"
         :users="users"
         :record-statuses="recordStatuses"
-        :vendors="vendors"
         :element-props="elementProps[operations[currentOperation]]"
         :current-operation="currentOperation"
         @confirm="closeModal"
@@ -357,12 +361,8 @@ const closeModal = (event) => {
                                         'update_certification'
                                     )
                                 "
-                                @click="
-                                    openModal(
-                                        elementProps.update.tag,
-                                        certification
-                                    )
-                                "
+                                route-name="certifications.edit"
+                                :id="certification.id"
                                 small
                             />
                             <BaseButton

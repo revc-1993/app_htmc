@@ -5,7 +5,8 @@ import { createToaster } from "@meforma/vue-toaster";
 
 const toast = useToast();
 toast("¡Vaya! Su formulario contiene errores.", {
-    timeout: 2500,
+    position: "top-center",
+    timeout: 3500,
     toastClassName: "my-custom-toast-class",
     bodyClassName: "custom-class",
     hideProgressBar: true,

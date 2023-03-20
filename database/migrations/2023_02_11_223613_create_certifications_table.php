@@ -47,7 +47,7 @@ return new class extends Migration
 
             // CONTROL TOTAL
             $table->integer('current_management')->default(2);
-            $table->unsignedBigInteger('record_status')->nullable();    // Estado de la certificación
+            $table->unsignedBigInteger('record_status_id')->nullable();    // Estado de la certificación
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
@@ -58,7 +58,7 @@ return new class extends Migration
             $table->foreign('expense_type_id')->references('id')->on('expense_types');
             $table->foreign('budget_line_id')->references('id')->on('budget_lines');
             $table->foreign('department_id')->references('id')->on('departments');
-            $table->foreign('record_status')->references('id')->on('record_statuses');
+            $table->foreign('record_status_id')->references('id')->on('record_statuses');
             $table->foreign('vendor_id')->references('id')->on('vendors');
         });
     }

@@ -9,7 +9,7 @@ const props = defineProps({
         :class="
             props.navBar
                 ? 'hidden lg:block lg:my-0.5 dark:border-slate-700'
-                : 'my-3 -mx-3 dark:border-slate-800'
+                : 'my-6 -mx-3 dark:border-slate-800'
         "
         class="border-t border-gray-100"
     />

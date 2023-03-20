@@ -21,7 +21,7 @@ class Commitment extends Model
         "commitment_comments",
 
         "current_management",
-        "record_status",
+        "record_status_id",
         "certification_id",
         "customer_id",
     ];
