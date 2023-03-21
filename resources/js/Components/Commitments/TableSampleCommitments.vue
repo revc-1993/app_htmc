@@ -4,15 +4,15 @@ import {
     mdiEye,
     mdiPenPlus,
     mdiTrashCan,
-    mdiFindReplace,
+    mdiUpdate,
     mdiFileDelimited,
     mdiFileExcel,
 } from "@mdi/js";
-import CardBoxComponentEmpty from "@/components/CardBoxComponentEmpty.vue";
 import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
+import ExportButton from "@/components/ExportButton.vue";
 import SpanState from "@/components/SpanState.vue";
 import CardBoxModalCommitment from "@/components/commitments/CardBoxModalCommitment.vue";
 import CardBox from "@/components/CardBox.vue";
@@ -20,20 +20,66 @@ import CardBox from "@/components/CardBox.vue";
 const props = defineProps({
     checkable: Boolean,
     commitments: Object,
+    instance: {
+        type: String,
+        default: "",
+    },
 });
 
-// --------------------------------------------
-// TABLA: BOTONES DE DESCARGA
-// --------------------------------------------
-const downloadFile = (type) => {
-    const data = props.commitments;
-    const fileName = "np-data";
-    const exportType = {
-        xls: exportFromJSON.types.xls,
-        csv: exportFromJSON.types.csv,
-    }[type];
+// ---------------------------------------------------------
+// CONSTANTES
+// ---------------------------------------------------------
+// Objeto Certificación
+const commitment = ref({});
+// Modal abierto o cerrado
+const isModalActive = ref(false);
+// Operación escogida para modal
+const currentOperation = ref("");
+// Operaciones
+const operations = {
+    1: "create",
+    2: "show",
+    3: "update",
+    4: "delete",
+};
 
-    if (data) exportFromJSON({ data, fileName, exportType });
+// Características de botones por operación
+const elementProps = {
+    create: {
+        tag: 1,
+        color: "success",
+        label: "Crear " + props.instance,
+        tooltip: "Crear " + props.instance,
+        icon: mdiPenPlus,
+    },
+    show: {
+        tag: 2,
+        color: "info",
+        label: "Ver " + props.instance,
+        tooltip: "Ver detalles",
+        icon: mdiEye,
+    },
+    update: {
+        tag: 3,
+        color: "warning",
+        label: "Actualizar " + props.instance,
+        tooltip: "Actualizar",
+        icon: mdiUpdate,
+    },
+    delete: {
+        tag: 4,
+        color: "danger",
+        label: "Eliminar " + props.instance,
+        tooltip: "Eliminar " + props.instance,
+        icon: mdiTrashCan,
+    },
+};
+
+const currentManagements = {
+    1: "1. Secretaría CGF",
+    2: "2. Secretaría JAPC",
+    3: "3. Analista de Compromiso",
+    4: "4. Coordinación General Financiera",
 };
 
 // ---------------------------------------------------------
@@ -91,71 +137,41 @@ const alerts = (mode, operation) => {
 };
 const alert = (operation) => alerts("alert", operation);
 
-// ---------------------------------------------------------
-// VARIABLES
-// ---------------------------------------------------------
-const commitment = ref({});
-const isModalActive = ref(false);
-const operation = ref("");
-
 // --------------------------------------------
 // ABRIR MODAL: 1 Create, 2 Show, 3 Update, 4 Delete
 // --------------------------------------------
-const openModal = (action, commitments = "") => {
-    // console.log(commitments);
-    if (action !== "1") commitment.value = commitments;
-    operation.value = action;
+const openModal = (action, commitments = {}) => {
+    commitment.value = commitments;
+    currentOperation.value = action;
     isModalActive.value = true;
-    // console.log(commitment);
-    // console.log(operation.value);
 };
 
 // --------------------------------------------
 // CERRAR MODAL: CONFIRMAR O CANCELAR
 // --------------------------------------------
 const closeModal = (isconfirm) => {
-    if (isconfirm === "confirm") alert(operation.value);
+    if (isconfirm === "confirm") alert(currentOperation.value);
+    currentOperation.value = "";
     isModalActive.value = false;
-    operation.value = "";
-};
-
-// --------------------------------------------
-// ESTADO DE CERTIFICACION
-// --------------------------------------------
-const current_managements = {
-    1: "1. Secretaría JAPC",
-    2: "2. Analista de Certificación",
-    3: "3. Analista de Tesorería",
 };
 </script>
 
 <template>
-    <!-- BOTON CREATE (OK) -->
-    <!-- <BaseButtons type="justify-end">
-        <BaseButton
-            color="success"
-            small
-            :icon="mdiPenPlus"
-            label="Crear compromiso"
-            @click="openModal('1')"
-        />
-    </BaseButtons> -->
-
     <BaseLevel>
         <BaseButtons type="justify-start">
-            <BaseButton
+            <ExportButton
+                :data="commitments"
+                type="xls"
                 color="success"
-                small
                 :icon="mdiFileExcel"
-                @click="downloadFile('xls')"
-                tooltip="Exportar a *.xls"
+                :tooltip="'Exportar a Excel'"
             />
-            <BaseButton
-                color="contrast"
-                small
+            <ExportButton
+                :data="commitments"
+                type="csv"
+                color="lightDark"
                 :icon="mdiFileDelimited"
-                @click="downloadFile('csv')"
-                tooltip="Exportar a *.pdf"
+                :tooltip="'Exportar a CSV'"
             />
             <!-- <FormControl
                 placeholder="Buscar"
@@ -165,18 +181,33 @@ const current_managements = {
             /> -->
         </BaseButtons>
         <BaseButtons type="justify-end">
-            <BaseButton
-                color="success"
-                :icon="mdiPenPlus"
-                label="Crear compromiso"
-                tooltip="Crear compromiso"
+            <!-- BUTTON CON CRUD MODAL -->
+            <!-- <BaseButton
+                :color="elementProps.create.color"
+                :icon="elementProps.create.icon"
+                :label="elementProps.create.label"
+                :tooltip="elementProps.create.tooltip"
+                @click="openModal(elementProps.create.tag)"
                 small
                 v-if="
                     $page.props.user.permissions.includes(
                         'create_certification'
                     )
                 "
-                @click="openModal('1')"
+            /> -->
+            <!-- BUTTON HACIA OTRA PAGINA -->
+            <BaseButton
+                :color="elementProps.create.color"
+                :icon="elementProps.create.icon"
+                :label="elementProps.create.label"
+                :tooltip="elementProps.create.tooltip"
+                route-name="commitments.create"
+                small
+                v-if="
+                    $page.props.user.permissions.includes(
+                        'create_certification'
+                    )
+                "
             />
         </BaseButtons>
     </BaseLevel>
@@ -184,9 +215,11 @@ const current_managements = {
     <CardBoxModalCommitment
         v-if="isModalActive"
         v-model="isModalActive"
-        instance="compromiso"
         :commitment="commitment"
-        :operation="operation"
+        :users="users"
+        :record-statuses="recordStatuses"
+        :element-props="elementProps[operations[currentOperation]]"
+        :current-operation="currentOperation"
         @confirm="closeModal"
     />
 
@@ -213,6 +246,7 @@ const current_managements = {
                     <th class="text-center">N. Proceso</th>
                     <th class="text-center">Administrador de contrato</th>
                     <th class="text-center">Nombre de Proveedor</th>
+                    <th class="text-center">Estado</th>
                     <th class="text-center">Monto</th>
                     <th class="text-center">Gestión actual</th>
                     <th class="text-center">Usuario asignado</th>
@@ -220,11 +254,6 @@ const current_managements = {
                 </tr>
             </thead>
             <tbody>
-                <!-- <tr v-if="nItems == 0">
-                    <td colspan="5">
-                        <CardBoxComponentEmpty />
-                    </td>
-                </tr> -->
                 <tr
                     v-for="commitment in itemsPaginated"
                     :key="commitment.id"
@@ -251,19 +280,19 @@ const current_managements = {
                         {{ commitment.contract_administrator }}
                     </td>
                     <td data-label="Proveedor" class="text-center">
-                        {{ commitment.nit_name }}
-                    </td>
-                    <td data-label="Monto" class="text-center">
-                        <strong v-if="commitment.commitment_amount"
-                            >$ {{ commitment.commitment_amount }}</strong
-                        >
-                        <div v-else>-</div>
+                        {{ commitment.vendor.name }}
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
                         <SpanState
                             v-if="commitment.record_status"
                             :state="commitment.record_status"
                         />
+                        <div v-else>-</div>
+                    </td>
+                    <td data-label="Monto" class="text-center">
+                        <strong v-if="commitment.commitment_amount"
+                            >$ {{ commitment.commitment_amount }}</strong
+                        >
                         <div v-else>-</div>
                     </td>
                     <td
@@ -295,22 +324,48 @@ const current_managements = {
                             no-wrap
                         >
                             <BaseButton
-                                color="info"
-                                :icon="mdiEye"
+                                :color="elementProps.show.color"
+                                :icon="elementProps.show.icon"
+                                :tooltip="elementProps.show.tooltip"
+                                v-if="
+                                    $page.props.user.permissions.includes(
+                                        'show_certification'
+                                    )
+                                "
+                                @click="
+                                    openModal(elementProps.show.tag, commitment)
+                                "
                                 small
-                                @click="openModal('2', commitment)"
                             />
                             <BaseButton
-                                color="warning"
-                                :icon="mdiFindReplace"
+                                :color="elementProps.update.color"
+                                :icon="elementProps.update.icon"
+                                :tooltip="elementProps.update.tooltip"
+                                v-if="
+                                    $page.props.user.permissions.includes(
+                                        'update_certification'
+                                    )
+                                "
+                                route-name="commitments.edit"
+                                :id="commitment.id"
                                 small
-                                @click="openModal('3', commitment)"
                             />
                             <BaseButton
-                                color="danger"
-                                :icon="mdiTrashCan"
+                                :color="elementProps.delete.color"
+                                :icon="elementProps.delete.icon"
+                                :tooltip="elementProps.delete.tooltip"
+                                v-if="
+                                    $page.props.user.permissions.includes(
+                                        'delete_certification'
+                                    )
+                                "
+                                @click="
+                                    openModal(
+                                        elementProps.delete.tag,
+                                        commitment
+                                    )
+                                "
                                 small
-                                @click="openModal('4', commitment)"
                             />
                         </BaseButtons>
                     </td>
@@ -333,7 +388,7 @@ const current_managements = {
                     />
                 </BaseButtons>
                 <small
-                    >Página {{ currentPageHuman > 0 ? currentPage + 1 : 0 }} de
+                    >Página {{ numPages > 0 ? currentPageHuman : 0 }} de
                     {{ numPages }}</small
                 >
             </BaseLevel>

@@ -82,10 +82,6 @@ const currentManagements = {
     4: "4. Coordinación General Financiera",
 };
 
-// --------------------------------------------
-// TABLA: BOTONES DE DESCARGA
-// --------------------------------------------
-
 // ---------------------------------------------------------
 // TABLA: PAGINACIÓN
 // ---------------------------------------------------------
@@ -291,7 +287,7 @@ const closeModal = (event) => {
                         />
                         <div v-else>-</div>
                     </td>
-                    <td data-label="Monto certificado" class="text-center">
+                    <td data-label="Monto" class="text-center">
                         <strong v-if="certification.certified_amount"
                             >$ {{ certification.certified_amount }}</strong
                         >

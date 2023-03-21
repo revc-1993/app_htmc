@@ -1,24 +1,20 @@
 <script setup>
-import { mdiCardBulleted, mdiBackspace } from "@mdi/js";
+import { mdiTextBoxMultipleOutline, mdiBackspace } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionMain from "@/components/SectionMain.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import FormCertification from "@/components/certifications/FormCertification.vue";
+import FormCommitment from "@/components/commitments/FormCommitment.vue";
 import BaseButton from "@/components/BaseButton.vue";
 
 // --------------------------------------------
 const props = defineProps({
-    departments: Object,
-    processTypes: Object,
-    expenseTypes: Object,
-    budgetLines: Object,
     users: Object,
     recordStatuses: Object,
 });
 
 const elementProps = {
-    label: "Crear Certificación",
+    label: "Crear Compromiso",
 };
 </script>
 
@@ -28,23 +24,19 @@ const elementProps = {
         <SectionMain>
             <!-- <p>{{ $page.props.auth.user.roles }}</p> -->
             <SectionTitleLineWithButton
-                :icon="mdiCardBulleted"
+                :icon="mdiTextBoxMultipleOutline"
                 :title="elementProps.label"
                 main
             >
                 <BaseButton
-                    route-name="certifications.index"
+                    route-name="commitments.index"
                     color="lightDark"
                     label="Regresar"
                     :icon="mdiBackspace"
                 />
             </SectionTitleLineWithButton>
 
-            <FormCertification
-                :departments="departments"
-                :process-types="processTypes"
-                :expense-types="expenseTypes"
-                :budget-lines="budgetLines"
+            <FormCommitment
                 :users="users"
                 :record-statuses="recordStatuses"
                 :current-operation="1"

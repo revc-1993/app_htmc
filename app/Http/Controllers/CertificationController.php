@@ -75,7 +75,7 @@ class CertificationController extends Controller
             'processTypes' => ProcessType::all(['id', 'process_type']),
             'expenseTypes' => ExpenseType::all(['id', 'expense_type']),
             'budgetLines' => BudgetLine::all(['id', 'budget_line']),
-            'users' => User::analystCertification()->get(),
+            'users' => User::analystRole()->get(),
             'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
         ]);
     }
@@ -122,7 +122,7 @@ class CertificationController extends Controller
             'processTypes' => ProcessType::all(['id', 'process_type']),
             'expenseTypes' => ExpenseType::all(['id', 'expense_type']),
             'budgetLines' => BudgetLine::all(['id', 'budget_line']),
-            'users' => User::analystCertification()->get(),
+            'users' => User::analystRole()->get(),
             'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
         ]);
     }

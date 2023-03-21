@@ -12,22 +12,29 @@ class Commitment extends Model
 
     protected $fillable = [
         "commitment_memo",
+        "process_number",
         "contract_administrator",
         "assignment_date",
+        "customer_id",
 
-        "commitment_date",
-        'nit_name',
-        'commitment_amount',
+        "commitment_cur",
+        "commitment_amount",
         "commitment_comments",
+        "commitment_date",
+        "vendor_id",
+
+        "treasury_approved",
+        "returned_document_number",
+        "coord_cgf_date",
+        "coord_cgf_comments",
 
         "current_management",
         "record_status_id",
         "certification_id",
-        "customer_id",
     ];
 
     /**
-     * Get the User that owns the Certification
+     * Get the User that owns the Commitment
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -44,5 +51,30 @@ class Commitment extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'customer_id');
+    }
+
+    /**
+     * Get the RecordStatus that owns the Commitment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
+
+    /**
+     * Get the RecordStatus that owns the Commitment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function recordStatus()
+    {
+        return $this->belongsTo(RecordStatus::class, 'record_status_id');
+    }
+
+    public function scopeFiltered($query)
+    {
+        $query->orderBy("commitments.id", "desc");
     }
 }

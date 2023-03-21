@@ -85,7 +85,7 @@ class User extends Authenticatable
         return $this->hasMany(Commitment::class, 'customer_id');
     }
 
-    public function scopeAnalystCertification($query)
+    public function scopeAnalystRole($query)
     {
         $query->select('users.id', 'users.name')
             ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')

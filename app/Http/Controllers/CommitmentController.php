@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Commitment;
+use App\Models\RecordStatus;
+use App\Http\Requests\StoreCommitmentRequest;
 use App\Http\Requests\UpdateCommitmentRequest;
 
 class CommitmentController extends Controller
@@ -22,13 +25,62 @@ class CommitmentController extends Controller
                         $query->select('id', 'process_number');
                     },
                     'user' => function ($query) {
-                        $query->select('id', 'name');
+                        $query->select('id', 'username');
+                    },
+                    'vendor' => function ($query) {
+                        $query->select('id', 'nit', 'name');
+                    },
+                    'recordStatus' => function ($query) {
+                        $query->select('id', 'status');
                     },
                 ])
-                ->orderBy("commitments.id", "desc")
+                ->filtered()
                 ->get(),
         ]);
     }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        return Inertia::render('Commitments/Create', [
+            'users' => User::analystRole()->get(),
+            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
+        ]);
+    }
+
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \App\Http\Requests\StoreCommitmentRequest  $request
+     * @param  \App\Models\Commitment  $commitment
+     * @return \Illuminate\Http\Response
+     */
+    public function store(StoreCommitmentRequest $request, Commitment $commitment)
+    {
+        $paramsControl = [
+            'current_management' => $this->getRole() + 1,
+            'assignment_date' => now(),
+        ];
+
+        $commitment = Commitment::create($request->validated() + $paramsControl);
+
+        $message = [
+            "response" => "Registro creado correctamente.",
+            "operation" => 1,
+        ];
+
+        if ($commitment->commitment_memo === null)
+            $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de compromiso."];
+
+        return to_route('commitments.index')->with(compact('message'));
+    }
+
+
 
     /**
      * Update the specified resource in storage.

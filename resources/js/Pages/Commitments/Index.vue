@@ -4,36 +4,13 @@ import { Head } from "@inertiajs/vue3";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionMain from "@/components/SectionMain.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
+import Toast from "@/components/Toast.vue";
 import TableSampleCommitments from "@/components/commitments/TableSampleCommitments.vue";
-import { useToast } from "vue-toastification";
 
 // --------------------------------------------
 const props = defineProps({
     commitments: Object,
 });
-
-// --------------------------------------------
-// MOSTRAR MENSAJES DE ALERTA
-// --------------------------------------------
-const getMessage = (operation, message) => {
-    const colors = {
-        1: "success-class",
-        3: "warning-class",
-        4: "danger-class",
-    };
-    const messages = computed(() => {
-        return `${message}`;
-    });
-
-    const toast = useToast();
-    toast(messages.value, {
-        position: "top-center",
-        timeout: 3500,
-        toastClassName: ["height-class", colors[operation] || "blue-class"],
-        bodyClassName: "custom-class",
-        hideProgressBar: true,
-    });
-};
 </script>
 
 <template>
@@ -44,12 +21,16 @@ const getMessage = (operation, message) => {
                 :icon="mdiTextBoxMultipleOutline"
                 title="Compromisos"
                 main
-            >
-            </SectionTitleLineWithButton>
+            />
+
+            <Toast
+                v-if="$page.props.flash.message"
+                :message="$page.props.flash.message"
+            />
 
             <TableSampleCommitments
                 :commitments="commitments"
-                @alert="getMessage($event, $page.props.flash.message)"
+                instance="compromiso"
             />
         </SectionMain>
     </LayoutAuthenticated>
