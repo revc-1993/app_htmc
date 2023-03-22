@@ -31,7 +31,7 @@ const elementProps = {
             >
                 <BaseButton
                     route-name="commitments.index"
-                    color="lightDark"
+                    color="slate"
                     label="Regresar"
                     :icon="mdiBackspace"
                 />

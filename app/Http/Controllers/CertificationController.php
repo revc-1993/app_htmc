@@ -55,6 +55,12 @@ class CertificationController extends Controller
                 ])
                 ->filtered()
                 ->get(),    // Aquí se puede especificar los campos especificos a extraer
+            'departments' => Department::all(['id', 'department']),
+            'processTypes' => ProcessType::all(['id', 'process_type']),
+            'expenseTypes' => ExpenseType::all(['id', 'expense_type']),
+            'budgetLines' => BudgetLine::all(['id', 'budget_line']),
+            'users' => User::all(['id', 'name']),
+            'recordStatuses' => RecordStatus::all(['id', 'status']),
         ]);
     }
 

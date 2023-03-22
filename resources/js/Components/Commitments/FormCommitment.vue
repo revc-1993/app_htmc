@@ -3,12 +3,10 @@ import { computed, ref } from "vue";
 import axios from "axios";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import {
-    mdiFormatListBulletedType,
     mdiTag,
     mdiDomain,
     mdiNumeric,
     mdiCurrencyUsd,
-    mdiBriefcasePlus,
     mdiMagnify,
     mdiCardAccountDetails,
     mdiContentSaveAll,
@@ -17,6 +15,7 @@ import {
 import CardBox from "@/components/CardBox.vue";
 import FormField from "@/components/FormField.vue";
 import FormControl from "@/components/FormControl.vue";
+import FormControlWithButton from "@/components/FormControlWithButton.vue";
 import Stepper from "@/components/Stepper.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseDivider from "@/components/BaseDivider.vue";
@@ -68,7 +67,7 @@ const statuses = {
 
 const role = computed(() => usePage().props.auth.user.roles[0].id);
 const activePhase = ref(2);
-activePhase.value = role.value ?? 2;
+activePhase.value = role.value && role.value < 5 ? role.value : 1;
 
 const certification = {
     contract_object: ref(""),
@@ -82,8 +81,6 @@ if (props.currentOperation === operations.update) {
     certification.vendor_name.value =
         props.commitment.certification.vendor.name;
 }
-const errorSearch = ref(false);
-
 const steps = [
     {
         id: 2,
@@ -141,7 +138,7 @@ const form = useForm(
               commitment_comments: "",
               commitment_date: new Date().toLocaleDateString(),
               vendor_id: "",
-
+              record_status_id: "",
               treasury_approved: "",
               returned_document_number: "",
               coord_cgf_comments: "",
@@ -165,7 +162,11 @@ const form = useForm(
                   props.commitment.commitment_date ??
                   new Date().toLocaleDateString(),
               vendor_id: props.commitment.vendor_id,
-
+              record_status_id:
+                  props.commitment.record_status_id &&
+                  props.commitment.record_status_id <= statuses.registered
+                      ? props.commitment.record_status_id
+                      : "",
               treasury_approved: props.commitment.treasury_approved,
               returned_document_number:
                   props.commitment.returned_document_number,
@@ -268,6 +269,7 @@ const searchCertificationByNumber = (alert = "") => {
         )
         .then((response) => {
             if (response) {
+                form.clearErrors("certification_id");
                 router.reload({ only: ["FormControl"] });
                 form.certification_id = response.data.certification.id;
                 formSearchCertification.certificationNumber =
@@ -287,99 +289,20 @@ const searchCertificationByNumber = (alert = "") => {
             }
         })
         .catch((error) => {
-            errorSearch.value = true;
+            form.setError(
+                "certification_id",
+                "No se encontró este Nro. de Certificación."
+            );
             router.reload({ only: ["FormControl"] });
             if (form.certification_id !== null) form.certification_id = null;
             certification.contract_object.value = "";
             console.log(error);
-
-            if (alert === "alert") {
-                toast.value = true;
-                messageResource.value = {
-                    response:
-                        "No se encontró el Nro. de certificación digitado",
-                    operation: 4,
-                };
-            }
         });
 };
-
-// --------------------------------------------
-// BUSCAR PROVEEDOR
-// --------------------------------------------
-// const searchVendorByNit = (alert = "") => {
-//     axios
-//         .get("/vendors/getVendorByNit?nit=" + formSearchVendor.nit)
-//         .then((response) => {
-//             if (response) {
-//                 router.reload({ only: ["FormControl"] });
-//                 form.vendor_id = response.data.vendor.id;
-//                 formSearchVendor.nit = response.data.vendor.nit;
-//                 vendor.value = response.data.vendor.name;
-
-//                 if (alert === "alert") {
-//                     toast.value = true;
-//                     messageResource.value = {
-//                         response:
-//                             "Se encontró el proveedor con NIT " +
-//                             formSearchVendor.nit,
-//                         operation: 1,
-//                     };
-//                 }
-//             }
-//         })
-//         .catch((error) => {
-//             errorSearch.value = true;
-//             router.reload({ only: ["FormControl"] });
-//             form.vendor_id = null;
-//             vendor.value = "";
-//             console.log(error);
-
-//             if (alert === "alert") {
-//                 toast.value = true;
-//                 messageResource.value = {
-//                     response: "No se encontró el NIT digitado",
-//                     operation: 4,
-//                 };
-//             }
-//         });
-// };
-
-// --------------------------------------------
-// MODAL DE CREAR PROVEEDOR: 1 Create, 2 Show, 3 Update, 4 Delete
-// --------------------------------------------
-// const isModalActive = ref(false);
-// const currentOperationVendor = ref(1);
-// const newVendor = ref({});
-
-// const openModal = () => {
-//     isModalActive.value = true;
-// };
-
-// const closeModal = (event) => {
-//     if (event === "confirm") {
-//         formSearchVendor.nit = newVendor.value.nit;
-//         searchVendorByNit();
-//         toast.value = true;
-//         messageVendor.value = {
-//             response: "Proveedor creado exitosamente.",
-//             operation: 1,
-//         };
-//     }
-//     isModalActive.value = false;
-// };
 </script>
 
 <template>
-    <!-- <CardBoxModalVendor
-        v-model="isModalActive"
-        v-model:vendor="newVendor"
-        :current-operation="1"
-        @confirm="closeModal"
-    /> -->
-
     <Toast v-if="toast" v-model="toast" :message="messageResource" />
-
     <FormValidationErrors v-if="form.hasErrors" />
 
     <Stepper
@@ -407,47 +330,41 @@ const searchCertificationByNumber = (alert = "") => {
             <div
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
-                <BaseLevel>
-                    <FormField
-                        label="Número de Certificación"
-                        label-for="certificationNumber"
-                        :errors="form.errors.certification_id"
+                <FormField
+                    label="Número de Certificación"
+                    label-for="certificationNumber"
+                    :errors="form.errors.certification_id"
+                    help="Digite el número de certificación"
+                >
+                    <form
+                        @submit.prevent="searchCertificationByNumber('alert')"
                     >
-                        <form
-                            @submit.prevent="
-                                searchCertificationByNumber('alert')
+                        <FormControlWithButton
+                            v-model="
+                                formSearchCertification.certificationNumber
                             "
+                            id="certificationNumber"
+                            name="certificationNumber"
+                            :icon="mdiCardAccountDetails"
+                            autocomplete="certificationNumber"
+                            type="text"
+                            placeholder="Digite el número de certificación"
+                            :has-errors="form.errors.certification_id != null"
+                            :disabled="disabled.global.value"
                         >
-                            <FormControl
-                                v-model="
-                                    formSearchCertification.certificationNumber
-                                "
-                                id="certificationNumber"
-                                name="certificationNumber"
-                                :icon="mdiCardAccountDetails"
-                                autocomplete="certificationNumber"
-                                type="text"
-                                placeholder="Digite el número de certificación"
-                                :has-errors="
-                                    form.errors.certification_id != null ||
-                                    errorSearch
-                                "
-                                :disabled="disabled.global.value"
-                            >
-                            </FormControl>
                             <BaseButton
                                 type="submit"
                                 color="info"
-                                :icon="mdiMagnify"
-                                tooltip="Buscar"
-                                small
                                 :disabled="
                                     disabled.global.value || disabledButton
                                 "
+                                :icon="mdiMagnify"
+                                tooltip="Buscar"
+                                location="end"
                             />
-                        </form>
-                    </FormField>
-                </BaseLevel>
+                        </FormControlWithButton>
+                    </form>
+                </FormField>
                 <FormField
                     label="Objeto de contrato"
                     label-for="contract_object"
@@ -677,7 +594,7 @@ const searchCertificationByNumber = (alert = "") => {
             <FormField
                 label="Nro. Memorando"
                 label-for="returned_document_number"
-                help="Ingrese el Nro. de Memorando de la revisión de Certificación"
+                help="Ingrese el Nro. de Memorando de la revisión de Compromiso"
                 :errors="form.errors.returned_document_number"
             >
                 <FormControl
@@ -721,7 +638,7 @@ const searchCertificationByNumber = (alert = "") => {
             />
             <BaseButton
                 route-name="commitments.index"
-                color="lightDark"
+                color="slate"
                 label="Regresar"
                 :icon="mdiBackspace"
             />

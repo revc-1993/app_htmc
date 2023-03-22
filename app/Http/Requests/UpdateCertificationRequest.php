@@ -23,10 +23,7 @@ class UpdateCertificationRequest extends FormRequest
      */
     public function rules()
     {
-        // dd($this->expense_type_id);
-
         $role = auth()->user()->roles()->first()->id;
-
         $validationRules = [];
 
         if ($role === 1) {

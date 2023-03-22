@@ -1,14 +1,13 @@
 <script setup>
 import { computed, ref } from "vue";
-import axios from "axios";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import {
     mdiFormatListBulletedType,
+    mdiBriefcasePlus,
     mdiTag,
     mdiDomain,
     mdiNumeric,
     mdiCurrencyUsd,
-    mdiCalendarRange,
     mdiMagnify,
     mdiCardAccountDetails,
 } from "@mdi/js";
@@ -17,10 +16,8 @@ import FormField from "@/components/FormField.vue";
 import FormControl from "@/components/FormControl.vue";
 import Stepper from "@/components/Stepper.vue";
 import BaseButton from "@/components/BaseButton.vue";
-import { useToast } from "vue-toastification";
 import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
-import CardBoxModalVendor from "@/components/vendors/CardBoxModalVendor.vue";
 import BaseButtons from "../BaseButtons.vue";
 
 // ---------------------------------------------------------
@@ -39,7 +36,7 @@ const props = defineProps({
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
-        default: null,
+        default: 1,
     },
     elementProps: {
         type: Object,
@@ -56,14 +53,9 @@ const props = defineProps({
 // ---------------------------------------------------------
 // CONSTANTES
 // ---------------------------------------------------------
-const certifications = ref({});
-certifications.value = props.certification;
-
 const operations = {
-    create: 1,
     show: 2,
-    update: 3,
-    destroy: 4,
+    delete: 4,
 };
 
 const statuses = {
@@ -78,10 +70,32 @@ const statuses = {
 
 const role = computed(() => usePage().props.auth.user.roles[0].id);
 const activePhase = ref(1);
-activePhase.value = role.value ?? 1;
+activePhase.value = role.value && role.value < 5 ? role.value : 1;
 
 const vendor = ref("");
+if (props.currentOperation === operations.update && props.certification.vendor)
+    vendor.value = props.certification.vendor.name;
 const errorSearch = ref(false);
+
+const steps = [
+    {
+        id: 1,
+        label: "Secretaría CGF",
+    },
+    {
+        id: 2,
+        label: "Secretaría JAPC",
+    },
+    {
+        id: 3,
+        label: "Analista de Certificación",
+    },
+    {
+        id: 4,
+        label: "Coordinación General Financiera",
+    },
+];
+
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
 // ---------------------------------------------------------
@@ -147,7 +161,7 @@ const form = useForm(
               sec_cgf_date: new Date().toLocaleDateString(),
               customer_id: "",
               japc_comments: "",
-              japc_date: new Date().toLocaleDateString(),
+              assignment_date: new Date().toLocaleDateString(),
               process_number: "",
               budget_line_id: "",
               vendor_id: "",
@@ -169,10 +183,14 @@ const form = useForm(
               expense_type_id: props.certification.expense_type_id,
               department_id: props.certification.department_id,
               sec_cgf_comments: props.certification.sec_cgf_comments,
-              sec_cgf_date: props.certification.sec_cgf_date,
+              sec_cgf_date:
+                  props.certification.sec_cgf_date ??
+                  new Date().toLocaleDateString(),
               customer_id: props.certification.customer_id ?? "",
               japc_comments: props.certification.japc_comments,
-              japc_date: props.certification.japc_date,
+              assignment_date:
+                  props.certification.assignment_date ??
+                  new Date().toLocaleDateString(),
               process_number: props.certification.process_number,
               budget_line_id: props.certification.budget_line_id,
               vendor_id: props.certification.vendor_id,
@@ -180,23 +198,35 @@ const form = useForm(
               certification_number: props.certification.certification_number,
               record_status_id:
                   props.certification.record_status_id &&
-                  props.certification.record_status_id.id <= statuses.registered
-                      ? props.certification.record_status_id.id
+                  props.certification.record_status_id <= statuses.registered
+                      ? props.certification.record_status_id
                       : "",
               certification_comments:
                   props.certification.certification_comments,
-              cp_date: props.certification.cp_date,
+              cp_date:
+                  props.certification.cp_date ??
+                  new Date().toLocaleDateString(),
               treasury_approved: props.certification.treasury_approved,
               returned_document_number:
                   props.certification.returned_document_number,
               coord_cgf_comments: props.certification.coord_cgf_comments,
-              coord_cgf_date: props.certification.coord_cgf_date,
+              coord_cgf_date:
+                  props.certification.coord_cgf_date ??
+                  new Date().toLocaleDateString(),
           }
 );
 
-const formSearchVendor = useForm({
-    nit: "",
-});
+const formSearchVendor = useForm(
+    props.currentOperation === operations.create
+        ? {
+              nit: "",
+          }
+        : {
+              nit: props.certification.vendor
+                  ? props.certification.vendor.nit
+                  : "",
+          }
+);
 
 // ---------------------------------------------------------
 // DISABLED
@@ -204,12 +234,13 @@ const formSearchVendor = useForm({
 const disabled = {
     global: computed(
         () =>
-            props.currentOperation === operations.show ||
-            activePhase.value !== role.value ||
-            (props.certification.record_status_id &&
-                props.certification.record_status_id.id ===
-                    statuses.liquidated &&
-                role.value < 4)
+            (role.value !== 5 ||
+                activePhase.value !== role.value ||
+                (props.certification.record_status_id &&
+                    props.certification.record_status_id ===
+                        statuses.liquidated &&
+                    role.value < 4)) &&
+            props.currentOperation === operations.show
     ),
     expense_type: computed(
         () =>
@@ -219,7 +250,7 @@ const disabled = {
     record_status: computed(
         () =>
             props.certification.record_status_id &&
-            props.certification.record_status_id.id >= statuses.approved
+            props.certification.record_status_id >= statuses.approved
     ),
     certification_number: computed(
         () => form.record_status_id !== statuses.registered
@@ -227,41 +258,11 @@ const disabled = {
 };
 
 const disabledButton = ref(false);
-
 disabledButton.value =
     (role.value <= 3 &&
         props.certification.record_status_id &&
-        props.certification.record_status_id.id >= statuses.approved) ||
+        props.certification.record_status_id >= statuses.approved) ||
     form.processing;
-
-// ---------------------------------------------------------
-// CERTIFICATIONS.STORE
-// ---------------------------------------------------------
-const create = () => {
-    form.transform((data) => ({
-        ...data,
-    })).post(route("certifications.store"), {
-        onStart: () => console.log(props.certification),
-        onSuccess: () => {
-            form.reset();
-            confirm();
-        },
-    });
-};
-
-// ---------------------------------------------------------
-// CERTIFICATIONS.UPDATE
-// ---------------------------------------------------------
-const update = () => {
-    form.transform((data) => ({
-        ...data,
-    })).put(route("certifications.update", props.certification.id), {
-        onSuccess: () => {
-            form.reset();
-            confirm();
-        },
-    });
-};
 
 // --------------------------------------------
 // CERTIFICATIONS.DELETE
@@ -273,97 +274,7 @@ const destroy = () => {
 };
 
 const transaction = () => {
-    return props.currentOperation === operations.create
-        ? create()
-        : props.currentOperation === operations.update
-        ? update()
-        : props.currentOperation === operations.delete
-        ? destroy()
-        : "";
-};
-
-// --------------------------------------------
-// PROVEEDOR
-// --------------------------------------------
-const searchVendorByNit = () => {
-    axios
-        .get("/certifications/getVendorByNit?nit=" + formSearchVendor.nit)
-        .then((response) => {
-            if (response) {
-                router.reload({ only: ["FormControl"] });
-                form.vendor_id = response.data.vendor.id;
-                formSearchVendor.nit = response.data.vendor.nit;
-                vendor.value = response.data.vendor.name;
-                getMessage(
-                    1,
-                    "Se encontró el proveedor con NIT " + formSearchVendor.nit
-                );
-            }
-        })
-        .catch((error) => {
-            errorSearch.value = true;
-            router.reload({ only: ["FormControl"] });
-            console.log(form.vendor_id);
-            form.vendor_id = null;
-            vendor.value = "";
-            console.log(error);
-            getMessage(2, "No se encontró el NIT digitado");
-        });
-};
-
-const searchVendorById = () => {
-    if (form.vendor_id) {
-        axios
-            .get(
-                "/certifications/getVendorById?id=" +
-                    props.certification.vendor_id
-            )
-            .then((response) => {
-                if (response) {
-                    formSearchVendor.nit = response.data.vendor.nit;
-                    vendor.value = response.data.vendor.name;
-                }
-            })
-            .catch((error) => {
-                console.log(form.vendor_id);
-                form.vendor_id = null;
-                vendor.value = "";
-                console.log(error);
-            });
-    }
-};
-
-searchVendorById();
-
-const getMessage = (operation, message) => {
-    const colors = {
-        1: "success-class",
-        2: "danger-class",
-    };
-    const toast = useToast();
-    toast(message, {
-        position: "top-center",
-        timeout: 3500,
-        toastClassName: ["height-class", colors[operation] || "blue-class"],
-        bodyClassName: "custom-class",
-        hideProgressBar: true,
-    });
-};
-
-// --------------------------------------------
-// MODAL DE CREAR PROVEEDOR: 1 Create, 2 Show, 3 Update, 4 Delete
-// --------------------------------------------
-const isModalActive = ref(false);
-const currentOperationVendor = ref(1);
-
-const openModal = () => {
-    isModalActive.value = true;
-};
-
-const closeModal = (event) => {
-    if (event === "confirm") getMessage(1, $page.props.flash.message);
-    currentOperationVendor.value = "";
-    isModalActive.value = false;
+    return props.currentOperation === operations.delete ? destroy() : "";
 };
 </script>
 
@@ -389,6 +300,7 @@ const closeModal = (event) => {
         <template v-if="currentOperation !== operations.delete">
             <Stepper
                 v-model="activePhase"
+                :steps="steps"
                 :operation="currentOperation"
                 :current-management="
                     currentOperation !== operations.create
@@ -402,22 +314,10 @@ const closeModal = (event) => {
                 v-show="activePhase === 1"
                 class="transition duration-500 ease-in-out"
             >
-                <FormField
-                    label="Fecha de ingreso"
-                    label-for="sec_cgf_date"
-                    help="Fecha de ingreso de secretaría CGF"
-                    :errors="form.errors.sec_cgf_date"
-                >
-                    <FormControl
-                        v-model="form.sec_cgf_date"
-                        id="sec_cgf_date"
-                        :icon="mdiCalendarRange"
-                        autocomplete="sec_cgf_date"
-                        type="date"
-                        :has-errors="form.errors.sec_cgf_date != null"
-                        disabled
-                    />
-                </FormField>
+                <div class="gap-x-3 mb-4 text-right">
+                    <strong>Fecha de ingreso: </strong>
+                    {{ form.sec_cgf_date }}
+                </div>
                 <FormField
                     label="Objeto de contrato"
                     label-for="contract_object"
@@ -550,22 +450,11 @@ const closeModal = (event) => {
                 v-show="activePhase === 2"
                 class="transition duration-500 ease-in-out"
             >
-                <FormField
-                    label="Fecha de asignación JAPC"
-                    label-for="japc_date"
-                    help="Fecha de asignación de secretaría JAPC"
-                    :errors="form.errors.japc_date"
-                >
-                    <FormControl
-                        v-model="form.japc_date"
-                        id="japc_date"
-                        :icon="mdiCalendarRange"
-                        autocomplete="japc_date"
-                        type="date"
-                        :has-errors="form.errors.japc_date != null"
-                        disabled
-                    />
-                </FormField>
+                <div class="gap-x-3 mb-4 text-right">
+                    <strong>Fecha de asignación JAPC: </strong>
+                    {{ form.assignment_date }}
+                </div>
+
                 <div
                     class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
                 >
@@ -627,22 +516,10 @@ const closeModal = (event) => {
                 v-show="activePhase === 3"
                 class="transition duration-500 ease-in-out"
             >
-                <FormField
-                    label="Fecha de certificación"
-                    label-for="cp_date"
-                    help="Fecha del actualización de la certificación"
-                    :errors="form.errors.cp_date"
-                >
-                    <FormControl
-                        v-model="form.cp_date"
-                        id="cp_date"
-                        :icon="mdiCalendarRange"
-                        autocomplete="cp_date"
-                        type="date"
-                        :has-errors="form.errors.cp_date != null"
-                        disabled
-                    />
-                </FormField>
+                <div class="gap-x-3 mb-4 text-right">
+                    <strong>Fecha de certificación: </strong>
+                    {{ form.cp_date }}
+                </div>
 
                 <FormField
                     label="Código presupuestario"
@@ -714,54 +591,22 @@ const closeModal = (event) => {
                         label-for="nit"
                         :errors="form.errors.vendor_id"
                     >
-                        <form @submit.prevent="searchVendorByNit">
-                            <BaseLevel>
-                                <FormControl
-                                    v-model="formSearchVendor.nit"
-                                    id="nit"
-                                    name="nit"
-                                    :icon="mdiCardAccountDetails"
-                                    autocomplete="nit"
-                                    type="text"
-                                    placeholder="Detalle el NIT del Proveedor"
-                                    :has-errors="
-                                        form.errors.vendor_id != null ||
-                                        errorSearch
-                                    "
-                                    :disabled="
-                                        disabled.global.value ||
-                                        disabled.expense_type.value
-                                    "
-                                >
-                                </FormControl>
-                                <BaseButtons>
-                                    <BaseButton
-                                        type="submit"
-                                        color="info"
-                                        :icon="mdiMagnify"
-                                        tooltip="Buscar"
-                                        small
-                                        :disabled="
-                                            disabled.expense_type.value ||
-                                            disabled.global.value ||
-                                            disabledButton
-                                        "
-                                    />
-                                    <BaseButton
-                                        color="success"
-                                        :icon="mdiMagnify"
-                                        tooltip="Nuevo proveedor"
-                                        small
-                                        :disabled="
-                                            disabled.expense_type.value ||
-                                            disabled.global.value ||
-                                            disabledButton
-                                        "
-                                        @click="openModal"
-                                    />
-                                </BaseButtons>
-                            </BaseLevel>
-                        </form>
+                        <FormControl
+                            v-model="formSearchVendor.nit"
+                            id="nit"
+                            name="nit"
+                            :icon="mdiCardAccountDetails"
+                            autocomplete="nit"
+                            type="text"
+                            placeholder="Detalle el NIT del Proveedor"
+                            :has-errors="
+                                form.errors.vendor_id != null || errorSearch
+                            "
+                            :disabled="
+                                disabled.global.value ||
+                                disabled.expense_type.value
+                            "
+                        />
                     </FormField>
                     <FormField label="Nombre de proveedor" label-for="name">
                         <FormControl
@@ -795,7 +640,7 @@ const closeModal = (event) => {
                             :has-errors="form.errors.record_status_id != null"
                             :disabled="
                                 disabled.global.value ||
-                                disabled.record_status_id.value
+                                disabled.record_status.value
                             "
                         />
                     </FormField>
@@ -845,21 +690,10 @@ const closeModal = (event) => {
                 v-show="activePhase === 4"
                 class="transition duration-500 ease-in-out"
             >
-                <FormField
-                    label="Fecha de revisión"
-                    label-for="coord_cgf_date"
-                    :errors="form.errors.coord_cgf_date"
-                >
-                    <FormControl
-                        v-model="form.coord_cgf_date"
-                        id="coord_cgf_date"
-                        :icon="mdiCalendarRange"
-                        autocomplete="coord_cgf_date"
-                        type="date"
-                        :has-errors="form.errors.coord_cgf_date != null"
-                        disabled
-                    />
-                </FormField>
+                <div class="gap-x-3 mb-4 text-right">
+                    <strong>Fecha de revisión: </strong>
+                    {{ form.coord_cgf_date }}
+                </div>
 
                 <FormField label="Revisión de certificación">
                     <FormCheckRadioGroup
@@ -886,7 +720,7 @@ const closeModal = (event) => {
                         :icon="mdiNumeric"
                         autocomplete="returned_document_number"
                         type="text"
-                        placeholder="Ej: HTMC-JATSGCME-2022-5073-M"
+                        placeholder="Ej: IESS-HTMC-JATSGCME-2022-5073-M"
                         :has-errors="
                             form.errors.returned_document_number != null
                         "
@@ -913,8 +747,10 @@ const closeModal = (event) => {
             </div>
         </template>
         <template v-else>
-            <strong>¿Está seguro de continuar con esta acción?</strong>
-            <p>No se podrá recuperar recuperar los datos eliminados.</p>
+            <h3><b>¿Está seguro de continuar con esta acción?</b></h3>
+            <div>
+                Nota: No se podrá recuperar recuperar los datos eliminados.
+            </div>
         </template>
     </CardBoxModal>
 </template>

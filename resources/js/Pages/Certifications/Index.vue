@@ -10,6 +10,12 @@ import Toast from "@/components/Toast.vue";
 // --------------------------------------------
 const props = defineProps({
     certifications: Object,
+    departments: Object,
+    processTypes: Object,
+    expenseTypes: Object,
+    budgetLines: Object,
+    users: Object,
+    recordStatuses: Object,
 });
 </script>
 
@@ -29,6 +35,12 @@ const props = defineProps({
 
             <TableSampleCertifications
                 :certifications="certifications"
+                :departments="departments"
+                :process-types="processTypes"
+                :expense-types="expenseTypes"
+                :budget-lines="budgetLines"
+                :users="users"
+                :recordStatuses="recordStatuses"
                 instance="certificación"
             />
         </SectionMain>

@@ -54,6 +54,10 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    location: {
+        type: String,
+        default: "",
+    },
 });
 
 const is = computed(() => {
@@ -86,17 +90,23 @@ const labelClass = computed(() =>
 
 const componentClass = computed(() => {
     const base = [
+        props.location === "end"
+            ? "rounded-tr-lg rounded-br-lg"
+            : props.location === "center"
+            ? ""
+            : props.roundedFull
+            ? "rounded-full"
+            : "rounded",
         "inline-flex",
         "justify-center",
         "items-center",
         "whitespace-nowrap",
         "focus:outline-none",
         "transition-colors",
-        "focus:ring",
+        "focus:ring-0",
         "duration-150",
         "border",
         props.disabled ? "cursor-not-allowed" : "cursor-pointer",
-        props.roundedFull ? "rounded-full" : "rounded",
         getButtonColor(
             props.color,
             props.outline,

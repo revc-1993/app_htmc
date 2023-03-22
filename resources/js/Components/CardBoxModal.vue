@@ -117,7 +117,7 @@ window.addEventListener("keydown", (e) => {
                     <BaseButton
                         v-if="hasCancel"
                         label="Regresar"
-                        color="lightDark"
+                        color="slate"
                         @click="cancel"
                         :icon="mdiBackspace"
                     />

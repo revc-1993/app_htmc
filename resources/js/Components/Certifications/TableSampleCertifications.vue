@@ -24,6 +24,12 @@ const props = defineProps({
         type: String,
         default: "",
     },
+    departments: Object,
+    processTypes: Object,
+    expenseTypes: Object,
+    budgetLines: Object,
+    users: Object,
+    recordStatuses: Object,
 });
 
 // ---------------------------------------------------------
@@ -170,7 +176,7 @@ const closeModal = (event) => {
             <ExportButton
                 :data="certifications"
                 type="csv"
-                color="lightDark"
+                color="slate"
                 :icon="mdiFileDelimited"
                 :tooltip="'Exportar a CSV'"
             />
@@ -182,20 +188,6 @@ const closeModal = (event) => {
             /> -->
         </BaseButtons>
         <BaseButtons type="justify-end">
-            <!-- BUTTON CON CRUD MODAL -->
-            <!-- <BaseButton
-                :color="elementProps.create.color"
-                :icon="elementProps.create.icon"
-                :label="elementProps.create.label"
-                :tooltip="elementProps.create.tooltip"
-                @click="openModal(elementProps.create.tag)"
-                small
-                v-if="
-                    $page.props.user.permissions.includes(
-                        'create_certification'
-                    )
-                "
-            /> -->
             <!-- BUTTON HACIA OTRA PAGINA -->
             <BaseButton
                 :color="elementProps.create.color"

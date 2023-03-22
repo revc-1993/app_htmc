@@ -169,7 +169,7 @@ const closeModal = (isconfirm) => {
             <ExportButton
                 :data="commitments"
                 type="csv"
-                color="lightDark"
+                color="slate"
                 :icon="mdiFileDelimited"
                 :tooltip="'Exportar a CSV'"
             />

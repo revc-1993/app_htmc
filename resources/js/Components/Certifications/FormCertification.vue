@@ -17,6 +17,7 @@ import {
 import CardBox from "@/components/CardBox.vue";
 import FormField from "@/components/FormField.vue";
 import FormControl from "@/components/FormControl.vue";
+import FormControlWithButton from "@/components/FormControlWithButton.vue";
 import Stepper from "@/components/Stepper.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseDivider from "@/components/BaseDivider.vue";
@@ -73,12 +74,11 @@ const statuses = {
 
 const role = computed(() => usePage().props.auth.user.roles[0].id);
 const activePhase = ref(1);
-activePhase.value = role.value ?? 1;
+activePhase.value = role.value && role.value < 5 ? role.value : 1;
 
 const vendor = ref("");
-if (props.currentOperation === operations.update)
+if (props.currentOperation === operations.update && props.certification.vendor)
     vendor.value = props.certification.vendor.name;
-const errorSearch = ref(false);
 
 const steps = [
     {
@@ -211,7 +211,9 @@ const formSearchVendor = useForm(
               nit: "",
           }
         : {
-              nit: props.certification.vendor.nit,
+              nit: props.certification.vendor
+                  ? props.certification.vendor.nit
+                  : "",
           }
 );
 
@@ -221,11 +223,13 @@ const formSearchVendor = useForm(
 const disabled = {
     global: computed(
         () =>
-            props.currentOperation === operations.show ||
-            activePhase.value !== role.value ||
-            (props.certification.record_status_id &&
-                props.certification.record_status_id === statuses.liquidated &&
-                role.value < 4)
+            (props.currentOperation === operations.show ||
+                activePhase.value !== role.value ||
+                (props.certification.record_status_id &&
+                    props.certification.record_status_id ===
+                        statuses.liquidated &&
+                    role.value < 4)) &&
+            role.value !== 5
     ),
     expense_type: computed(
         () =>
@@ -273,15 +277,6 @@ const update = () => {
     });
 };
 
-// --------------------------------------------
-// CERTIFICATIONS.DELETE
-// --------------------------------------------
-const destroy = () => {
-    router.delete(`/certifications/${props.certification.id}`, {
-        onSuccess: () => confirm(),
-    });
-};
-
 const transaction = () => {
     return props.currentOperation === operations.create
         ? create()
@@ -301,6 +296,7 @@ const searchVendorByNit = (alert = "") => {
         .get("/vendors/getVendorByNit?nit=" + formSearchVendor.nit)
         .then((response) => {
             if (response) {
+                form.clearErrors("vendor_id");
                 router.reload({ only: ["FormControl"] });
                 form.vendor_id = response.data.vendor.id;
                 formSearchVendor.nit = response.data.vendor.nit;
@@ -318,19 +314,14 @@ const searchVendorByNit = (alert = "") => {
             }
         })
         .catch((error) => {
-            errorSearch.value = true;
+            form.setError(
+                "vendor_id",
+                "No se encontró este NIT en los registros."
+            );
             router.reload({ only: ["FormControl"] });
             form.vendor_id = null;
             vendor.value = "";
             console.log(error);
-
-            if (alert === "alert") {
-                toast.value = true;
-                messageVendor.value = {
-                    response: "No se encontró el NIT digitado",
-                    operation: 4,
-                };
-            }
         });
 };
 
@@ -662,53 +653,50 @@ const closeModal = (event) => {
                     label="NIT de Proveedor"
                     label-for="nit"
                     :errors="form.errors.vendor_id"
+                    help="Digite el NIT del proveedor"
                 >
                     <form @submit.prevent="searchVendorByNit('alert')">
-                        <BaseLevel>
-                            <FormControl
-                                v-model="formSearchVendor.nit"
-                                id="nit"
-                                name="nit"
-                                :icon="mdiCardAccountDetails"
-                                autocomplete="nit"
-                                type="text"
-                                placeholder="Detalle el NIT del Proveedor"
-                                :has-errors="
-                                    form.errors.vendor_id != null || errorSearch
-                                "
+                        <FormControlWithButton
+                            v-model="formSearchVendor.nit"
+                            id="nit"
+                            name="nit"
+                            :icon="mdiCardAccountDetails"
+                            autocomplete="nit"
+                            type="text"
+                            placeholder="Detalle el NIT del Proveedor"
+                            :has-errors="form.errors.vendor_id != null"
+                            :disabled="
+                                disabled.global.value ||
+                                disabled.expense_type.value
+                            "
+                        >
+                            <BaseButton
+                                type="submit"
+                                color="info"
+                                :icon="mdiMagnify"
+                                tooltip="Buscar"
+                                small
+                                location="center"
                                 :disabled="
+                                    disabled.expense_type.value ||
                                     disabled.global.value ||
-                                    disabled.expense_type.value
+                                    disabledButton
                                 "
-                            >
-                            </FormControl>
-                            <BaseButtons>
-                                <BaseButton
-                                    type="submit"
-                                    color="info"
-                                    :icon="mdiMagnify"
-                                    tooltip="Buscar"
-                                    small
-                                    :disabled="
-                                        disabled.expense_type.value ||
-                                        disabled.global.value ||
-                                        disabledButton
-                                    "
-                                />
-                                <BaseButton
-                                    color="success"
-                                    :icon="mdiBriefcasePlus"
-                                    tooltip="Nuevo proveedor"
-                                    small
-                                    :disabled="
-                                        disabled.expense_type.value ||
-                                        disabled.global.value ||
-                                        disabledButton
-                                    "
-                                    @click="openModal"
-                                />
-                            </BaseButtons>
-                        </BaseLevel>
+                            />
+                            <BaseButton
+                                color="success"
+                                :icon="mdiBriefcasePlus"
+                                tooltip="Nuevo proveedor"
+                                small
+                                location="end"
+                                :disabled="
+                                    disabled.expense_type.value ||
+                                    disabled.global.value ||
+                                    disabledButton
+                                "
+                                @click="openModal"
+                            />
+                        </FormControlWithButton>
                     </form>
                 </FormField>
                 <FormField label="Nombre de proveedor" label-for="name">
