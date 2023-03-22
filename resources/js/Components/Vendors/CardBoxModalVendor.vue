@@ -61,7 +61,7 @@ const form = useForm({ nit: "", name: "" });
 const create = () => {
     form.transform((data) => ({
         ...data,
-    })).post(route("certifications.setVendor"), {
+    })).post(route("vendors.store"), {
         onError: (error) => console.log(error),
         onSuccess: () => {
             newVendor.value = {

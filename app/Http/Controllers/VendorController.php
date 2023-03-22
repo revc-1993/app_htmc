@@ -25,7 +25,13 @@ class VendorController extends Controller
             "operation" => 1,
         ];
 
-        // return response()->json(compact('message', 'vendor'));
-        return inertia('Certifications/Edit', compact('message', 'vendor'));
+        return redirect()->back();
+    }
+
+    public function getVendorByNit(Request $request)
+    {
+        $vendor = Vendor::where('nit', $request->get('nit'))
+            ->first(['id', 'nit', 'name']);
+        return response()->json(compact('vendor'), 200);
     }
 }

@@ -76,6 +76,8 @@ const activePhase = ref(1);
 activePhase.value = role.value ?? 1;
 
 const vendor = ref("");
+if (props.currentOperation === operations.update)
+    vendor.value = props.certification.vendor.name;
 const errorSearch = ref(false);
 
 const steps = [
@@ -203,9 +205,15 @@ const form = useForm(
           }
 );
 
-const formSearchVendor = useForm({
-    nit: "",
-});
+const formSearchVendor = useForm(
+    props.currentOperation === operations.create
+        ? {
+              nit: "",
+          }
+        : {
+              nit: props.certification.vendor.nit,
+          }
+);
 
 // ---------------------------------------------------------
 // DISABLED
@@ -285,14 +293,12 @@ const transaction = () => {
 // --------------------------------------------
 // PROVEEDOR
 // --------------------------------------------
-const messageOperation = ref(null);
-
 const toast = ref(false);
 const messageVendor = ref("");
 
 const searchVendorByNit = (alert = "") => {
     axios
-        .get("/certifications/getVendorByNit?nit=" + formSearchVendor.nit)
+        .get("/vendors/getVendorByNit?nit=" + formSearchVendor.nit)
         .then((response) => {
             if (response) {
                 router.reload({ only: ["FormControl"] });
@@ -327,29 +333,6 @@ const searchVendorByNit = (alert = "") => {
             }
         });
 };
-
-const searchVendorById = () => {
-    if (form.vendor_id) {
-        axios
-            .get(
-                "/certifications/getVendorById?id=" +
-                    props.certification.vendor_id
-            )
-            .then((response) => {
-                if (response) {
-                    formSearchVendor.nit = response.data.vendor.nit;
-                    vendor.value = response.data.vendor.name;
-                }
-            })
-            .catch((error) => {
-                form.vendor_id = null;
-                vendor.value = "";
-                console.log(error);
-            });
-    }
-};
-
-searchVendorById();
 
 // --------------------------------------------
 // MODAL DE CREAR PROVEEDOR: 1 Create, 2 Show, 3 Update, 4 Delete

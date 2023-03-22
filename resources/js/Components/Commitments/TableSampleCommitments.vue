@@ -204,9 +204,7 @@ const closeModal = (isconfirm) => {
                 route-name="commitments.create"
                 small
                 v-if="
-                    $page.props.user.permissions.includes(
-                        'create_certification'
-                    )
+                    $page.props.user.permissions.includes('create_commitment')
                 "
             />
         </BaseButtons>
@@ -245,7 +243,6 @@ const closeModal = (isconfirm) => {
                     <th class="text-center">N.</th>
                     <th class="text-center">N. Proceso</th>
                     <th class="text-center">Administrador de contrato</th>
-                    <th class="text-center">Nombre de Proveedor</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Monto</th>
                     <th class="text-center">Gestión actual</th>
@@ -279,9 +276,6 @@ const closeModal = (isconfirm) => {
                     >
                         {{ commitment.contract_administrator }}
                     </td>
-                    <td data-label="Proveedor" class="text-center">
-                        {{ commitment.vendor.name }}
-                    </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
                         <SpanState
                             v-if="commitment.record_status"
@@ -301,7 +295,7 @@ const closeModal = (isconfirm) => {
                     >
                         <strong>
                             {{
-                                current_managements[
+                                currentManagements[
                                     commitment.current_management
                                 ]
                             }}
@@ -329,7 +323,7 @@ const closeModal = (isconfirm) => {
                                 :tooltip="elementProps.show.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
-                                        'show_certification'
+                                        'show_commitment'
                                     )
                                 "
                                 @click="
@@ -343,7 +337,7 @@ const closeModal = (isconfirm) => {
                                 :tooltip="elementProps.update.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
-                                        'update_certification'
+                                        'update_commitment'
                                     )
                                 "
                                 route-name="commitments.edit"
@@ -356,7 +350,7 @@ const closeModal = (isconfirm) => {
                                 :tooltip="elementProps.delete.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
-                                        'delete_certification'
+                                        'delete_commitment'
                                     )
                                 "
                                 @click="

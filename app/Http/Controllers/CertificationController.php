@@ -115,6 +115,13 @@ class CertificationController extends Controller
      */
     public function edit(Certification $certification)
     {
+        $certification = $certification
+            ->with([
+                'vendor' => function ($query) {
+                    $query->select('id', 'nit', 'name');
+                },
+            ])
+            ->first();
         // dd($certification);
         return Inertia::render('Certifications/Edit', [
             'certification' => $certification,
@@ -149,7 +156,7 @@ class CertificationController extends Controller
             "response" => "Registro actualizado correctamente.",
             "operation" => 3,
         ];
-        if ($certification->certification_memo === null && $certification->current_management <= 2)
+        if ($certification->certification_memo === null && $role <= 2)
             $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de certificación."];
 
         return to_route('certifications.index')->with(compact('message'));
@@ -227,45 +234,11 @@ class CertificationController extends Controller
         }
     }
 
-    public function getVendorByNit(Request $request)
+    public function getCertificationByNumber(Request $request)
     {
-        $vendor = Vendor::where('nit', $request->get('nit'))
-            ->first(['id', 'nit', 'name']);
-        return response()->json(compact('vendor'), 200);
-    }
+        $certification = Certification::where('certification_number', $request->get('certification_number'))
+            ->first(['id', 'certification_number', 'contract_object']);
 
-    public function getVendorById(Request $request)
-    {
-        $vendor = Vendor::where('id', $request->get('id'))
-            ->first(['id', 'nit', 'name']);
-        return response()->json(compact('vendor'), 200);
-    }
-
-    public function setVendor(VendorRequest $request)
-    {
-        $vendor = Vendor::create($request->validated());
-
-        $message = [
-            "response" => "Registro creado correctamente.",
-            "operation" => 1,
-        ];
-
-        // dd(redirect()->getUrlGenerator()->previous());
-
-        // return Redirect::back()
-
-        return redirect()->back();
-        //  'vendor_id', $vendor->id);;
-
-        // return redirect(redirect()->getUrlGenerator()->previous())->with('vendor', $vendor);
-
-
-        // return Inertia::render(
-        //     'Certifications/Edit',
-        //     [
-        //         'vendor' => Inertia::lazy(fn () => $vendor),
-        //     ]
-        // );
-        // redirect()->back();
+        return response()->json(compact('certification'), 200);
     }
 }

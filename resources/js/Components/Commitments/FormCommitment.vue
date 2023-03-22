@@ -22,7 +22,6 @@ import BaseButton from "@/components/BaseButton.vue";
 import BaseDivider from "@/components/BaseDivider.vue";
 import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
 import BaseLevel from "@/components/BaseLevel.vue";
-import CardBoxModalVendor from "@/components/vendors/CardBoxModalVendor.vue";
 import FormValidationErrors from "@/components/FormValidationErrors.vue";
 import BaseButtons from "../BaseButtons.vue";
 import Toast from "@/components/Toast.vue";
@@ -68,29 +67,41 @@ const statuses = {
 };
 
 const role = computed(() => usePage().props.auth.user.roles[0].id);
-const activePhase = ref(1);
-activePhase.value = role.value ?? 1;
+const activePhase = ref(2);
+activePhase.value = role.value ?? 2;
 
-const contractObject = ref("");
+const certification = {
+    contract_object: ref(""),
+    vendor_id: ref(""),
+    vendor_name: ref(""),
+};
+if (props.currentOperation === operations.update) {
+    certification.contract_object.value =
+        props.commitment.certification.contract_object;
+    certification.vendor_id.value = props.commitment.certification.vendor_id;
+    certification.vendor_name.value =
+        props.commitment.certification.vendor.name;
+}
 const errorSearch = ref(false);
 
 const steps = [
     {
         id: 2,
-        key: 1,
         label: "Secretaría JAPC",
     },
     {
         id: 3,
-        key: 2,
         label: "Analista de Certificación",
     },
     {
         id: 4,
-        key: 3,
         label: "Coordinación General Financiera",
     },
 ];
+
+// Toast
+const messageResource = ref("");
+const toast = ref(false);
 
 // ---------------------------------------------------------
 // SELECTS
@@ -101,18 +112,6 @@ const optionSelect = (array = []) => {
         newArray.push({
             id: Object.values(element)[0],
             label: Object.values(element)[1],
-        });
-    });
-    return newArray;
-};
-
-const optionSelect2 = (array = []) => {
-    let newArray = [];
-    array.forEach((element) => {
-        newArray.push({
-            id: Object.values(element)[0],
-            label:
-                Object.values(element)[1] + " - " + Object.values(element)[2],
         });
     });
     return newArray;
@@ -129,6 +128,7 @@ let selectOptions = {
 const form = useForm(
     props.currentOperation === operations.create
         ? {
+              certification_id: "",
               commitment_memo: "",
               process_number: "",
               contract_administrator: "",
@@ -156,6 +156,7 @@ const form = useForm(
                   new Date().toLocaleDateString(),
               japc_comments: props.commitment.japc_comments,
               customer_id: props.commitment.customer_id ?? "",
+              certification_id: props.commitment.certification_id,
 
               commitment_cur: props.commitment.commitment_cur,
               commitment_amount: props.commitment.commitment_amount,
@@ -175,9 +176,16 @@ const form = useForm(
           }
 );
 
-const formSearchVendor = useForm({
-    certification_number: "",
-});
+const formSearchCertification = useForm(
+    props.currentOperation === operations.create
+        ? {
+              certificationNumber: "",
+          }
+        : {
+              certificationNumber:
+                  props.commitment.certification.certification_number,
+          }
+);
 
 // ---------------------------------------------------------
 // DISABLED
@@ -190,11 +198,6 @@ const disabled = {
             (props.commitment.record_status_id &&
                 props.commitment.record_status_id === statuses.liquidated &&
                 role.value < 4)
-    ),
-    expense_type: computed(
-        () =>
-            typeof props.commitment.expense_type_id &&
-            props.commitment.expense_type_id === 1
     ),
     record_status: computed(
         () =>
@@ -231,7 +234,7 @@ const create = () => {
 const update = () => {
     form.transform((data) => ({
         ...data,
-    })).put(route("commitments.update", props.commitments.id), {
+    })).put(route("commitments.update", props.commitment.id), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
     });
@@ -241,7 +244,7 @@ const update = () => {
 // COMMITMENTS.DELETE
 // --------------------------------------------
 const destroy = () => {
-    router.delete(`/commitments/${props.commitments.id}`, {
+    router.delete(`/commitments/${props.commitment.id}`, {
         onSuccess: () => confirm(),
     });
 };
@@ -255,29 +258,29 @@ const transaction = () => {
 };
 
 // --------------------------------------------
-// PROVEEDOR
+// BUSCAR CERTIFICACION
 // --------------------------------------------
-const messageOperation = ref(null);
-
-const toast = ref(false);
-const messageVendor = ref("");
-
-const searchVendorByNit = (alert = "") => {
+const searchCertificationByNumber = (alert = "") => {
     axios
-        .get("/commitments/getVendorByNit?nit=" + formSearchVendor.nit)
+        .get(
+            "/certifications/getCertificationByNumber?certification_number=" +
+                formSearchCertification.certificationNumber
+        )
         .then((response) => {
             if (response) {
                 router.reload({ only: ["FormControl"] });
-                form.vendor_id = response.data.vendor.id;
-                formSearchVendor.nit = response.data.vendor.nit;
-                vendor.value = response.data.vendor.name;
+                form.certification_id = response.data.certification.id;
+                formSearchCertification.certificationNumber =
+                    response.data.certification.certification_number;
+                certification.contract_object.value =
+                    response.data.certification.contract_object;
 
                 if (alert === "alert") {
                     toast.value = true;
-                    messageVendor.value = {
+                    messageResource.value = {
                         response:
-                            "Se encontró el proveedor con NIT " +
-                            formSearchVendor.nit,
+                            "Se encontró la Certificación Nro. " +
+                            formSearchCertification.certificationNumber,
                         operation: 1,
                     };
                 }
@@ -286,39 +289,61 @@ const searchVendorByNit = (alert = "") => {
         .catch((error) => {
             errorSearch.value = true;
             router.reload({ only: ["FormControl"] });
-            form.vendor_id = null;
-            vendor.value = "";
+            if (form.certification_id !== null) form.certification_id = null;
+            certification.contract_object.value = "";
             console.log(error);
 
             if (alert === "alert") {
                 toast.value = true;
-                messageVendor.value = {
-                    response: "No se encontró el NIT digitado",
+                messageResource.value = {
+                    response:
+                        "No se encontró el Nro. de certificación digitado",
                     operation: 4,
                 };
             }
         });
 };
 
-const searchVendorById = () => {
-    if (form.vendor_id) {
-        axios
-            .get("/commitments/getVendorById?id=" + props.commitment.vendor_id)
-            .then((response) => {
-                if (response) {
-                    formSearchVendor.nit = response.data.vendor.nit;
-                    vendor.value = response.data.vendor.name;
-                }
-            })
-            .catch((error) => {
-                form.vendor_id = null;
-                vendor.value = "";
-                console.log(error);
-            });
-    }
-};
+// --------------------------------------------
+// BUSCAR PROVEEDOR
+// --------------------------------------------
+// const searchVendorByNit = (alert = "") => {
+//     axios
+//         .get("/vendors/getVendorByNit?nit=" + formSearchVendor.nit)
+//         .then((response) => {
+//             if (response) {
+//                 router.reload({ only: ["FormControl"] });
+//                 form.vendor_id = response.data.vendor.id;
+//                 formSearchVendor.nit = response.data.vendor.nit;
+//                 vendor.value = response.data.vendor.name;
 
-searchVendorById();
+//                 if (alert === "alert") {
+//                     toast.value = true;
+//                     messageResource.value = {
+//                         response:
+//                             "Se encontró el proveedor con NIT " +
+//                             formSearchVendor.nit,
+//                         operation: 1,
+//                     };
+//                 }
+//             }
+//         })
+//         .catch((error) => {
+//             errorSearch.value = true;
+//             router.reload({ only: ["FormControl"] });
+//             form.vendor_id = null;
+//             vendor.value = "";
+//             console.log(error);
+
+//             if (alert === "alert") {
+//                 toast.value = true;
+//                 messageResource.value = {
+//                     response: "No se encontró el NIT digitado",
+//                     operation: 4,
+//                 };
+//             }
+//         });
+// };
 
 // --------------------------------------------
 // MODAL DE CREAR PROVEEDOR: 1 Create, 2 Show, 3 Update, 4 Delete
@@ -353,7 +378,7 @@ searchVendorById();
         @confirm="closeModal"
     /> -->
 
-    <Toast v-if="toast" v-model="toast" :message="messageVendor" />
+    <Toast v-if="toast" v-model="toast" :message="messageResource" />
 
     <FormValidationErrors v-if="form.hasErrors" />
 
@@ -369,9 +394,9 @@ searchVendorById();
     />
 
     <CardBox is-form @submit.prevent="transaction">
-        <!-- STEP 1 -->
+        <!-- STEP 2 -->
         <div
-            v-show="activePhase === 1"
+            v-show="activePhase === 2"
             class="transition duration-500 ease-in-out"
         >
             <div class="gap-x-3 mb-4 text-right">
@@ -385,57 +410,59 @@ searchVendorById();
                 <BaseLevel>
                     <FormField
                         label="Número de Certificación"
-                        label-for="certification_number"
-                        :errors="form.errors.certification_number"
+                        label-for="certificationNumber"
+                        :errors="form.errors.certification_id"
                     >
-                        <form @submit.prevent="searchVendorByNit('alert')">
+                        <form
+                            @submit.prevent="
+                                searchCertificationByNumber('alert')
+                            "
+                        >
                             <FormControl
-                                v-model="formSearchVendor.certification_number"
-                                id="certification_number"
-                                name="certification_number"
+                                v-model="
+                                    formSearchCertification.certificationNumber
+                                "
+                                id="certificationNumber"
+                                name="certificationNumber"
                                 :icon="mdiCardAccountDetails"
-                                autocomplete="certification_number"
+                                autocomplete="certificationNumber"
                                 type="text"
                                 placeholder="Digite el número de certificación"
                                 :has-errors="
-                                    form.errors.certification_number != null ||
+                                    form.errors.certification_id != null ||
                                     errorSearch
                                 "
-                                :disabled="
-                                    disabled.global.value ||
-                                    disabled.expense_type.value
-                                "
+                                :disabled="disabled.global.value"
                             >
                             </FormControl>
-                            <BaseButtons>
-                                <BaseButton
-                                    type="submit"
-                                    color="info"
-                                    :icon="mdiMagnify"
-                                    tooltip="Buscar"
-                                    small
-                                    :disabled="
-                                        disabled.expense_type.value ||
-                                        disabled.global.value ||
-                                        disabledButton
-                                    "
-                                />
-                                <!-- <BaseButton
-                                    color="success"
-                                    :icon="mdiBriefcasePlus"
-                                    tooltip="Nuevo proveedor"
-                                    small
-                                    :disabled="
-                                        disabled.expense_type.value ||
-                                        disabled.global.value ||
-                                        disabledButton
-                                    "
-                                    @click="openModal"
-                                /> -->
-                            </BaseButtons>
+                            <BaseButton
+                                type="submit"
+                                color="info"
+                                :icon="mdiMagnify"
+                                tooltip="Buscar"
+                                small
+                                :disabled="
+                                    disabled.global.value || disabledButton
+                                "
+                            />
                         </form>
                     </FormField>
                 </BaseLevel>
+                <FormField
+                    label="Objeto de contrato"
+                    label-for="contract_object"
+                >
+                    <FormControl
+                        v-model="certification.contract_object.value"
+                        id="contract_object"
+                        name="contract_object"
+                        :icon="mdiCardAccountDetails"
+                        placeholder="Objeto de contrato"
+                        autocomplete="contract_object"
+                        type="text"
+                        disabled
+                    />
+                </FormField>
             </div>
             <div
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
@@ -513,202 +540,62 @@ searchVendorById();
                 </FormField>
             </div>
         </div>
-        <!-- STEP 2 -->
-        <!-- <div
-            v-show="activePhase === 2"
-            class="transition duration-500 ease-in-out"
-        >
-            <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de asignación JAPC: </strong>
-                {{ form.assignment_date }}
-            </div>
-
-            <div
-                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
-            >
-                <FormField
-                    label="Contenido"
-                    label-for="content"
-                    help="Indique el contenido de la certificación"
-                    :errors="form.errors.content"
-                >
-                    <FormControl
-                        v-model="form.content"
-                        id="content"
-                        :icon="mdiNumeric"
-                        autocomplete="content"
-                        type="text"
-                        placeholder="Ej: 01 EXPEDIENTE CON VINCHA"
-                        :has-errors="form.errors.content != null"
-                        :disabled="disabled.global.value"
-                    />
-                </FormField>
-            </div>
-            <FormField
-                label="Observaciones"
-                label-for="japc_comments"
-                help="Máximo 255 caracteres."
-                :errors="form.errors.japc_comments"
-            >
-                <FormControl
-                    v-model="form.japc_comments"
-                    type="textarea"
-                    id="japc_comments"
-                    :icon="mdiTag"
-                    autocomplete="japc_comments"
-                    placeholder="Indique las principales observaciones."
-                    :has-errors="form.errors.japc_comments != null"
-                    :disabled="disabled.global.value"
-                />
-            </FormField>
-        </div> -->
         <!-- STEP 3 -->
-        <!-- <div
+        <div
             v-show="activePhase === 3"
             class="transition duration-500 ease-in-out"
         >
             <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de certificación: </strong>
-                {{ form.cp_date }}
+                <strong>Fecha de compromiso: </strong>
+                {{ form.commitment_date }}
             </div>
-
-            <FormField
-                label="Código presupuestario"
-                label-for="budget_line_id"
-                help="Seleccione el código presupuestario"
-                :errors="form.errors.budget_line_id"
-            >
-                <FormControl
-                    v-model="form.budget_line_id"
-                    name="budget_line_id"
-                    id="budget_line_id"
-                    :icon="mdiDomain"
-                    autocomplete="budget_line_id"
-                    :options="selectOptions.budgetLine"
-                    :has-errors="form.errors.budget_line_id != null"
-                    :disabled="disabled.global.value"
-                />
-            </FormField>
 
             <div
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
                 <FormField
-                    label="Nro. Proceso"
-                    label-for="process_number"
-                    help="Ingrese el Nro. de Proceso"
-                    :errors="form.errors.process_number"
+                    label="Nombre de proveedor"
+                    label-for="nit_name"
+                    help="Nombre del proveedor detallado en la certificación"
                 >
                     <FormControl
-                        v-model="form.process_number"
-                        id="process_number"
-                        :icon="mdiNumeric"
-                        autocomplete="process_number"
-                        type="text"
-                        placeholder="Ej: CE-2023000384849"
-                        :has-errors="form.errors.process_number != null"
-                        :disabled="
-                            disabled.global.value || disabled.expense_type.value
-                        "
+                        v-model="certification.vendor_name.value"
+                        name="nit_name"
+                        id="nit_name"
+                        :icon="mdiDomain"
+                        autocomplete="nit_name"
+                        disabled
                     />
                 </FormField>
                 <FormField
-                    label="Monto certificado"
-                    label-for="certified_amount"
-                    help="Ingrese el monto certificado"
-                    :errors="form.errors.certified_amount"
+                    label="Monto del compromiso"
+                    label-for="commitment_amount"
+                    help="Ingrese el monto del compromiso"
+                    :errors="form.errors.commitment_amount"
                 >
                     <FormControl
-                        v-model="form.certified_amount"
-                        id="certified_amount"
+                        v-model="form.commitment_amount"
+                        id="commitment_amount"
                         :icon="mdiCurrencyUsd"
-                        autocomplete="certified_amount"
+                        autocomplete="commitment_amount"
                         type="number"
                         inputmode="decimal"
                         placeholder="Ej: 1534.35"
                         :step="0.0001"
                         :min="0"
-                        :has-errors="form.errors.certified_amount != null"
+                        :has-errors="form.errors.commitment_amount != null"
                         :disabled="disabled.global.value"
                     />
                 </FormField>
             </div>
+
             <div
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
                 <FormField
-                    label="NIT de Proveedor"
-                    label-for="nit"
-                    :errors="form.errors.vendor_id"
-                >
-                    <form @submit.prevent="searchVendorByNit('alert')">
-                        <BaseLevel>
-                            <FormControl
-                                v-model="formSearchVendor.nit"
-                                id="nit"
-                                name="nit"
-                                :icon="mdiCardAccountDetails"
-                                autocomplete="nit"
-                                type="text"
-                                placeholder="Detalle el NIT del Proveedor"
-                                :has-errors="
-                                    form.errors.vendor_id != null || errorSearch
-                                "
-                                :disabled="
-                                    disabled.global.value ||
-                                    disabled.expense_type.value
-                                "
-                            >
-                            </FormControl>
-                            <BaseButtons>
-                                <BaseButton
-                                    type="submit"
-                                    color="info"
-                                    :icon="mdiMagnify"
-                                    tooltip="Buscar"
-                                    small
-                                    :disabled="
-                                        disabled.expense_type.value ||
-                                        disabled.global.value ||
-                                        disabledButton
-                                    "
-                                />
-                                <BaseButton
-                                    color="success"
-                                    :icon="mdiBriefcasePlus"
-                                    tooltip="Nuevo proveedor"
-                                    small
-                                    :disabled="
-                                        disabled.expense_type.value ||
-                                        disabled.global.value ||
-                                        disabledButton
-                                    "
-                                    @click="openModal"
-                                />
-                            </BaseButtons>
-                        </BaseLevel>
-                    </form>
-                </FormField>
-                <FormField label="Nombre de proveedor" label-for="name">
-                    <FormControl
-                        v-model="vendor"
-                        id="name"
-                        name="name"
-                        :icon="mdiCardAccountDetails"
-                        placeholder="Nombre de proveedor"
-                        autocomplete="name"
-                        type="text"
-                        disabled
-                    />
-                </FormField>
-            </div>
-            <div
-                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
-            >
-                <FormField
-                    label="Estado de certificación"
+                    label="Estado del compromiso"
                     label-for="record_status_id"
-                    help="Seleccione el estado de la certificación"
+                    help="Seleccione el estado del compromiso"
                     :errors="form.errors.record_status_id"
                 >
                     <FormControl
@@ -726,44 +613,44 @@ searchVendorById();
                     />
                 </FormField>
                 <FormField
-                    label="Número de Certificación"
-                    label-for="certification_number"
-                    help="Digite el número de certificación"
-                    :errors="form.errors.certification_number"
+                    label="Nro. CUR del Compromiso"
+                    label-for="commitment_cur"
+                    help="Digite el número de CUR del compromiso"
+                    :errors="form.errors.commitment_cur"
                 >
                     <FormControl
-                        v-model="form.certification_number"
-                        id="certification_number"
+                        v-model="form.commitment_cur"
+                        id="commitment_cur"
                         :icon="mdiNumeric"
-                        autocomplete="certification_number"
+                        autocomplete="commitment_cur"
                         placeholder="Ej: 123"
                         type="number"
-                        :has-errors="form.errors.certification_number != null"
+                        :has-errors="form.errors.commitment_cur != null"
                         :disabled="
                             disabled.global.value ||
-                            disabled.certification_number.value
+                            disabled.commitment_cur.value
                         "
                     />
                 </FormField>
             </div>
             <FormField
                 label="Observaciones"
-                label-for="certification_comments"
+                label-for="commitment_comments"
                 help="Máximo 255 caracteres."
-                :errors="form.errors.certification_comments"
+                :errors="form.errors.commitment_comments"
             >
                 <FormControl
-                    v-model="form.certification_comments"
+                    v-model="form.commitment_comments"
                     type="textarea"
-                    id="certification_comments"
+                    id="commitment_comments"
                     :icon="mdiTag"
-                    autocomplete="certification_comments"
+                    autocomplete="commitment_comments"
                     placeholder="Indique las principales observaciones."
-                    :has-errors="form.errors.certification_comments != null"
+                    :has-errors="form.errors.commitment_comments != null"
                     :disabled="disabled.global.value"
                 />
             </FormField>
-        </div> -->
+        </div>
         <!-- STEP 4 -->
         <div
             v-show="activePhase === 4"

@@ -1,5 +1,4 @@
 <script setup>
-import BaseIcon from "@/components/BaseIcon.vue";
 import { computed, ref } from "vue";
 
 const props = defineProps({
@@ -14,6 +13,8 @@ const props = defineProps({
     },
     steps: Array,
 });
+
+const index = ref(1);
 
 const olClass = computed(() => {
     const base = [
@@ -132,7 +133,7 @@ const stepping = (step) => {
             <ol :class="olClass">
                 <li
                     v-for="step in steps"
-                    :key="step.key ?? step.id"
+                    :key="step.id"
                     :class="liClass(step.id)"
                     :tabindex="tabindex(step.id)"
                     @click.prevent="stepping(step.id)"
@@ -190,7 +191,7 @@ const stepping = (step) => {
                     </svg>
                     <p class="leading-none">
                         <strong class="block font-medium">
-                            {{ step.key ?? step.id }}.
+                            {{ step.id }}.
                         </strong>
                         <small class="mt-1"> {{ step.label }} </small>
                     </p>

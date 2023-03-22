@@ -6,6 +6,8 @@ use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Commitment;
 use App\Models\RecordStatus;
+use Illuminate\Http\Request;
+use App\Models\Certification;
 use App\Http\Requests\StoreCommitmentRequest;
 use App\Http\Requests\UpdateCommitmentRequest;
 
@@ -52,7 +54,6 @@ class CommitmentController extends Controller
         ]);
     }
 
-
     /**
      * Store a newly created resource in storage.
      *
@@ -80,7 +81,29 @@ class CommitmentController extends Controller
         return to_route('commitments.index')->with(compact('message'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Certification $certification
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Commitment $commitment)
+    {
+        $commitment = $commitment
+            ->with([
+                'certification' => function ($query) {
+                    $query->select('certification.id', 'certification.certification_number', 'certification.contract_object', 'certification.vendor_id');
+                },
+            ])
+            ->with('certification.vendor')
+            ->first();
 
+        return Inertia::render('Commitments/Edit', [
+            'commitment' => $commitment,
+            'users' => User::analystRole()->get(),
+            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
+        ]);
+    }
 
     /**
      * Update the specified resource in storage.
@@ -91,21 +114,25 @@ class CommitmentController extends Controller
      */
     public function update(UpdateCommitmentRequest $request, Commitment $commitment)
     {
-        $commitment->update($request->validated() + [
-            'management_status' => $this->updateStatus($request),
-        ]);
+        $role = $this->getRole();
 
-        $message = "Registro actualizado correctamente.";
-        $state = $commitment->management_status;
+        $paramsControl = $this->paramsControl($request, $role);
+        $adjustedRequest = $request->validated();
+        $adjustedRequest['record_status_id'] =
+            $this->manageRecordStatus($request, $role);
 
-        if ($commitment->management_status === 'Observado') {
-            Commitment::create([
-                'certification_id' => $commitment->id,
-            ]);
-            $message .= "\nPuede revisar el nuevo compromiso en el módulo COMPROMISOS.";
-        }
 
-        return to_route('commitments.index')->with(compact('message', 'state'));
+        $commitment->update($adjustedRequest + $paramsControl);
+
+        $message = [
+            "response" => "Registro actualizado correctamente.",
+            "operation" => 3,
+        ];
+
+        if ($commitment->commitment_memo === null && $role <= 2)
+            $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de compromiso."];
+
+        return to_route('commitments.index')->with(compact('message'));
     }
 
     /**
@@ -121,13 +148,58 @@ class CommitmentController extends Controller
         return to_route('commitments.index')->with(compact('message'));
     }
 
-    public function updateStatus(UpdateCommitmentRequest $request)
+    protected function getRole()
     {
-        if (!is_null($request->process_code) && !is_null($request->vendor_name) && !is_null($request->contract_administrator) && !is_null($request->amount_to_commit))
-            return "Observado";
-        else if (!is_null($request->process_code) || !is_null($request->vendor_name) || !is_null($request->contract_administrator))
-            return "En revisión";
-        else
-            return "Pendiente de revisión";
+        return auth()->user()->roles()->first()->id;
+    }
+
+    protected function paramsControl(UpdateCommitmentRequest $request, int $role)
+    {
+        return
+            $this->manageDate($role) +
+            $this->manageAssignment($role, $request->record_status_id, $request->treasury_approved);
+    }
+
+    protected function manageDate(int $role)
+    {
+        if ($role === 2)   return  ['assignment_date' => now()];
+        else if ($role === 3)   return  ['commitment_date' => now()];
+        else if ($role === 4)   return  ['coord_cgf_date' => now()];
+        else return                     [];
+    }
+
+    protected function manageAssignment(int $role, $record_status_id, $treasury_approved)
+    {
+        if ($role <= 2) {
+            return ['current_management' => $role + 1];
+        } else if ($role === 3) {
+            if ($record_status_id < 4)
+                return ['current_management' => 3];
+            else
+                return ['current_management' => $role + 1];
+        } else if ($role === 4) {
+            if ($treasury_approved === "returned")
+                return ['current_management' => $role - 1];
+            else
+                return ['current_management' => $role];
+        } else {
+            return [];
+        }
+    }
+
+    protected function manageRecordStatus(UpdateCommitmentRequest $request, int $role)
+    {
+        if ($role === 4) {
+            if ($request->treasury_approved === "returned")
+                return 5;
+            else if ($request->treasury_approved === "approved")
+                return 6;
+            else if ($request->treasury_approved === "liquidated")
+                return 7;
+            else
+                return $request->record_status_id;
+        } else {
+            return $request->record_status_id;
+        }
     }
 }
