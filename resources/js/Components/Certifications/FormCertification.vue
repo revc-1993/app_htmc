@@ -22,7 +22,6 @@ import Stepper from "@/components/Stepper.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import BaseDivider from "@/components/BaseDivider.vue";
 import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
-import BaseLevel from "@/components/BaseLevel.vue";
 import CardBoxModalVendor from "@/components/vendors/CardBoxModalVendor.vue";
 import FormValidationErrors from "@/components/FormValidationErrors.vue";
 import BaseButtons from "../BaseButtons.vue";
@@ -52,6 +51,14 @@ const props = defineProps({
             label: "",
         },
     },
+    withButton: {
+        type: Boolean,
+        default: true,
+    },
+    inModal: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 // ---------------------------------------------------------
@@ -59,6 +66,7 @@ const props = defineProps({
 // ---------------------------------------------------------
 const operations = {
     create: 1,
+    show: 2,
     update: 3,
 };
 
@@ -77,7 +85,11 @@ const activePhase = ref(1);
 activePhase.value = role.value && role.value < 5 ? role.value : 1;
 
 const vendor = ref("");
-if (props.currentOperation === operations.update && props.certification.vendor)
+if (
+    (props.currentOperation === operations.show ||
+        props.currentOperation === operations.update) &&
+    props.certification.vendor
+)
     vendor.value = props.certification.vendor.name;
 
 const steps = [
@@ -163,6 +175,7 @@ const form = useForm(
               returned_document_number: "",
               coord_cgf_comments: "",
               coord_cgf_date: new Date().toLocaleDateString(),
+              current_management: "",
           }
         : {
               certification_memo: props.certification.certification_memo,
@@ -202,6 +215,7 @@ const form = useForm(
               coord_cgf_date:
                   props.certification.coord_cgf_date ??
                   new Date().toLocaleDateString(),
+              current_management: props.certification.current_management,
           }
 );
 
@@ -223,35 +237,33 @@ const formSearchVendor = useForm(
 const disabled = {
     global: computed(
         () =>
-            (props.currentOperation === operations.show ||
-                activePhase.value !== role.value ||
-                (props.certification.record_status_id &&
-                    props.certification.record_status_id ===
-                        statuses.liquidated &&
-                    role.value < 4)) &&
-            role.value !== 5
+            props.currentOperation === operations.show ||
+            (role.value !== 5 &&
+                (activePhase.value !== role.value ||
+                    (props.certification.record_status_id &&
+                        props.certification.record_status_id >=
+                            statuses.approved &&
+                        role.value !== 4)))
     ),
     expense_type: computed(
         () =>
-            typeof props.certification.expense_type_id &&
+            typeof props.certification.expense_type_id !== "undefined" &&
             props.certification.expense_type_id === 1
-    ),
-    record_status: computed(
-        () =>
-            props.certification.record_status_id &&
-            props.certification.record_status_id >= statuses.approved
     ),
     certification_number: computed(
         () => form.record_status_id !== statuses.registered
     ),
+    button: ref(false),
 };
-
-const disabledButton = ref(false);
-disabledButton.value =
-    (role.value <= 3 &&
-        props.certification.record_status_id &&
-        props.certification.record_status_id >= statuses.approved) ||
-    form.processing;
+disabled.button.value =
+    (props.currentOperation !== operations.show &&
+        role.value !== 5 &&
+        (activePhase.value !== role.value ||
+            (props.certification.record_status_id &&
+                props.certification.record_status_id >= statuses.approved &&
+                role.value !== 4))) ||
+    form.processing ||
+    formSearchVendor.processing;
 
 // ---------------------------------------------------------
 // CERTIFICATIONS.STORE
@@ -259,6 +271,7 @@ disabledButton.value =
 const create = () => {
     form.transform((data) => ({
         ...data,
+        current_management: 1,
     })).post(route("certifications.store"), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
@@ -271,6 +284,10 @@ const create = () => {
 const update = () => {
     form.transform((data) => ({
         ...data,
+        record_status_id:
+            form.record_status_id > statuses.registered
+                ? props.certification.record_status_id
+                : form.record_status_id,
     })).put(route("certifications.update", props.certification.id), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
@@ -280,13 +297,15 @@ const update = () => {
 const transaction = () => {
     return props.currentOperation === operations.create
         ? create()
+        : props.currentOperation === operations.show
+        ? ""
         : props.currentOperation === operations.update
         ? update()
         : "";
 };
 
 // --------------------------------------------
-// PROVEEDOR
+// BUSCAR PROVEEDOR
 // --------------------------------------------
 const toast = ref(false);
 const messageVendor = ref("");
@@ -358,7 +377,6 @@ const closeModal = (event) => {
     />
 
     <Toast v-if="toast" v-model="toast" :message="messageVendor" />
-
     <FormValidationErrors v-if="form.hasErrors" />
 
     <Stepper
@@ -372,7 +390,7 @@ const closeModal = (event) => {
         "
     />
 
-    <CardBox is-form @submit.prevent="transaction">
+    <CardBox is-form :in-modal="inModal" @submit.prevent="transaction">
         <!-- STEP 1 -->
         <div
             v-show="activePhase === 1"
@@ -679,8 +697,7 @@ const closeModal = (event) => {
                                 location="center"
                                 :disabled="
                                     disabled.expense_type.value ||
-                                    disabled.global.value ||
-                                    disabledButton
+                                    disabled.global.value
                                 "
                             />
                             <BaseButton
@@ -691,8 +708,7 @@ const closeModal = (event) => {
                                 location="end"
                                 :disabled="
                                     disabled.expense_type.value ||
-                                    disabled.global.value ||
-                                    disabledButton
+                                    disabled.global.value
                                 "
                                 @click="openModal"
                             />
@@ -729,10 +745,7 @@ const closeModal = (event) => {
                         autocomplete="record_status_id"
                         :options="selectOptions.recordStatus"
                         :has-errors="form.errors.record_status_id != null"
-                        :disabled="
-                            disabled.global.value ||
-                            disabled.record_status.value
-                        "
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
                 <FormField
@@ -832,19 +845,25 @@ const closeModal = (event) => {
                 />
             </FormField>
         </div>
-        <BaseDivider />
-        <BaseButtons>
+        <BaseDivider v-if="!inModal" />
+        <BaseButtons v-if="withButton">
             <BaseButton
                 type="submit"
                 color="success"
                 :label="elementProps.label"
-                :class="{ 'opacity-25': disabledButton }"
-                :disabled="disabledButton"
-                :icon="mdiContentSaveAll"
+                :class="{
+                    'opacity-25': disabled.button.value,
+                }"
+                :disabled="disabled.button.value"
+                :icon="
+                    currentOperation === operations.show
+                        ? mdiPrinter
+                        : mdiContentSaveAll
+                "
             />
             <BaseButton
                 route-name="certifications.index"
-                color="lightDark"
+                color="slate"
                 label="Regresar"
                 :icon="mdiBackspace"
             />

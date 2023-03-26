@@ -20,6 +20,8 @@ import CardBox from "@/components/CardBox.vue";
 const props = defineProps({
     checkable: Boolean,
     commitments: Object,
+    users: Object,
+    recordStatuses: Object,
     instance: {
         type: String,
         default: "",
@@ -241,7 +243,7 @@ const closeModal = (isconfirm) => {
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-if="checkable" class="text-center" />
                     <th class="text-center">N.</th>
-                    <th class="text-center">N. Proceso</th>
+                    <th class="text-center">N. Certificación</th>
                     <th class="text-center">Administrador de contrato</th>
                     <th class="text-center">Estado</th>
                     <th class="text-center">Monto</th>
@@ -268,7 +270,11 @@ const closeModal = (isconfirm) => {
                     /> -->
                     </td>
                     <td data-label="N. Proceso" class="text-center">
-                        {{ commitment.certification.process_number }}
+                        {{
+                            commitment.certification
+                                ? commitment.certification.certification_number
+                                : ""
+                        }}
                     </td>
                     <td
                         data-label="Administrador de contrato"

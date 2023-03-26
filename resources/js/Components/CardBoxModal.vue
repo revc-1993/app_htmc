@@ -107,6 +107,9 @@ window.addEventListener("keydown", (e) => {
                         type="submit"
                         :label="buttonLabel"
                         :color="disabled ? 'contrast' : button"
+                        :class="{
+                            'opacity-25': disabled,
+                        }"
                         @click.prevent="confirm"
                         :icon="
                             buttonLabel === 'Imprimir'

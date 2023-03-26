@@ -26,7 +26,10 @@ class UpdateCertificationRequest extends FormRequest
         $role = auth()->user()->roles()->first()->id;
         $validationRules = [];
 
-        if ($role === 1) {
+        if ($role === 5)    $currentRole = $this->current_management;
+        else                $currentRole = $role;
+
+        if ($currentRole === 1) {
             $validationRules += [
                 'certification_memo' => [
                     'nullable',
@@ -39,13 +42,13 @@ class UpdateCertificationRequest extends FormRequest
                 'department_id' => ['required'],
                 'sec_cgf_comments' => ['nullable'],
             ];
-        } else if ($role === 2) {
+        } else if ($currentRole === 2) {
             $validationRules += [
                 'content' => ['nullable', 'min:10'],
                 'japc_comments' => ['nullable'],
                 'customer_id' => ['required'],
             ];
-        } else if ($role === 3) {
+        } else if ($currentRole === 3) {
             $validationRules += [
                 'process_number' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']) + ['alphadash', 'string', 'min:15', 'max:100'],
                 'vendor_id' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']),
@@ -55,7 +58,7 @@ class UpdateCertificationRequest extends FormRequest
                 'record_status_id' => ['required', 'in:1,2,3,4'],
                 'certification_comments' => ['nullable'],
             ];
-        } else if ($role === 4) {
+        } else if ($currentRole === 4) {
             $validationRules += [
                 'treasury_approved' => ['required'],
                 'returned_document_number' => [
@@ -65,6 +68,10 @@ class UpdateCertificationRequest extends FormRequest
                 'coord_cgf_comments' => ['nullable'],
             ];
         }
+
+        $validationRules += [
+            'current_management' => ['nullable'],
+        ];
 
         return $validationRules;
     }

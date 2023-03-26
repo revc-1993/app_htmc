@@ -26,7 +26,10 @@ class UpdateCommitmentRequest extends FormRequest
         $role = auth()->user()->roles()->first()->id;
         $validationRules = [];
 
-        if ($role === 2) {
+        if ($role === 5)    $currentRole = $this->current_management;
+        else                $currentRole = $role;
+
+        if ($currentRole === 2) {
             $validationRules += [
                 'certification_id' => ['required'],
                 'commitment_memo' => [
@@ -36,15 +39,17 @@ class UpdateCommitmentRequest extends FormRequest
                 'process_number' => ['nullable', 'alphadash', 'string', 'min:15', 'max:100'],
                 'contract_administrator' => ['required'],
                 'customer_id' => ['required'],
+                'japc_comments' => ['nullable'],
             ];
-        } else if ($role === 3) {
+        } else if ($currentRole === 3) {
             $validationRules += [
                 'vendor_id' => ['nullable'],
                 'commitment_amount' => ['nullable', 'numeric', 'min:10'],
                 'record_status_id' => ['required', 'in:1,2,3,4'],
                 'commitment_cur' => ['required_if:record_status_id,4', 'numeric', 'min:1', 'nullable'],
+                'commitment_comments' => ['nullable'],
             ];
-        } else if ($role === 4) {
+        } else if ($currentRole === 4) {
             $validationRules += [
                 'treasury_approved' => ['required'],
                 'returned_document_number' => [
@@ -54,6 +59,10 @@ class UpdateCommitmentRequest extends FormRequest
                 'coord_cgf_comments' => ['nullable'],
             ];
         }
+
+        $validationRules += [
+            'current_management' => ['nullable'],
+        ];
 
         return $validationRules;
     }

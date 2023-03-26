@@ -10,6 +10,8 @@ import TableSampleCommitments from "@/components/commitments/TableSampleCommitme
 // --------------------------------------------
 const props = defineProps({
     commitments: Object,
+    users: Object,
+    recordStatuses: Object,
 });
 </script>
 
@@ -30,6 +32,8 @@ const props = defineProps({
 
             <TableSampleCommitments
                 :commitments="commitments"
+                :users="users"
+                :record-statuses="recordStatuses"
                 instance="compromiso"
             />
         </SectionMain>

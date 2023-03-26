@@ -32,6 +32,8 @@ class StoreCommitmentRequest extends FormRequest
             'process_number' => ['nullable', 'alphadash', 'string', 'min:15', 'max:100'],
             'contract_administrator' => ['required'],
             'customer_id' => ['required'],
+            'japc_comments' => ['nullable'],
+            'current_management' => ['nullable'],
         ];
     }
 }

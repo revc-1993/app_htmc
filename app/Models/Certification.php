@@ -139,6 +139,11 @@ class Certification extends Model
         $query->orderBy("certifications.id", "desc");
     }
 
+    public function scopeApproved($query, $request)
+    {
+        $query->where('certification_number', $request)->where('record_status_id', '>=', 6);
+    }
+
     public function scopeNotReviewed($query)
     {
         $query->where('record_status_id', '<>', 'Observado')->orderBy("certifications.sec_cgf_date", "asc");

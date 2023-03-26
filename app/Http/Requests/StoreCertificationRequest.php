@@ -34,6 +34,7 @@ class StoreCertificationRequest extends FormRequest
             'expense_type_id' => ['required'],
             'department_id' => ['required'],
             'sec_cgf_comments' => ['nullable'],
+            'current_management' => ['nullable'],
         ];
     }
 

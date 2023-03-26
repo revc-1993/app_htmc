@@ -45,6 +45,15 @@ const props = defineProps({
             label: "",
         },
     },
+    withButton: {
+        type: Boolean,
+        default: true,
+    },
+
+    inModal: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 // ---------------------------------------------------------
@@ -52,6 +61,7 @@ const props = defineProps({
 // ---------------------------------------------------------
 const operations = {
     create: 1,
+    show: 2,
     update: 3,
 };
 
@@ -67,20 +77,26 @@ const statuses = {
 
 const role = computed(() => usePage().props.auth.user.roles[0].id);
 const activePhase = ref(2);
-activePhase.value = role.value && role.value < 5 ? role.value : 1;
+activePhase.value = role.value && role.value < 5 ? role.value : 2;
 
 const certification = {
     contract_object: ref(""),
     vendor_id: ref(""),
     vendor_name: ref(""),
 };
-if (props.currentOperation === operations.update) {
+
+if (
+    (props.currentOperation === operations.show ||
+        props.currentOperation === operations.update) &&
+    props.commitment.certification
+) {
     certification.contract_object.value =
         props.commitment.certification.contract_object;
     certification.vendor_id.value = props.commitment.certification.vendor_id;
     certification.vendor_name.value =
         props.commitment.certification.vendor.name;
 }
+
 const steps = [
     {
         id: 2,
@@ -88,7 +104,7 @@ const steps = [
     },
     {
         id: 3,
-        label: "Analista de Certificación",
+        label: "Analista de Compromiso",
     },
     {
         id: 4,
@@ -143,8 +159,11 @@ const form = useForm(
               returned_document_number: "",
               coord_cgf_comments: "",
               coord_cgf_date: new Date().toLocaleDateString(),
+
+              current_management: "",
           }
         : {
+              certification_id: props.commitment.certification_id,
               commitment_memo: props.commitment.commitment_memo,
               process_number: props.commitment.process_number,
               contract_administrator: props.commitment.contract_administrator,
@@ -153,7 +172,6 @@ const form = useForm(
                   new Date().toLocaleDateString(),
               japc_comments: props.commitment.japc_comments,
               customer_id: props.commitment.customer_id ?? "",
-              certification_id: props.commitment.certification_id,
 
               commitment_cur: props.commitment.commitment_cur,
               commitment_amount: props.commitment.commitment_amount,
@@ -174,6 +192,8 @@ const form = useForm(
               coord_cgf_date:
                   props.commitment.coord_cgf_date ??
                   new Date().toLocaleDateString(),
+
+              current_management: props.commitment.current_management,
           }
 );
 
@@ -183,8 +203,9 @@ const formSearchCertification = useForm(
               certificationNumber: "",
           }
         : {
-              certificationNumber:
-                  props.commitment.certification.certification_number,
+              certificationNumber: props.commitment.certification
+                  ? props.commitment.certification.certification_number
+                  : "",
           }
 );
 
@@ -195,27 +216,27 @@ const disabled = {
     global: computed(
         () =>
             props.currentOperation === operations.show ||
-            activePhase.value !== role.value ||
-            (props.commitment.record_status_id &&
-                props.commitment.record_status_id === statuses.liquidated &&
-                role.value < 4)
-    ),
-    record_status: computed(
-        () =>
-            props.commitment.record_status_id &&
-            props.commitment.record_status_id >= statuses.approved
+            (role.value !== 5 &&
+                (activePhase.value !== role.value ||
+                    (props.commitment.record_status_id &&
+                        props.commitment.record_status_id >=
+                            statuses.approved &&
+                        role.value !== 4)))
     ),
     commitment_cur: computed(
         () => form.record_status_id !== statuses.registered
     ),
+    button: ref(false),
 };
-
-const disabledButton = ref(false);
-disabledButton.value =
-    (role.value <= 3 &&
-        props.commitment.record_status_id &&
-        props.commitment.record_status_id >= statuses.approved) ||
-    form.processing;
+disabled.button.value =
+    (props.currentOperation !== operations.show &&
+        role.value !== 5 &&
+        (activePhase.value !== role.value ||
+            (props.commitment.record_status_id &&
+                props.commitment.record_status_id >= statuses.approved &&
+                role.value !== 4))) ||
+    form.processing ||
+    formSearchCertification.processing;
 
 // ---------------------------------------------------------
 // COMMITMENTS.STORE
@@ -223,6 +244,7 @@ disabledButton.value =
 const create = () => {
     form.transform((data) => ({
         ...data,
+        current_management: 2,
     })).post(route("commitments.store"), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
@@ -235,24 +257,21 @@ const create = () => {
 const update = () => {
     form.transform((data) => ({
         ...data,
+        record_status_id:
+            form.record_status_id > statuses.registered
+                ? props.commitment.record_status_id
+                : form.record_status_id,
     })).put(route("commitments.update", props.commitment.id), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
     });
 };
 
-// --------------------------------------------
-// COMMITMENTS.DELETE
-// --------------------------------------------
-const destroy = () => {
-    router.delete(`/commitments/${props.commitment.id}`, {
-        onSuccess: () => confirm(),
-    });
-};
-
 const transaction = () => {
     return props.currentOperation === operations.create
         ? create()
+        : props.currentOperation === operations.show
+        ? ""
         : props.currentOperation === operations.update
         ? update()
         : "";
@@ -316,7 +335,7 @@ const searchCertificationByNumber = (alert = "") => {
         "
     />
 
-    <CardBox is-form @submit.prevent="transaction">
+    <CardBox is-form :in-modal="inModal" @submit.prevent="transaction">
         <!-- STEP 2 -->
         <div
             v-show="activePhase === 2"
@@ -355,9 +374,7 @@ const searchCertificationByNumber = (alert = "") => {
                             <BaseButton
                                 type="submit"
                                 color="info"
-                                :disabled="
-                                    disabled.global.value || disabledButton
-                                "
+                                :disabled="disabled.global.value"
                                 :icon="mdiMagnify"
                                 tooltip="Buscar"
                                 location="end"
@@ -456,6 +473,23 @@ const searchCertificationByNumber = (alert = "") => {
                     />
                 </FormField>
             </div>
+            <FormField
+                label="Observaciones"
+                label-for="japc_comments"
+                help="Máximo 255 caracteres."
+                :errors="form.errors.japc_comments"
+            >
+                <FormControl
+                    v-model="form.japc_comments"
+                    type="textarea"
+                    id="japc_comments"
+                    :icon="mdiTag"
+                    autocomplete="japc_comments"
+                    placeholder="Indique las principales observaciones."
+                    :has-errors="form.errors.japc_comments != null"
+                    :disabled="disabled.global.value"
+                />
+            </FormField>
         </div>
         <!-- STEP 3 -->
         <div
@@ -523,10 +557,7 @@ const searchCertificationByNumber = (alert = "") => {
                         autocomplete="record_status_id"
                         :options="selectOptions.recordStatus"
                         :has-errors="form.errors.record_status_id != null"
-                        :disabled="
-                            disabled.global.value ||
-                            disabled.record_status.value
-                        "
+                        :disabled="disabled.global.value"
                     />
                 </FormField>
                 <FormField
@@ -626,15 +657,21 @@ const searchCertificationByNumber = (alert = "") => {
                 />
             </FormField>
         </div>
-        <BaseDivider />
-        <BaseButtons>
+        <BaseDivider v-if="!inModal" />
+        <BaseButtons v-if="withButton">
             <BaseButton
                 type="submit"
                 color="success"
                 :label="elementProps.label"
-                :class="{ 'opacity-25': disabledButton }"
-                :disabled="disabledButton"
-                :icon="mdiContentSaveAll"
+                :class="{
+                    'opacity-25': disabled.button.value,
+                }"
+                :disabled="disabled.button.value"
+                :icon="
+                    currentOperation === operations.show
+                        ? mdiPrinter
+                        : mdiContentSaveAll
+                "
             />
             <BaseButton
                 route-name="commitments.index"

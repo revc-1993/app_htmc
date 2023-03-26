@@ -16,12 +16,13 @@ class Commitment extends Model
         "contract_administrator",
         "assignment_date",
         "customer_id",
+        "japc_comments",
 
-        "commitment_cur",
+        "vendor_id",
         "commitment_amount",
+        "commitment_cur",
         "commitment_comments",
         "commitment_date",
-        "vendor_id",
 
         "treasury_approved",
         "returned_document_number",

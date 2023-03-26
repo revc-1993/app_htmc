@@ -113,8 +113,10 @@ const submit = () => {
                         <BaseButton
                             v-if="canResetPassword"
                             route-name="password.request"
-                            color="lightDark"
+                            color="slate"
                             label="Recuperar contraseña"
+                            :class="{ 'opacity-25': form.processing }"
+                            :disabled="form.processing"
                             :icon="mdiLockReset"
                         />
                         <!-- <BaseButton
