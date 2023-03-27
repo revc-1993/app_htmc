@@ -4,7 +4,7 @@ import { Head } from "@inertiajs/vue3";
 import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
 import SectionMain from "@/components/SectionMain.vue";
 import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import FormCommitment from "@/components/commitments/FormCommitment.vue";
+import FormUser from "@/components/users/FormUser.vue";
 import BaseButton from "@/components/BaseButton.vue";
 
 // --------------------------------------------
@@ -34,12 +34,11 @@ const elementProps = {
                 />
             </SectionTitleLineWithButton>
 
-            <!-- <FormCommitment
-                :users="users"
-                :record-statuses="recordStatuses"
+            <FormUser
+                :roles="roles"
                 :current-operation="1"
                 :element-props="elementProps"
-            /> -->
+            />
         </SectionMain>
     </LayoutAuthenticated>
 </template>

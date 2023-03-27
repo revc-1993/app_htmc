@@ -44,7 +44,8 @@ const submit = () => {
 let departments = [];
 let role = [];
 
-const optionSelect = (array, newArray) => {
+const optionSelect = (array = []) => {
+    let newArray = [];
     array.forEach((element) => {
         newArray.push({
             id: Object.values(element)[0],
@@ -184,21 +185,27 @@ let selectOptions = {
                     :has-errors="form.errors.terms != null"
                 />
 
-                <BaseDivider />
-
-                <BaseButtons>
+                <BaseDivider v-if="!inModal" />
+                <BaseButtons v-if="withButton">
                     <BaseButton
                         type="submit"
-                        color="info"
-                        label="Crear usuario"
-                        :class="{ 'opacity-25': form.processing }"
-                        :disabled="form.processing"
+                        color="success"
+                        :label="elementProps.label"
+                        :class="{
+                            'opacity-25': disabled.button.value,
+                        }"
+                        :disabled="disabled.button.value"
+                        :icon="
+                            currentOperation === operations.show
+                                ? mdiPrinter
+                                : mdiContentSaveAll
+                        "
                     />
                     <BaseButton
-                        route-name="login"
-                        color="info"
-                        outline
-                        label="Iniciar sesión"
+                        route-name="certifications.index"
+                        color="slate"
+                        label="Regresar"
+                        :icon="mdiBackspace"
                     />
                 </BaseButtons>
             </CardBox>

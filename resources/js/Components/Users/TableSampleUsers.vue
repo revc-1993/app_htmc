@@ -187,14 +187,6 @@ const closeModal = (isconfirm) => {
         </BaseButtons>
     </BaseLevel>
 
-    <!-- <CardBoxModalCommitment
-        v-model="isModalActive"
-        v-model:user="user"
-        :element-props="elementProps[operations[currentOperation]]"
-        :current-operation="currentOperation"
-        @confirm="closeModal"
-    /> -->
-
     <CardBox class="mb-6" has-table>
         <div
             v-if="checkedRows.length"
