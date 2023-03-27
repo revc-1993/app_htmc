@@ -1,10 +1,10 @@
 <script setup>
 import { computed, ref } from "vue";
 import {
-    mdiEye,
-    mdiPenPlus,
-    mdiTrashCan,
-    mdiUpdate,
+    mdiAccountSearch,
+    mdiAccountEdit,
+    mdiAccountRemove,
+    mdiAccountPlus,
     mdiFileDelimited,
     mdiFileExcel,
 } from "@mdi/js";
@@ -14,14 +14,12 @@ import BaseButtons from "@/components/BaseButtons.vue";
 import BaseButton from "@/components/BaseButton.vue";
 import ExportButton from "@/components/ExportButton.vue";
 import SpanState from "@/components/SpanState.vue";
-import CardBoxModalCommitment from "@/components/commitments/CardBoxModalCommitment.vue";
+// import CardBoxModalCommitment from "@/components/commitments/CardBoxModalCommitment.vue";
 import CardBox from "@/components/CardBox.vue";
 
 const props = defineProps({
     checkable: Boolean,
-    commitments: Object,
     users: Object,
-    recordStatuses: Object,
     instance: {
         type: String,
         default: "",
@@ -31,8 +29,8 @@ const props = defineProps({
 // ---------------------------------------------------------
 // CONSTANTES
 // ---------------------------------------------------------
-// Objeto Certificación
-const commitment = ref({});
+// Objeto Usuario
+const user = ref({});
 // Modal abierto o cerrado
 const isModalActive = ref(false);
 // Operación escogida para modal
@@ -52,42 +50,35 @@ const elementProps = {
         color: "success",
         label: "Crear " + props.instance,
         tooltip: "Crear " + props.instance,
-        icon: mdiPenPlus,
+        icon: mdiAccountPlus,
     },
     show: {
         tag: 2,
         color: "info",
         label: "Ver " + props.instance,
         tooltip: "Ver detalles",
-        icon: mdiEye,
+        icon: mdiAccountSearch,
     },
     update: {
         tag: 3,
         color: "warning",
         label: "Actualizar " + props.instance,
         tooltip: "Actualizar",
-        icon: mdiUpdate,
+        icon: mdiAccountEdit,
     },
     delete: {
         tag: 4,
         color: "danger",
         label: "Eliminar " + props.instance,
-        tooltip: "Eliminar " + props.instance,
-        icon: mdiTrashCan,
+        tooltip: "Eliminar",
+        icon: mdiAccountRemove,
     },
-};
-
-const currentManagements = {
-    1: "1. Secretaría CGF",
-    2: "2. Secretaría JAPC",
-    3: "3. Analista de Compromiso",
-    4: "4. Coordinación General Financiera",
 };
 
 // ---------------------------------------------------------
 // TABLA: PAGINACIÓN
 // ---------------------------------------------------------
-const items = computed(() => props.commitments);
+const items = computed(() => props.users);
 const perPage = ref(5);
 const currentPage = ref(0);
 const itemsPaginated = computed(() =>
@@ -119,13 +110,13 @@ const remove = (arr, cb) => {
     });
     return newArr;
 };
-const checked = (isChecked, commitment) => {
+const checked = (isChecked, user) => {
     if (isChecked) {
-        checkedRows.value.push(commitment);
+        checkedRows.value.push(user);
     } else {
         checkedRows.value = remove(
             checkedRows.value,
-            (row) => row.id === commitment.id
+            (row) => row.id === user.id
         );
     }
 };
@@ -142,8 +133,8 @@ const alert = (operation) => alerts("alert", operation);
 // --------------------------------------------
 // ABRIR MODAL: 1 Create, 2 Show, 3 Update, 4 Delete
 // --------------------------------------------
-const openModal = (action, commitments = {}) => {
-    commitment.value = commitments;
+const openModal = (action, users = {}) => {
+    user.value = users;
     currentOperation.value = action;
     isModalActive.value = true;
 };
@@ -162,14 +153,14 @@ const closeModal = (isconfirm) => {
     <BaseLevel>
         <BaseButtons type="justify-start">
             <ExportButton
-                :data="commitments"
+                :data="users"
                 type="xls"
                 color="success"
                 :icon="mdiFileExcel"
                 :tooltip="'Exportar a Excel'"
             />
             <ExportButton
-                :data="commitments"
+                :data="users"
                 type="csv"
                 color="slate"
                 :icon="mdiFileDelimited"
@@ -183,44 +174,26 @@ const closeModal = (isconfirm) => {
             /> -->
         </BaseButtons>
         <BaseButtons type="justify-end">
-            <!-- BUTTON CON CRUD MODAL -->
-            <!-- <BaseButton
-                :color="elementProps.create.color"
-                :icon="elementProps.create.icon"
-                :label="elementProps.create.label"
-                :tooltip="elementProps.create.tooltip"
-                @click="openModal(elementProps.create.tag)"
-                small
-                v-if="
-                    $page.props.user.permissions.includes(
-                        'create_certification'
-                    )
-                "
-            /> -->
             <!-- BUTTON HACIA OTRA PAGINA -->
             <BaseButton
                 :color="elementProps.create.color"
                 :icon="elementProps.create.icon"
                 :label="elementProps.create.label"
                 :tooltip="elementProps.create.tooltip"
-                route-name="commitments.create"
+                route-name="users.create"
                 small
-                v-if="
-                    $page.props.user.permissions.includes('create_commitment')
-                "
+                v-if="$page.props.user.permissions.includes('create_user')"
             />
         </BaseButtons>
     </BaseLevel>
 
-    <CardBoxModalCommitment
+    <!-- <CardBoxModalCommitment
         v-model="isModalActive"
-        v-model:commitment="commitment"
-        :users="users"
-        :record-statuses="recordStatuses"
+        v-model:user="user"
         :element-props="elementProps[operations[currentOperation]]"
         :current-operation="currentOperation"
         @confirm="closeModal"
-    />
+    /> -->
 
     <CardBox class="mb-6" has-table>
         <div
@@ -242,78 +215,56 @@ const closeModal = (isconfirm) => {
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-if="checkable" class="text-center" />
                     <th class="text-center">N.</th>
-                    <th class="text-center">N. Certificación</th>
-                    <th class="text-center">Administrador de contrato</th>
-                    <th class="text-center">Estado</th>
-                    <th class="text-center">Monto</th>
-                    <th class="text-center">Gestión actual</th>
-                    <th class="text-center">Usuario asignado</th>
+                    <th class="text-center">Nombres</th>
+                    <th class="text-center">Correo electrónico</th>
+                    <th class="text-center">Departamento</th>
+                    <th class="text-center">Nick</th>
+                    <th class="text-center">Rol</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <tr
-                    v-for="commitment in itemsPaginated"
-                    :key="commitment.id"
+                    v-for="user in itemsPaginated"
+                    :key="user.id"
                     class="border-b border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                     <TableCheckboxCell
                         v-if="checkable"
-                        @checked="checked($event, commitment)"
+                        @checked="checked($event, user)"
                     />
                     <td class="border-b-0 lg:w-6 before:hidden text-center">
-                        {{ commitment.id }}
+                        {{ user.id }}
                         <!-- <UserAvatar
                         :username="certification.cf_contract_object"
                         class="w-24 h-24 mx-auto lg:w-6 lg:h-6"
                     /> -->
                     </td>
-                    <td data-label="N. Proceso" class="text-center">
-                        {{
-                            commitment.certification
-                                ? commitment.certification.certification_number
-                                : ""
-                        }}
+                    <td data-label="Nombres" class="text-center">
+                        {{ user.name }}
+                    </td>
+                    <td data-label="Correo electrónico" class="text-center">
+                        {{ user.email }}
+                    </td>
+                    <td data-label="Departamento" class="text-center">
+                        {{ user.department }}
                     </td>
                     <td
-                        data-label="Administrador de contrato"
-                        class="text-center"
+                        data-label="Nick"
+                        class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        {{ commitment.contract_administrator }}
+                        <strong v-if="user.username">
+                            @{{ user.username }}
+                        </strong>
+                        <div v-else>-</div>
                     </td>
-                    <td data-label="Estado" class="py-3 px-6 text-center">
-                        <SpanState
-                            v-if="commitment.record_status"
+                    <td data-label="Rol" class="py-3 px-6 text-center">
+                        <!-- <SpanState
+                            v-if="user.record_status"
                             :state="commitment.record_status"
                         />
-                        <div v-else>-</div>
-                    </td>
-                    <td data-label="Monto" class="text-center">
-                        <strong v-if="commitment.commitment_amount"
-                            >$ {{ commitment.commitment_amount }}</strong
-                        >
-                        <div v-else>-</div>
-                    </td>
-                    <td
-                        data-label="Gestión actual"
-                        class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
-                    >
-                        <strong>
-                            {{
-                                currentManagements[
-                                    commitment.current_management
-                                ]
-                            }}
-                        </strong>
-                    </td>
-                    <td
-                        data-label="Usuario asignado"
-                        class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
-                    >
-                        <strong v-if="commitment.user">
-                            @{{ commitment.user.username }}
-                        </strong>
-                        <div v-else>-</div>
+                        <div v-else>-</div> -->
+                        {{ user.roles[0].name }}
                     </td>
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"
@@ -328,12 +279,10 @@ const closeModal = (isconfirm) => {
                                 :tooltip="elementProps.show.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
-                                        'show_commitment'
+                                        'show_user'
                                     )
                                 "
-                                @click="
-                                    openModal(elementProps.show.tag, commitment)
-                                "
+                                @click="openModal(elementProps.show.tag, user)"
                                 small
                             />
                             <BaseButton
@@ -342,11 +291,11 @@ const closeModal = (isconfirm) => {
                                 :tooltip="elementProps.update.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
-                                        'update_commitment'
+                                        'update_user'
                                     )
                                 "
-                                route-name="commitments.edit"
-                                :id="commitment.id"
+                                route-name="users.edit"
+                                :id="user.id"
                                 small
                             />
                             <BaseButton
@@ -355,14 +304,11 @@ const closeModal = (isconfirm) => {
                                 :tooltip="elementProps.delete.tooltip"
                                 v-if="
                                     $page.props.user.permissions.includes(
-                                        'delete_commitment'
+                                        'delete_user'
                                     )
                                 "
                                 @click="
-                                    openModal(
-                                        elementProps.delete.tag,
-                                        commitment
-                                    )
+                                    openModal(elementProps.delete.tag, user)
                                 "
                                 small
                             />

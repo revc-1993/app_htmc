@@ -1,10 +1,12 @@
 <?php
 
-use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\CommitmentController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -32,15 +34,7 @@ Route::get('/', function () {
 Route::get('/dashboard', [ChartController::class, 'dashboard'])
     ->middleware(['auth', 'verified'])->name('dashboard');
 
-// Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
-//     return Inertia::render('HomeView');
-// })->name('dashboard');
-
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
     Route::get('/certifications/getCertificationByNumber', [CertificationController::class, 'getCertificationByNumber'])->name('certifications.getCertificationByNumber');
     Route::resource('certifications', CertificationController::class);
 
@@ -48,6 +42,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/vendors/getVendorByNit', [VendorController::class, 'getVendorByNit'])->name('vendors.getVendorByNit');
     Route::resource('vendors', VendorController::class);
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::resource('roles', RoleController::class);
+    Route::resource('users', UserController::class);
 });
 
 require __DIR__ . '/auth.php';

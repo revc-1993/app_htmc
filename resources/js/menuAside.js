@@ -1,16 +1,16 @@
 import {
     mdiAccountCircle,
     mdiMonitor,
-    mdiFileSign,
+    mdiShieldCrown,
     mdiTextBoxMultipleOutline,
     mdiCash,
-    mdiAlertCircle,
+    mdiNotebook,
     mdiFileDocumentEditOutline,
     mdiCardBulleted,
-    mdiViewList,
-    mdiTelevisionGuide,
-    mdiResponsive,
-    mdiPalette,
+    mdiFolderAccount,
+    mdiCheckbook,
+    mdiAccountGroup,
+    mdiBadgeAccountHorizontal,
     mdiRefresh,
 } from "@mdi/js";
 
@@ -69,6 +69,38 @@ export default [
         to: "/profile",
         label: "Profile",
         icon: mdiAccountCircle,
+    },
+    {
+        label: "Administrador",
+        icon: mdiShieldCrown,
+        menu: [
+            {
+                route: "users.index",
+                label: "Usuarios",
+                icon: mdiAccountGroup,
+            },
+            {
+                // route: "",
+                label: "Roles",
+                icon: mdiBadgeAccountHorizontal,
+            },
+            {
+                label: "Catálogo",
+                icon: mdiNotebook,
+                menu: [
+                    {
+                        // route: "",
+                        label: "Departamentos",
+                        icon: mdiFolderAccount,
+                    },
+                    {
+                        // route: "",
+                        label: "Tipos de gasto",
+                        icon: mdiCheckbook,
+                    },
+                ],
+            },
+        ],
     },
     // {
     //     to: "/login",

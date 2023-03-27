@@ -26,44 +26,29 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // *---- ROLES ----*
-        // Rol 1: Secretario CGF: Crear certificación, actualizar certificación (STEP 1)
-        $cgf_secretary_role = Role::create(['name' => 'cgf_secretary_role']);
-        // Rol 2: Secretario JAPC: actualizar certificación (STEP 2)
-        $japc_secretary_role = Role::create(['name' => 'japc_secretary_role']);
-        // Rol 3: Analita de certificación: actualizar certificación (STEP 3)
-        $analyst_role = Role::create(['name' => 'analyst_role']);
-        // Rol 4: Coordinador General Financiero: actualizar certificación (STEP 4)
-        $cgf_coord_role = Role::create(['name' => 'cgf_coord_role']);
-        // Rol 5: Administrador: todos los permisos (STEP 1,2,3,4)
-        $admin_role = Role::create(['name' => 'admin_role']);  // Admin
+        $roles = [
+            'cgf_secretary_role', 'japc_secretary_role', 'analyst_role', 'cgf_coord_role', 'admin_role',
+        ];
+        foreach ($roles as $role) {
+            ${$role} = Role::create(['name' => $role]);
+        }
 
-        // *---- PERMISOS: CERTIFICACION ----*
-        // Permiso 1: Crear certificación
-        $create_certification = Permission::create(['name' => 'create_certification']);
-        // Permiso 2: Ver certificación
-        $show_certification = Permission::create(['name' => 'show_certification']);
-        // Permiso 3: Editar certificación
-        $update_certification = Permission::create(['name' => 'update_certification']);
-        // Permiso 4: Eliminar certificación
-        $delete_certification = Permission::create(['name' => 'delete_certification']);
-        // *---- PERMISOS: COMPROMISO ----*
-        // Permiso 1: Crear compromiso
-        $create_commitment = Permission::create(['name' => 'create_commitment']);
-        // Permiso 2: Ver compromiso
-        $show_commitment = Permission::create(['name' => 'show_commitment']);
-        // Permiso 3: Editar compromiso
-        $update_commitment = Permission::create(['name' => 'update_commitment']);
-        // Permiso 4: Eliminar compromiso
-        $delete_commitment = Permission::create(['name' => 'delete_commitment']);
-        // *---- PERMISOS: POR STEPS ----*
-        // Permiso 5: Datos del Secretario CGF
-        $cgf_sec = Permission::create(['name' => 'cgf_sec']);
-        // Permiso 6: Datos del Secretario JAPC
-        $japc = Permission::create(['name' => 'japc']);
-        // Permiso 7: Datos del Analista de Certificación
-        $financial = Permission::create(['name' => 'financial']);
-        // Permiso 8: Datos del Coordinador General Financiero
-        $cgf_coord = Permission::create(['name' => 'cgf_coord']);
+        // *---- PERMISOS ----*
+        $permissions = [
+            // Certifications
+            'create_certification', 'show_certification', 'update_certification', 'delete_certification',
+            // Commitments
+            'create_commitment', 'show_commitment', 'update_commitment', 'delete_commitment',
+            // Currents Management
+            'cgf_sec', 'japc', 'financial', 'cgf_coord',
+            // Roles
+            'create_role', 'show_role', 'update_role', 'delete_role',
+            // Users
+            'create_user', 'show_user', 'update_user', 'delete_user',
+        ];
+        foreach ($permissions as $permission) {
+            ${$permission} = Permission::create(['name' => $permission]);
+        }
 
         // *---- ASIGNA PERMISOS A ROLES ----*
         $cgf_secretary_role->syncPermissions([
@@ -89,14 +74,16 @@ class DatabaseSeeder extends Seeder
         $admin_role->syncPermissions([
             $create_certification, $show_certification, $update_certification, $delete_certification,
             $create_commitment, $show_commitment, $update_commitment, $delete_commitment,
+            $create_role, $show_role, $update_role, $delete_role,
+            $create_user, $show_user, $update_user, $delete_user,
             $cgf_sec, $japc, $financial, $cgf_coord,
         ]);
 
         // *---- DEPARTAMENTOS ----*
-        $department = Department::factory(3)->create();
+        Department::factory(3)->create();
 
         // *---- TIPOS DE PROCESO ----*
-        $process_type = ProcessType::factory(3)->create();
+        ProcessType::factory(3)->create();
 
         // *---- TIPOS DE GASTO ----*
         $expense_types = ['PROCESO NUEVO', 'CONVALIDACION', 'DEUDA DE AÑOS ANTERIORES'];
@@ -113,7 +100,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // *---- ITEM PRESUPUESTARIOS ----*
-        $budget_line = BudgetLine::factory(3)->create();
+        BudgetLine::factory(3)->create();
 
         // *---- ESTADOS ----*
         $statuses = [

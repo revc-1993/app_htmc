@@ -4,23 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Inertia\Inertia;
-use App\Models\Vendor;
-use Faker\Core\Number;
 use App\Models\BudgetLine;
-use App\Models\Commitment;
 use App\Models\Department;
 use App\Models\ExpenseType;
 use App\Models\ProcessType;
 use App\Models\RecordStatus;
 use Illuminate\Http\Request;
 use App\Models\Certification;
-use App\Http\Requests\VendorRequest;
-use Illuminate\Support\Facades\Redirect;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
 
 class CertificationController extends Controller
 {
+
+    function __construct()
+    {
+        $this->middleware(
+            'permission:create_certification|show_certification|update_certification|delete_certification',
+            ['only' => ['index']]
+        );
+
+        $this->middleware(
+            'permission:create_certification',
+            ['only' => ['create', 'store']]
+        );
+
+        $this->middleware(
+            'permission:update_certification',
+            ['only' => ['edit', 'update']]
+        );
+
+        $this->middleware(
+            'permission:delete_certification',
+            ['only' => ['destroy']]
+        );
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -116,17 +135,15 @@ class CertificationController extends Controller
      * @param  \App\Models\Certification $certification
      * @return \Illuminate\Http\Response
      */
-    public function edit($certification_id)
+    public function edit($id)
     {
         $certification = Certification::with([
             'vendor' => function ($query) {
                 $query->select('id', 'nit', 'name');
             },
         ])
-            ->where('certifications.id', '=', $certification_id)
+            ->where('certifications.id', '=', $id)
             ->first();
-
-        // dd($certification);
 
         return Inertia::render('Certifications/Edit', [
             'certification' => $certification,
@@ -179,11 +196,6 @@ class CertificationController extends Controller
             "operation" => 4,
         ];
         return to_route('certifications.index')->with(compact('message'));
-    }
-
-    protected function getRole()
-    {
-        return auth()->user()->roles()->first()->id;
     }
 
     protected function paramsControl($request)
