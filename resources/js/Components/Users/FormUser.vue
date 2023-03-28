@@ -47,6 +47,7 @@ const props = defineProps({
     },
 });
 
+console.log(props.roles);
 // ---------------------------------------------------------
 // CONSTANTES
 // ---------------------------------------------------------
@@ -61,6 +62,7 @@ const operations = {
 // ---------------------------------------------------------
 // const optionSelect = (array = []) => {
 //     let newArray = [];
+//     let i = 0;
 //     array.forEach((element) => {
 //         newArray.push({
 //             id: Object.values(element)[0],
@@ -72,7 +74,6 @@ const operations = {
 
 // let selectOptions = {
 //     roles: optionSelect(props.roles),
-//     recordStatus: optionSelect(props.recordStatuses),
 // };
 
 // ---------------------------------------------------------

@@ -266,18 +266,6 @@ const closeModal = (isconfirm) => {
                             no-wrap
                         >
                             <BaseButton
-                                :color="elementProps.show.color"
-                                :icon="elementProps.show.icon"
-                                :tooltip="elementProps.show.tooltip"
-                                v-if="
-                                    $page.props.user.permissions.includes(
-                                        'show_user'
-                                    )
-                                "
-                                @click="openModal(elementProps.show.tag, user)"
-                                small
-                            />
-                            <BaseButton
                                 :color="elementProps.update.color"
                                 :icon="elementProps.update.icon"
                                 :tooltip="elementProps.update.tooltip"
