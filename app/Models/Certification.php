@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Certification extends Model
 {
@@ -31,6 +31,7 @@ class Certification extends Model
         'cp_date',
         'budget_line_id',
         'certified_amount',
+        'balance',
         'certification_number',
         'certification_comments',
 
@@ -141,7 +142,7 @@ class Certification extends Model
 
     public function scopeApproved($query, $request)
     {
-        $query->where('certification_number', $request)->where('record_status_id', '>=', 6);
+        $query->where('certification_number', $request)->where('record_status_id', '=', 6);
     }
 
     public function scopeNotReviewed($query)

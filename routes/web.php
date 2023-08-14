@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccrualController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CertificationController;
 use App\Http\Controllers\CommitmentController;
@@ -38,7 +39,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/certifications/getCertificationByNumber', [CertificationController::class, 'getCertificationByNumber'])->name('certifications.getCertificationByNumber');
     Route::resource('certifications', CertificationController::class);
 
+    Route::get('/commitments/getCommitmentByNumber', [CommitmentController::class, 'getCommitmentByNumber'])->name('commitments.getCommitmentByNumber');
     Route::resource('commitments', CommitmentController::class);
+
+    Route::resource('accruals', AccrualController::class);
 
     Route::get('/vendors/getVendorByNit', [VendorController::class, 'getVendorByNit'])->name('vendors.getVendorByNit');
     Route::resource('vendors', VendorController::class);

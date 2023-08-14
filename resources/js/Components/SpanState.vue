@@ -17,22 +17,24 @@ const colorState = computed(() => {
         1: "danger",
         2: "orange",
         3: "warning",
-        4: "green",
-        5: "violet",
+        4: "violet",
+        5: "green",
         6: "success",
-        7: "teal",
+        7: "light",
+        8: "teal",
     }[props.state.id];
 });
 
 const pillIcon = computed(() => {
     return {
         danger: mdiTrendingDown,
-        orange: mdiTrendingDown,
-        warning: mdiTrendingNeutral,
-        green: mdiTrendingUp,
+        orange: mdiTrendingNeutral,
+        warning: mdiTrendingUp,
         violet: mdiTrendingDown,
+        green: mdiTrendingUp,
         success: mdiTrendingUp,
-        teal: mdiTrendingUp,
+        light: mdiTrendingDown,
+        teal: mdiTrendingDown,
         info: mdiTrendingNeutral,
     }[colorState.value];
 });

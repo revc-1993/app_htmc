@@ -30,9 +30,9 @@ const olClass = computed(() => {
         "text-gray-500",
     ];
     base.push(
-        props.steps.length === 4
+        props.steps?.length === 4
             ? "sm:grid-cols-4"
-            : props.steps.length === 3
+            : props.steps?.length === 3
             ? "sm:grid-cols-3"
             : "sm:grid-cols-2"
     );
@@ -193,7 +193,7 @@ const stepping = (step) => {
                         <strong class="block font-medium">
                             {{ step.id }}.
                         </strong>
-                        <small class="mt-1"> {{ step.label }} </small>
+                        <small class="mt-1"> {{ step.nickname }} </small>
                     </p>
                 </li>
 

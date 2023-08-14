@@ -10,14 +10,17 @@ use App\Models\ExpenseType;
 use App\Models\ProcessType;
 use App\Models\RecordStatus;
 use Illuminate\Http\Request;
+use App\Services\CertificationService;
 use App\Models\Certification;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
+use App\Models\CustomRole;
 
 class CertificationController extends Controller
 {
+    protected $certificationService;
 
-    function __construct()
+    public function __construct(CertificationService $certificationService)
     {
         $this->middleware(
             'permission:create_certification|show_certification|update_certification|delete_certification',
@@ -38,6 +41,8 @@ class CertificationController extends Controller
             'permission:delete_certification',
             ['only' => ['destroy']]
         );
+
+        $this->certificationService = $certificationService;
     }
 
     /**
@@ -47,46 +52,27 @@ class CertificationController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Certifications/Index', [
-            'certifications' => Certification
-                ::with([
-                    'user' => function ($query) {
-                        $query->select('id', 'username');
-                    },
-                    'department' => function ($query) {
-                        $query->select('id', 'department');
-                    },
-                    'processType' => function ($query) {
-                        $query->select('id', 'process_type');
-                    },
-                    'expenseType' => function ($query) {
-                        $query->select('id', 'expense_type');
-                    },
-                    'budgetLine' => function ($query) {
-                        $query->select('id', 'budget_line');
-                    },
-                    'recordStatus' => function ($query) {
-                        $query->select('id', 'status');
-                    },
-                    'vendor' => function ($query) {
-                        $query->select('id', 'nit', 'name');
-                    },
-                ])
-                ->filtered()
-                ->get(),    // Aquí se puede especificar los campos especificos a extraer
-            'departments' => Department::all(['id', 'department']),
-            'processTypes' => ProcessType::all(['id', 'process_type']),
-            'expenseTypes' => ExpenseType::all(['id', 'expense_type']),
-            'budgetLines' => BudgetLine::all(['id', 'budget_line']),
-            'users' => User::all(['id', 'name']),
-            'recordStatuses' => RecordStatus::all(['id', 'status']),
-        ]);
+        $certifications = $this->certificationService->getAllCertifications();
+        $departments = Department::all(['id', 'department']);
+        $processTypes = ProcessType::all(['id', 'process_type']);
+        $expenseTypes = ExpenseType::all(['id', 'expense_type']);
+        $budgetLines = BudgetLine::all(['id', 'budget_line']);
+        $users = User::all(['id', 'name']);
+        $roles = CustomRole::allRoles();
+        $recordStatuses = RecordStatus::all(['id', 'status']);
+
+        return Inertia::render('Certifications/Index', compact(
+            'certifications',
+            'departments',
+            'processTypes',
+            'expenseTypes',
+            'budgetLines',
+            'users',
+            'roles',
+            'recordStatuses'
+        ));
     }
 
-    public function show(Certification $certification)
-    {
-        // return json_encode(['data'])
-    }
 
     /**
      * Show the form for creating a new resource.
@@ -95,16 +81,22 @@ class CertificationController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Certifications/Create', [
-            'departments' => Department::all(['id', 'department']),
-            'processTypes' => ProcessType::all(['id', 'process_type']),
-            'expenseTypes' => ExpenseType::all(['id', 'expense_type']),
-            'budgetLines' => BudgetLine::all(['id', 'budget_line']),
-            'users' => User::analystRole()->get(),
-            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
-        ]);
-    }
+        $departments = Department::all(['id', 'department']);
+        $processTypes = ProcessType::all(['id', 'process_type']);
+        $expenseTypes = ExpenseType::all(['id', 'expense_type']);
+        $budgetLines = BudgetLine::all(['id', 'budget_line']);
+        $users = User::analystRole()->get();
+        $roles = CustomRole::allRoles();
 
+        return Inertia::render('Certifications/Create', compact(
+            'departments',
+            'processTypes',
+            'expenseTypes',
+            'budgetLines',
+            'users',
+            'roles'
+        ));
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -114,17 +106,15 @@ class CertificationController extends Controller
      */
     public function store(StoreCertificationRequest $request)
     {
-        $adjustedRequest = $this->paramsControl($request);
-
-        $certification = Certification::create($adjustedRequest);
+        $certification = $this->certificationService->createCertification($request);
 
         $message = [
             "response" => "Registro creado correctamente.",
             "operation" => 1,
         ];
 
-        if ($certification->certification_memo === null)
-            $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de certificación."];
+        if (is_null($certification->certification_memo))
+            $message["comments"] = "Atención: No se especificó un Nro. de Memorando de certificación.";
 
         return to_route('certifications.index')->with(compact('message'));
     }
@@ -137,23 +127,25 @@ class CertificationController extends Controller
      */
     public function edit($id)
     {
-        $certification = Certification::with([
-            'vendor' => function ($query) {
-                $query->select('id', 'nit', 'name');
-            },
-        ])
-            ->where('certifications.id', '=', $id)
-            ->first();
+        $certification = $this->certificationService->getCertificationForEdit($id);
+        $departments = Department::all(['id', 'department']);
+        $processTypes = ProcessType::all(['id', 'process_type']);
+        $expenseTypes = ExpenseType::all(['id', 'expense_type']);
+        $budgetLines = BudgetLine::all(['id', 'budget_line']);
+        $recordStatuses = RecordStatus::all(['id', 'status']);
+        $users = User::analystRole()->get();
+        $roles = CustomRole::allRoles();
 
-        return Inertia::render('Certifications/Edit', [
-            'certification' => $certification,
-            'departments' => Department::all(['id', 'department']),
-            'processTypes' => ProcessType::all(['id', 'process_type']),
-            'expenseTypes' => ExpenseType::all(['id', 'expense_type']),
-            'budgetLines' => BudgetLine::all(['id', 'budget_line']),
-            'users' => User::analystRole()->get(),
-            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
-        ]);
+        return Inertia::render('Certifications/Edit', compact(
+            'certification',
+            'departments',
+            'processTypes',
+            'expenseTypes',
+            'budgetLines',
+            'recordStatuses',
+            'users',
+            'roles'
+        ));
     }
 
     /**
@@ -165,19 +157,18 @@ class CertificationController extends Controller
      */
     public function update(UpdateCertificationRequest $request, Certification $certification)
     {
-        $role = $this->getRole();
-
-        $adjustedRequest = $this->paramsControl($request);
-
-        $certification->update($adjustedRequest);
+        $role = $this->certificationService->getRole();
+        $adjustedRequest = $this->certificationService->adjustParams($request);
+        $this->certificationService->updateCertification($certification, $adjustedRequest);
 
         $message = [
             "response" => "Registro actualizado correctamente.",
             "operation" => 3,
         ];
 
-        if ($certification->certification_memo === null && $role <= 2)
-            $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de certificación."];
+        if (is_null($certification->certification_memo) && $role <= 2) {
+            $message["comments"] = "Atención: No se especificó un Nro. de Memorando de certificación.";
+        }
 
         return to_route('certifications.index')->with(compact('message'));
     }
@@ -198,106 +189,9 @@ class CertificationController extends Controller
         return to_route('certifications.index')->with(compact('message'));
     }
 
-    protected function paramsControl($request)
-    {
-        $adjustedRequest = $request->validated() +
-            $this->manageDate($request->current_management);
-
-        $adjustedRequest['current_management'] = $this->manageAssignment($request);
-        $adjustedRequest['record_status_id'] = $this->manageRecordStatus($request);
-
-        return $adjustedRequest;
-    }
-
-    protected function manageDate(int $current_management)
-    {
-        if ($current_management === 1)        return  ['sec_cgf_date' => now()];
-        else if ($current_management === 2)   return  ['assignment_date' => now()];
-        else if ($current_management === 3)   return  ['cp_date' => now()];
-        else if ($current_management === 4)   return  ['coord_cgf_date' => now()];
-        else return [];
-    }
-
-    protected function manageAssignment($request)
-    {
-
-        if (
-            !is_null($request->contract_object) && is_null($request->customer_id)
-            && is_null($request->record_status_id) && is_null($request->treasury_approved)
-        )
-            return 2;
-
-        if (
-            !is_null($request->contract_object) && !is_null($request->customer_id)
-            && (
-                // 1
-                (is_null($request->record_status_id) && is_null($request->treasury_approved))
-                // 2
-                || ($request->record_status_id < 4
-                    && (is_null($request->treasury_approved) || $request->treasury_approved === "returned"
-                    )
-                )
-                // 3
-                || (
-                    ($request->record_status_id > 4 || is_null($request->record_status_id))
-                    && $request->treasury_approved === "returned"
-                )
-                // 4
-                || ($request->record_status_id === 4 && $request->treasury_approved === "returned" && $request->current_management === 4)
-            )
-        )
-            return 3;
-
-        if (
-            !is_null($request->contract_object) && !is_null($request->customer_id)
-            && (
-                // 1
-                ($request->record_status_id === 4 && is_null($request->treasury_approved))
-                // 2
-                || (
-                    ($request->record_status_id >= 4 || is_null($request->record_status_id))
-                    && ($request->treasury_approved === "approved" || $request->treasury_approved === "liquidated")
-                )
-                // 3
-                || ($request->record_status_id === 4 && $request->treasury_approved === "returned" && $request->current_management === 3)
-            )
-        )
-            return 4;
-    }
-
-    protected function manageRecordStatus($request)
-    {
-        if (
-            // 1
-            (($request->record_status_id > 4 || is_null($request->record_status_id)) && $request->treasury_approved === "returned")
-            // 2
-            || ($request->record_status_id === 4 && $request->treasury_approved === "returned" && $request->current_management === 4)
-        ) {
-            return 5;
-        }
-
-        if (
-            // 1
-            (($request->record_status_id >= 4 || is_null($request->record_status_id)) && $request->treasury_approved === "approved")
-        ) {
-            return 6;
-        }
-
-        if (
-            // 1
-            (($request->record_status_id >= 4 || is_null($request->record_status_id)) && $request->treasury_approved === "liquidated")
-        ) {
-            return 7;
-        }
-
-        return $request->record_status_id;
-    }
-
     public function getCertificationByNumber(Request $request)
     {
-        $certification = Certification::approved($request->get('certification_number'))
-            ->first(['id', 'certification_number', 'contract_object']);
-
+        $certification = $this->certificationService->getCertificationByNumber($request->get('certification_number'));
         return response()->json(compact('certification'), 200);
     }
 }

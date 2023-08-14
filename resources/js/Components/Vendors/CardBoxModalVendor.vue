@@ -2,9 +2,9 @@
 import { computed } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import { mdiCardAccountDetails } from "@mdi/js";
-import CardBoxModal from "@/components/CardBoxModal.vue";
-import FormField from "@/components/FormField.vue";
-import FormControl from "@/components/FormControl.vue";
+import CardBoxModal from "@/Components/CardBoxModal.vue";
+import FormField from "@/Components/FormField.vue";
+import FormControl from "@/Components/FormControl.vue";
 
 // ---------------------------------------------------------
 // PROPS

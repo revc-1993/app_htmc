@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\FormRequestValidator\Certification\CertificationRoleValidatorFactory;
 
 class StoreCertificationRequest extends FormRequest
 {
@@ -23,19 +24,9 @@ class StoreCertificationRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'certification_memo' => [
-                'nullable',
-                'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/'
-            ],
-            'content' => ['nullable', 'min:10'],
-            'contract_object' => ['required', 'string', 'min:15', 'max:255'],
-            'process_type_id' => ['required'],
-            'expense_type_id' => ['required'],
-            'department_id' => ['required'],
-            'sec_cgf_comments' => ['nullable'],
-            'current_management' => ['nullable'],
-        ];
+        $roleValidator = CertificationRoleValidatorFactory::make($this->getCurrentRole(), $this->input());
+
+        return $roleValidator->getRules();
     }
 
     public function messages(): array
@@ -49,5 +40,13 @@ class StoreCertificationRequest extends FormRequest
             // 'description.string' => __('El campo descripción debe ser una cadena de texto.'),
             // 'description.max' => __('El campo descripción no debe ser mayor a :max caracteres.'),
         ];
+    }
+
+    protected function getCurrentRole()
+    {
+        $role = auth()->user()->roles()->first()->id;
+        if ($role === 5)    $currentRole = $this->current_management;
+        else                $currentRole = $role;
+        return $currentRole;
     }
 }

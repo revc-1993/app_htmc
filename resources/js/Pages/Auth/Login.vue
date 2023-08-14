@@ -6,19 +6,19 @@ import {
     mdiLoginVariant,
     mdiLockReset,
 } from "@mdi/js";
-import LayoutGuest from "@/layouts/LayoutGuest.vue";
-import SectionFullScreen from "@/components/SectionFullScreen.vue";
-import CardBox from "@/components/CardBox.vue";
-import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
-import FormField from "@/components/FormField.vue";
-import FormControl from "@/components/FormControl.vue";
+import LayoutGuest from "@/Layouts/LayoutGuest.vue";
+import SectionFullScreen from "@/Components/SectionFullScreen.vue";
+import CardBox from "@/Components/CardBox.vue";
+import FormCheckRadioGroup from "@/Components/FormCheckRadioGroup.vue";
+import FormField from "@/Components/FormField.vue";
+import FormControl from "@/Components/FormControl.vue";
 import BaseDivider from "@/components/BaseDivider.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import BaseButtons from "@/components/BaseButtons.vue";
+import BaseButton from "@/Components/BaseButton.vue";
+import BaseButtons from "@/Components/BaseButtons.vue";
 import FormValidationErrors from "@/components/FormValidationErrors.vue";
 import NotificationBarInCard from "@/components/NotificationBarInCard.vue";
-import BaseLevel from "@/components/BaseLevel.vue";
-import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
+import BaseLevel from "@/Components/BaseLevel.vue";
+import SectionTitleLineWithButton from "@/Components/SectionTitleLineWithButton.vue";
 
 const props = defineProps({
     canResetPassword: Boolean,

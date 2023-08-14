@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\FormRequestValidator\Commitment\CommitmentRoleValidatorFactory;
 
 class StoreCommitmentRequest extends FormRequest
 {
@@ -23,17 +24,15 @@ class StoreCommitmentRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            'certification_id' => ['required'],
-            'commitment_memo' => [
-                'nullable',
-                'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/'
-            ],
-            'process_number' => ['nullable', 'alphadash', 'string', 'min:15', 'max:100'],
-            'contract_administrator' => ['required'],
-            'customer_id' => ['required'],
-            'japc_comments' => ['nullable'],
-            'current_management' => ['nullable'],
-        ];
+        $roleValidator = CommitmentRoleValidatorFactory::make($this->getCurrentRole(), $this->input());
+        return $roleValidator->getRules();
+    }
+
+    protected function getCurrentRole()
+    {
+        $role = auth()->user()->roles()->first()->id;
+        if ($role === 5)    $currentRole = $this->current_management;
+        else                $currentRole = $role;
+        return $currentRole;
     }
 }

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, useSlots } from "vue";
-import CardBoxComponentBody from "@/components/CardBoxComponentBody.vue";
-import CardBoxComponentFooter from "@/components/CardBoxComponentFooter.vue";
+import CardBoxComponentBody from "@/Components/CardBoxComponentBody.vue";
+import CardBoxComponentFooter from "@/Components/CardBoxComponentFooter.vue";
 import { useStyleStore } from "@/stores/style.js";
 
 const styleStore = useStyleStore();

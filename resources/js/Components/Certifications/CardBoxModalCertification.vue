@@ -1,20 +1,9 @@
 <script setup>
-import { computed, ref } from "vue";
-import { router, useForm, usePage } from "@inertiajs/vue3";
-import {
-    mdiFormatListBulletedType,
-    mdiTag,
-    mdiDomain,
-    mdiNumeric,
-    mdiCurrencyUsd,
-    mdiCardAccountDetails,
-} from "@mdi/js";
-import CardBoxModal from "@/components/CardBoxModal.vue";
-import FormField from "@/components/FormField.vue";
-import FormControl from "@/components/FormControl.vue";
-import Stepper from "@/components/Stepper.vue";
-import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
-import FormCertification from "./FormCertification.vue";
+import { computed } from "vue";
+import { router } from "@inertiajs/vue3";
+import CardBoxModal from "@/Components/CardBoxModal.vue";
+import FormCertification from "@/components/certifications/FormCertification.vue";
+import { mdiPrinter } from "@mdi/js";
 
 // ---------------------------------------------------------
 // PROPS
@@ -29,6 +18,7 @@ const props = defineProps({
     expenseTypes: Object,
     budgetLines: Object,
     users: Object,
+    roles: Object,
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
@@ -110,8 +100,9 @@ const transaction = () => {
                 :expense-types="expenseTypes"
                 :budget-lines="budgetLines"
                 :users="users"
+                :roles="roles"
                 :record-statuses="recordStatuses"
-                :current-operation="2"
+                :current-operation="currentOperation"
                 :element-props="elementProps"
                 :with-button="
                     currentOperation === operations.create ||

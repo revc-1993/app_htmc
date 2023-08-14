@@ -14,12 +14,17 @@ class Commitment extends Model
         "commitment_memo",
         "process_number",
         "contract_administrator",
+        "contract_number",
+        "sec_cgf_date",
+        "sec_cgf_comments",
+
         "assignment_date",
         "customer_id",
         "japc_comments",
 
         "vendor_id",
         "commitment_amount",
+        "balance",
         "commitment_cur",
         "commitment_comments",
         "commitment_date",
@@ -77,5 +82,10 @@ class Commitment extends Model
     public function scopeFiltered($query)
     {
         $query->orderBy("commitments.id", "desc");
+    }
+
+    public function accruals()
+    {
+        return $this->hasMany(Accrual::class, 'commitment_id');
     }
 }

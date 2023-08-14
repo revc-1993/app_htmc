@@ -1,5 +1,5 @@
 <script setup>
-import NotificationBar from "@/components/NotificationBar.vue";
+import NotificationBar from "@/Components/NotificationBar.vue";
 import { useToast } from "vue-toastification";
 import { createToaster } from "@meforma/vue-toaster";
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\FormRequestValidator\Accrual\AccrualRoleValidatorFactory;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAccrualRequest extends FormRequest
@@ -13,7 +14,7 @@ class UpdateAccrualRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,8 +24,15 @@ class UpdateAccrualRequest extends FormRequest
      */
     public function rules()
     {
-        return [
-            //
-        ];
+        $roleValidator = AccrualRoleValidatorFactory::make($this->getCurrentRole(), $this->input());
+        return $roleValidator->getRules();
+    }
+
+    protected function getCurrentRole()
+    {
+        $role = auth()->user()->roles()->first()->id;
+        if ($role === 5)    $currentRole = $this->current_management;
+        else                $currentRole = $role;
+        return $currentRole;
     }
 }

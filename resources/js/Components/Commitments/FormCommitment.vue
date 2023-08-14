@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import axios from "axios";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import {
@@ -11,19 +11,30 @@ import {
     mdiCardAccountDetails,
     mdiContentSaveAll,
     mdiBackspace,
+    mdiPrinter,
+    mdiBriefcasePlus,
 } from "@mdi/js";
-import CardBox from "@/components/CardBox.vue";
-import FormField from "@/components/FormField.vue";
-import FormControl from "@/components/FormControl.vue";
-import FormControlWithButton from "@/components/FormControlWithButton.vue";
-import Stepper from "@/components/Stepper.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import BaseDivider from "@/components/BaseDivider.vue";
-import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
-import BaseLevel from "@/components/BaseLevel.vue";
-import FormValidationErrors from "@/components/FormValidationErrors.vue";
-import BaseButtons from "../BaseButtons.vue";
-import Toast from "@/components/Toast.vue";
+import CardBox from "@/Components/CardBox.vue";
+import FormField from "@/Components/FormField.vue";
+import FormControl from "@/Components/FormControl.vue";
+import FormControlWithButton from "@/Components/FormControlWithButton.vue";
+import Stepper from "@/Components/Stepper.vue";
+import BaseButton from "@/Components/BaseButton.vue";
+import BaseDivider from "@/Components/BaseDivider.vue";
+import FormCheckRadioGroup from "@/Components/FormCheckRadioGroup.vue";
+import CardBoxModalVendor from "@/Components/Vendors/CardBoxModalVendor.vue";
+import BaseLevel from "@/Components/BaseLevel.vue";
+import FormValidationErrors from "@/Components/FormValidationErrors.vue";
+import BaseButtons from "@/Components/BaseButtons.vue";
+import Toast from "@/Components/Toast.vue";
+import LabelDate from "@/Components/LabelDate.vue";
+
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime"; // Importa el complemento de fechas relativas
+import "dayjs/locale/es"; // Si deseas utilizar el idioma español
+
+dayjs.locale("es");
+dayjs.extend(relativeTime);
 
 // ---------------------------------------------------------
 // PROPS
@@ -34,6 +45,7 @@ const props = defineProps({
         default: {},
     },
     users: Object,
+    roles: Object,
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
@@ -69,20 +81,31 @@ const statuses = {
     pendingReview: 1,
     reviewing: 2,
     observed: 3,
-    registered: 4,
-    returned: 5,
+    returned: 4,
+    registered: 5,
     approved: 6,
-    liquidated: 7,
+    canceled: 7,
 };
 
 const role = computed(() => usePage().props.auth.user.roles[0].id);
-const activePhase = ref(2);
-activePhase.value = role.value && role.value < 5 ? role.value : 2;
+const activePhase = ref(1);
+
+const toast = ref(false);
+const messageResource = ref("");
+
+const isModalActive = ref(false);
+const newVendor = ref({});
+
+// ---------------------------------------------------------
+// SETS
+// ---------------------------------------------------------
+activePhase.value = role.value && role.value < 5 ? role.value : 1;
 
 const certification = {
     contract_object: ref(""),
     vendor_id: ref(""),
     vendor_name: ref(""),
+    balance: ref(0),
 };
 
 if (
@@ -93,28 +116,10 @@ if (
     certification.contract_object.value =
         props.commitment.certification.contract_object;
     certification.vendor_id.value = props.commitment.certification.vendor_id;
-    certification.vendor_name.value =
-        props.commitment.certification.vendor.name;
+    certification.balance.value = props.commitment.certification.balance;
+    // certification.vendor_name.value =
+    //     props.commitment.certification.vendor.name ?? "";
 }
-
-const steps = [
-    {
-        id: 2,
-        label: "Secretaría JAPC",
-    },
-    {
-        id: 3,
-        label: "Analista de Compromiso",
-    },
-    {
-        id: 4,
-        label: "Coordinación General Financiera",
-    },
-];
-
-// Toast
-const messageResource = ref("");
-const toast = ref(false);
 
 // ---------------------------------------------------------
 // SELECTS
@@ -138,64 +143,68 @@ let selectOptions = {
 // ---------------------------------------------------------
 // FORM
 // ---------------------------------------------------------
-const form = useForm(
-    props.currentOperation === operations.create
-        ? {
-              certification_id: "",
-              commitment_memo: "",
-              process_number: "",
-              contract_administrator: "",
-              assignment_date: new Date().toLocaleDateString(),
-              japc_comments: "",
-              customer_id: "",
+const form = useForm({
+    certification_id: "",
+    commitment_memo: "",
+    process_number: "",
+    contract_administrator: "",
+    contract_number: "",
+    sec_cgf_date: new Date().toLocaleDateString(),
+    sec_cgf_comments: "",
 
-              commitment_cur: "",
-              commitment_amount: "",
-              commitment_comments: "",
-              commitment_date: new Date().toLocaleDateString(),
-              vendor_id: "",
-              record_status_id: "",
-              treasury_approved: "",
-              returned_document_number: "",
-              coord_cgf_comments: "",
-              coord_cgf_date: new Date().toLocaleDateString(),
+    assignment_date: new Date().toLocaleDateString(),
+    japc_comments: "",
+    customer_id: "",
 
-              current_management: "",
-          }
-        : {
-              certification_id: props.commitment.certification_id,
-              commitment_memo: props.commitment.commitment_memo,
-              process_number: props.commitment.process_number,
-              contract_administrator: props.commitment.contract_administrator,
-              assignment_date:
-                  props.commitment.assignment_date ??
-                  new Date().toLocaleDateString(),
-              japc_comments: props.commitment.japc_comments,
-              customer_id: props.commitment.customer_id ?? "",
+    commitment_cur: "",
+    commitment_amount: "",
+    commitment_comments: "",
+    commitment_date: new Date().toLocaleDateString(),
+    vendor_id: "",
+    record_status_id: "",
+    treasury_approved: "",
+    returned_document_number: "",
+    coord_cgf_comments: "",
+    coord_cgf_date: new Date().toLocaleDateString(),
 
-              commitment_cur: props.commitment.commitment_cur,
-              commitment_amount: props.commitment.commitment_amount,
-              commitment_comments: props.commitment.commitment_comments,
-              commitment_date:
-                  props.commitment.commitment_date ??
-                  new Date().toLocaleDateString(),
-              vendor_id: props.commitment.vendor_id,
-              record_status_id:
-                  props.commitment.record_status_id &&
-                  props.commitment.record_status_id <= statuses.registered
-                      ? props.commitment.record_status_id
-                      : "",
-              treasury_approved: props.commitment.treasury_approved,
-              returned_document_number:
-                  props.commitment.returned_document_number,
-              coord_cgf_comments: props.commitment.coord_cgf_comments,
-              coord_cgf_date:
-                  props.commitment.coord_cgf_date ??
-                  new Date().toLocaleDateString(),
+    current_management: "",
+});
 
-              current_management: props.commitment.current_management,
-          }
-);
+onMounted(() => {
+    if (props.currentOperation !== operations.create) {
+        form.certification_id = props.commitment.certification_id;
+        form.commitment_memo = props.commitment.commitment_memo;
+        form.process_number = props.commitment.process_number;
+        form.contract_number = props.commitment.contract_number;
+        form.contract_administrator = props.commitment.contract_administrator;
+        form.sec_cgf_comments = props.commitment.sec_cgf_comments;
+        form.sec_cgf_date = props.commitment.sec_cgf_date;
+        form.assignment_date =
+            props.commitment.assignment_date ?? new Date().toLocaleDateString();
+        form.japc_comments = props.commitment.japc_comments;
+        form.customer_id = props.commitment.customer_id ?? "";
+
+        form.commitment_cur = props.commitment.commitment_cur;
+        form.commitment_amount = props.commitment.commitment_amount;
+        form.commitment_comments = props.commitment.commitment_comments;
+        form.commitment_date =
+            props.commitment.commitment_date ?? new Date().toLocaleDateString();
+        form.vendor_id = props.commitment.vendor_id;
+        form.record_status_id =
+            props.commitment.record_status_id &&
+            props.commitment.record_status_id <= statuses.registered
+                ? props.commitment.record_status_id
+                : "";
+        form.treasury_approved = props.commitment.treasury_approved;
+        form.returned_document_number =
+            props.commitment.returned_document_number;
+        form.coord_cgf_comments = props.commitment.coord_cgf_comments;
+        form.coord_cgf_date =
+            props.commitment.coord_cgf_date ?? new Date().toLocaleDateString();
+
+        form.current_management = props.commitment.current_management;
+    }
+});
 
 const formSearchCertification = useForm(
     props.currentOperation === operations.create
@@ -206,6 +215,18 @@ const formSearchCertification = useForm(
               certificationNumber: props.commitment.certification
                   ? props.commitment.certification.certification_number
                   : "",
+          }
+);
+
+const formSearchVendor = useForm(
+    props.currentOperation === operations.create
+        ? {
+              nit: "",
+              name: "",
+          }
+        : {
+              nit: props.commitment.vendor ? props.commitment.vendor.nit : "",
+              name: props.commitment.vendor ? props.commitment.vendor.name : "",
           }
 );
 
@@ -244,7 +265,7 @@ disabled.button.value =
 const create = () => {
     form.transform((data) => ({
         ...data,
-        current_management: 2,
+        current_management: 1,
     })).post(route("commitments.store"), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
@@ -295,6 +316,8 @@ const searchCertificationByNumber = (alert = "") => {
                     response.data.certification.certification_number;
                 certification.contract_object.value =
                     response.data.certification.contract_object;
+                certification.balance.value =
+                    response.data.certification.balance;
 
                 if (alert === "alert") {
                     toast.value = true;
@@ -315,18 +338,90 @@ const searchCertificationByNumber = (alert = "") => {
             router.reload({ only: ["FormControl"] });
             if (form.certification_id !== null) form.certification_id = null;
             certification.contract_object.value = "";
+            certification.balance.value = "";
             console.log(error);
         });
+};
+
+// --------------------------------------------
+// BUSCAR PROVEEDOR
+// --------------------------------------------
+const searchVendorByNit = (alert = "") => {
+    axios
+        .get("/vendors/getVendorByNit?nit=" + formSearchVendor.nit)
+        .then((response) => {
+            if (response) {
+                form.clearErrors("vendor_id");
+                router.reload({ only: ["FormControl"] });
+                form.vendor_id = response.data.vendor.id;
+                formSearchVendor.nit = response.data.vendor.nit;
+                formSearchVendor.name = response.data.vendor.name;
+
+                if (alert === "alert") {
+                    toast.value = true;
+                    messageResource.value = {
+                        response:
+                            "Se encontró el proveedor con NIT " +
+                            formSearchVendor.nit,
+                        operation: 1,
+                    };
+                }
+            }
+        })
+        .catch((error) => {
+            form.setError(
+                "vendor_id",
+                "No se encontró este NIT en los registros."
+            );
+            router.reload({ only: ["FormControl"] });
+            form.vendor_id = null;
+            formSearchVendor.name = "";
+            console.log(error);
+        });
+};
+
+// --------------------------------------------
+// MODAL DE CREAR PROVEEDOR: 1 Create, 2 Show, 3 Update, 4 Delete
+// --------------------------------------------
+const openModal = () => {
+    isModalActive.value = true;
+};
+
+const closeModal = (event) => {
+    if (event === "confirm") {
+        formSearchVendor.nit = newVendor.value.nit;
+        searchVendorByNit();
+        toast.value = true;
+        messageResource.value = {
+            response: "Proveedor creado exitosamente.",
+            operation: 1,
+        };
+    }
+    isModalActive.value = false;
+};
+
+// --------------------------------------------
+// MANEJO DE FECHAS
+// --------------------------------------------
+const formattedDate = (date) => {
+    return dayjs(date).format("YYYY-MM-DD");
 };
 </script>
 
 <template>
+    <CardBoxModalVendor
+        v-model="isModalActive"
+        v-model:vendor="newVendor"
+        :current-operation="1"
+        @confirm="closeModal"
+    />
+
     <Toast v-if="toast" v-model="toast" :message="messageResource" />
     <FormValidationErrors v-if="form.hasErrors" />
 
     <Stepper
         v-model="activePhase"
-        :steps="steps"
+        :steps="roles"
         :operation="currentOperation"
         :current-management="
             currentOperation !== operations.create
@@ -336,68 +431,11 @@ const searchCertificationByNumber = (alert = "") => {
     />
 
     <CardBox is-form :in-modal="inModal" @submit.prevent="transaction">
-        <!-- STEP 2 -->
+        <!-- STEP 1 -->
         <div
-            v-show="activePhase === 2"
+            v-show="activePhase === 1"
             class="transition duration-500 ease-in-out"
         >
-            <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de asignación: </strong>
-                {{ form.assignment_date }}
-            </div>
-
-            <div
-                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
-            >
-                <FormField
-                    label="Número de Certificación"
-                    label-for="certificationNumber"
-                    :errors="form.errors.certification_id"
-                    help="Digite el número de certificación"
-                >
-                    <form
-                        @submit.prevent="searchCertificationByNumber('alert')"
-                    >
-                        <FormControlWithButton
-                            v-model="
-                                formSearchCertification.certificationNumber
-                            "
-                            id="certificationNumber"
-                            name="certificationNumber"
-                            :icon="mdiCardAccountDetails"
-                            autocomplete="certificationNumber"
-                            type="text"
-                            placeholder="Digite el número de certificación"
-                            :has-errors="form.errors.certification_id != null"
-                            :disabled="disabled.global.value"
-                        >
-                            <BaseButton
-                                type="submit"
-                                color="info"
-                                :disabled="disabled.global.value"
-                                :icon="mdiMagnify"
-                                tooltip="Buscar"
-                                location="end"
-                            />
-                        </FormControlWithButton>
-                    </form>
-                </FormField>
-                <FormField
-                    label="Objeto de contrato"
-                    label-for="contract_object"
-                >
-                    <FormControl
-                        v-model="certification.contract_object.value"
-                        id="contract_object"
-                        name="contract_object"
-                        :icon="mdiCardAccountDetails"
-                        placeholder="Objeto de contrato"
-                        autocomplete="contract_object"
-                        type="text"
-                        disabled
-                    />
-                </FormField>
-            </div>
             <div
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
@@ -456,6 +494,65 @@ const searchCertificationByNumber = (alert = "") => {
                     />
                 </FormField>
                 <FormField
+                    label="Nro. de contrato - Convenio Marco"
+                    label-for="contract_number"
+                    :errors="form.errors.contract_number"
+                >
+                    <FormControl
+                        v-model="form.contract_number"
+                        id="contract_number"
+                        :icon="mdiCardAccountDetails"
+                        autocomplete="contract_number"
+                        type="text"
+                        placeholder="Detalle el Nro. de contrato del convenio marco"
+                        :has-errors="form.errors.contract_number != null"
+                        :disabled="disabled.global.value"
+                    />
+                </FormField>
+            </div>
+            <FormField
+                label="Observaciones"
+                label-for="sec_cgf_comments"
+                help="Máximo 255 caracteres."
+                :errors="form.errors.sec_cgf_comments"
+            >
+                <FormControl
+                    v-model="form.sec_cgf_comments"
+                    type="textarea"
+                    id="sec_cgf_comments"
+                    :icon="mdiTag"
+                    autocomplete="sec_cgf_comments"
+                    placeholder="Indique las principales observaciones."
+                    :has-errors="form.errors.sec_cgf_comments != null"
+                    :disabled="disabled.global.value"
+                />
+            </FormField>
+        </div>
+        <!-- STEP 2 -->
+        <div
+            v-show="activePhase === 2"
+            class="transition duration-500 ease-in-out"
+        >
+            <div
+                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+            >
+                <FormField
+                    label="Administrador de contrato"
+                    label-for="contract_administrator"
+                    :errors="form.errors.contract_administrator"
+                >
+                    <FormControl
+                        v-model="form.contract_administrator"
+                        id="contract_administrator"
+                        :icon="mdiCardAccountDetails"
+                        autocomplete="contract_administrator"
+                        type="text"
+                        placeholder="Detalle los nombres del administrador de contrato"
+                        :has-errors="form.errors.contract_administrator != null"
+                        :disabled="disabled.global.value"
+                    />
+                </FormField>
+                <FormField
                     label="Reasignar a "
                     label-for="customer_id"
                     help="Seleccione el usuario a reasignar la gestión"
@@ -491,30 +588,131 @@ const searchCertificationByNumber = (alert = "") => {
                 />
             </FormField>
         </div>
-        <!-- STEP 3 -->
         <div
             v-show="activePhase === 3"
             class="transition duration-500 ease-in-out"
         >
-            <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de compromiso: </strong>
-                {{ form.commitment_date }}
-            </div>
-
             <div
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
                 <FormField
-                    label="Nombre de proveedor"
-                    label-for="nit_name"
-                    help="Nombre del proveedor detallado en la certificación"
+                    label="Número de Certificación"
+                    label-for="certificationNumber"
+                    :errors="form.errors.certification_id"
+                    help="Digite el número de certificación"
+                >
+                    <form
+                        @submit.prevent="searchCertificationByNumber('alert')"
+                    >
+                        <FormControlWithButton
+                            v-model="
+                                formSearchCertification.certificationNumber
+                            "
+                            id="certificationNumber"
+                            name="certificationNumber"
+                            :icon="mdiCardAccountDetails"
+                            autocomplete="certificationNumber"
+                            type="text"
+                            placeholder="Digite el número de certificación"
+                            :has-errors="form.errors.certification_id != null"
+                            :disabled="disabled.global.value"
+                        >
+                            <BaseButton
+                                type="submit"
+                                color="info"
+                                :disabled="disabled.global.value"
+                                :icon="mdiMagnify"
+                                tooltip="Buscar"
+                                location="end"
+                            />
+                        </FormControlWithButton>
+                    </form>
+                </FormField>
+                <FormField
+                    label="Objeto de contrato"
+                    label-for="contract_object"
                 >
                     <FormControl
-                        v-model="certification.vendor_name.value"
-                        name="nit_name"
-                        id="nit_name"
-                        :icon="mdiDomain"
-                        autocomplete="nit_name"
+                        v-model="certification.contract_object.value"
+                        id="contract_object"
+                        name="contract_object"
+                        :icon="mdiCardAccountDetails"
+                        placeholder="Objeto de contrato"
+                        autocomplete="contract_object"
+                        type="text"
+                        disabled
+                    />
+                </FormField>
+            </div>
+            <div
+                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+            >
+                <FormField
+                    label="NIT de Proveedor"
+                    label-for="nit"
+                    :errors="form.errors.vendor_id"
+                    help="Digite el NIT del proveedor"
+                >
+                    <form @submit.prevent="searchVendorByNit('alert')">
+                        <FormControlWithButton
+                            v-model="formSearchVendor.nit"
+                            id="nit"
+                            name="nit"
+                            :icon="mdiCardAccountDetails"
+                            autocomplete="nit"
+                            type="text"
+                            placeholder="Detalle el NIT del Proveedor"
+                            :has-errors="form.errors.vendor_id != null"
+                            :disabled="disabled.global.value"
+                        >
+                            <BaseButton
+                                type="submit"
+                                color="info"
+                                :icon="mdiMagnify"
+                                tooltip="Buscar"
+                                small
+                                location="center"
+                                :disabled="disabled.global.value"
+                            />
+                            <BaseButton
+                                color="success"
+                                :icon="mdiBriefcasePlus"
+                                tooltip="Nuevo proveedor"
+                                small
+                                location="end"
+                                :disabled="disabled.global.value"
+                                @click="openModal"
+                            />
+                        </FormControlWithButton>
+                    </form>
+                </FormField>
+                <FormField label="Nombre de proveedor" label-for="name">
+                    <FormControl
+                        v-model="formSearchVendor.name"
+                        id="name"
+                        name="name"
+                        :icon="mdiCardAccountDetails"
+                        placeholder="Nombre de proveedor"
+                        autocomplete="name"
+                        type="text"
+                        disabled
+                    />
+                </FormField>
+            </div>
+            <div
+                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+            >
+                <FormField
+                    label="Saldo de certificación"
+                    label-for="certification_balance"
+                    help="Saldo de la certificación seleccionada"
+                >
+                    <FormControl
+                        v-model="certification.balance.value"
+                        name="certification_balance"
+                        id="certification_balance"
+                        :icon="mdiCurrencyUsd"
+                        autocomplete="certification_balance"
                         disabled
                     />
                 </FormField>
@@ -604,11 +802,6 @@ const searchCertificationByNumber = (alert = "") => {
             v-show="activePhase === 4"
             class="transition duration-500 ease-in-out"
         >
-            <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de revisión: </strong>
-                {{ form.coord_cgf_date }}
-            </div>
-
             <FormField label="Revisión de certificación">
                 <FormCheckRadioGroup
                     v-model="form.treasury_approved"
@@ -617,7 +810,7 @@ const searchCertificationByNumber = (alert = "") => {
                     :options="{
                         approved: 'Aprobado',
                         returned: 'Devuelto',
-                        liquidated: 'Liquidado',
+                        canceled: 'Reversado',
                     }"
                     :disabled="disabled.global.value"
                 />
@@ -657,28 +850,38 @@ const searchCertificationByNumber = (alert = "") => {
                 />
             </FormField>
         </div>
-        <BaseDivider v-if="!inModal" />
-        <BaseButtons v-if="withButton">
-            <BaseButton
-                type="submit"
-                color="success"
-                :label="elementProps.label"
-                :class="{
-                    'opacity-25': disabled.button.value,
-                }"
-                :disabled="disabled.button.value"
-                :icon="
-                    currentOperation === operations.show
-                        ? mdiPrinter
-                        : mdiContentSaveAll
-                "
+        <BaseDivider v-show="!inModal" />
+        <BaseLevel>
+            <BaseButtons type="justify-start" v-show="withButton">
+                <BaseButton
+                    type="submit"
+                    color="success"
+                    :label="elementProps.label"
+                    :class="{
+                        'opacity-25': disabled.button.value,
+                    }"
+                    :disabled="disabled.button.value"
+                    :icon="
+                        currentOperation === operations.show
+                            ? mdiPrinter
+                            : mdiContentSaveAll
+                    "
+                />
+                <BaseButton
+                    route-name="commitments.index"
+                    color="slate"
+                    label="Regresar"
+                    :icon="mdiBackspace"
+                />
+            </BaseButtons>
+            <LabelDate
+                v-if="currentOperation !== 1"
+                :dateOne="formattedDate(commitment.sec_cgf_date)"
+                :dateTwo="formattedDate(commitment.assignment_date)"
+                :dateThree="formattedDate(commitment.commitment_date)"
+                :dateFour="formattedDate(commitment.coord_cgf_date)"
+                v-model:activePhase="activePhase"
             />
-            <BaseButton
-                route-name="commitments.index"
-                color="slate"
-                label="Regresar"
-                :icon="mdiBackspace"
-            />
-        </BaseButtons>
+        </BaseLevel>
     </CardBox>
 </template>

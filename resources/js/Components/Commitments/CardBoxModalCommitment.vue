@@ -1,24 +1,8 @@
 <script setup>
-import { computed, ref } from "vue";
-import { router, useForm, usePage } from "@inertiajs/vue3";
-import {
-    mdiFormatListBulletedType,
-    mdiTag,
-    mdiDomain,
-    mdiNumeric,
-    mdiCurrencyUsd,
-    mdiCalendarRange,
-    mdiBackspaceOutline,
-    mdiCardAccountDetails,
-} from "@mdi/js";
-import CardBoxModal from "@/components/CardBoxModal.vue";
-import FormValidationErrors from "@/components/FormValidationErrors.vue";
-import FormField from "@/components/FormField.vue";
-import FormControl from "@/components/FormControl.vue";
-import Stepper from "@/Components/Stepper.vue";
-import BaseDivider from "@/components/BaseDivider.vue";
-import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
-import FormCommitment from "./FormCommitment.vue";
+import { computed } from "vue";
+import { router } from "@inertiajs/vue3";
+import CardBoxModal from "@/Components/CardBoxModal.vue";
+import FormCommitment from "@/Components/Commitments/FormCommitment.vue";
 
 // ---------------------------------------------------------
 // PROPS
@@ -29,6 +13,7 @@ const props = defineProps({
         default: {},
     },
     users: Object,
+    roles: Object,
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
@@ -106,8 +91,9 @@ const transaction = () => {
                 in-modal
                 :commitment="commitment"
                 :users="users"
+                :roles="roles"
                 :record-statuses="recordStatuses"
-                :current-operation="2"
+                :current-operation="currentOperation"
                 :element-props="elementProps"
                 :with-button="
                     currentOperation === operations.create ||

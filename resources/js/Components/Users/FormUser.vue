@@ -9,14 +9,14 @@ import {
     mdiBackspace,
     mdiContentSaveAll,
 } from "@mdi/js";
-import CardBox from "@/components/CardBox.vue";
-import FormField from "@/components/FormField.vue";
-import FormControl from "@/components/FormControl.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import BaseDivider from "@/components/BaseDivider.vue";
-import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
+import CardBox from "@/Components/CardBox.vue";
+import FormField from "@/Components/FormField.vue";
+import FormControl from "@/Components/FormControl.vue";
+import BaseButton from "@/Components/BaseButton.vue";
+import BaseDivider from "@/Components/BaseDivider.vue";
+import FormCheckRadioGroup from "@/Components/FormCheckRadioGroup.vue";
 import FormValidationErrors from "@/components/FormValidationErrors.vue";
-import BaseButtons from "../BaseButtons.vue";
+import BaseButtons from "@/Components/BaseButtons.vue";
 
 // ---------------------------------------------------------
 // PROPS

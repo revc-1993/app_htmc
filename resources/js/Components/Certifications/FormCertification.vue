@@ -1,10 +1,11 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import axios from "axios";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import {
     mdiFormatListBulletedType,
     mdiTag,
+    mdiPrinter,
     mdiDomain,
     mdiNumeric,
     mdiCurrencyUsd,
@@ -14,18 +15,27 @@ import {
     mdiContentSaveAll,
     mdiBackspace,
 } from "@mdi/js";
-import CardBox from "@/components/CardBox.vue";
-import FormField from "@/components/FormField.vue";
-import FormControl from "@/components/FormControl.vue";
-import FormControlWithButton from "@/components/FormControlWithButton.vue";
-import Stepper from "@/components/Stepper.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import BaseDivider from "@/components/BaseDivider.vue";
-import FormCheckRadioGroup from "@/components/FormCheckRadioGroup.vue";
-import CardBoxModalVendor from "@/components/vendors/CardBoxModalVendor.vue";
-import FormValidationErrors from "@/components/FormValidationErrors.vue";
-import BaseButtons from "../BaseButtons.vue";
-import Toast from "@/components/Toast.vue";
+import CardBox from "@/Components/CardBox.vue";
+import LabelDate from "@/Components/LabelDate.vue";
+import FormField from "@/Components/FormField.vue";
+import FormControl from "@/Components/FormControl.vue";
+import FormControlWithButton from "@/Components/FormControlWithButton.vue";
+import Stepper from "@/Components/Stepper.vue";
+import BaseButton from "@/Components/BaseButton.vue";
+import BaseDivider from "@/Components/BaseDivider.vue";
+import FormCheckRadioGroup from "@/Components/FormCheckRadioGroup.vue";
+import CardBoxModalVendor from "@/Components/Vendors/CardBoxModalVendor.vue";
+import FormValidationErrors from "@/Components/FormValidationErrors.vue";
+import BaseButtons from "@/Components/BaseButtons.vue";
+import Toast from "@/Components/Toast.vue";
+import BaseLevel from "@/Components/BaseLevel.vue";
+
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime"; // Importa el complemento de fechas relativas
+import "dayjs/locale/es"; // Si deseas utilizar el idioma español
+
+dayjs.locale("es");
+dayjs.extend(relativeTime);
 
 // ---------------------------------------------------------
 // PROPS
@@ -40,6 +50,7 @@ const props = defineProps({
     expenseTypes: Object,
     budgetLines: Object,
     users: Object,
+    roles: Object,
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
@@ -74,42 +85,26 @@ const statuses = {
     pendingReview: 1,
     reviewing: 2,
     observed: 3,
-    registered: 4,
-    returned: 5,
+    returned: 4,
+    registered: 5,
     approved: 6,
-    liquidated: 7,
+    canceled: 7,
+    liquidated: 8,
 };
 
 const role = computed(() => usePage().props.auth.user.roles[0].id);
 const activePhase = ref(1);
+
+const toast = ref(false);
+const messageVendor = ref("");
+
+const isModalActive = ref(false);
+const newVendor = ref({});
+
+// ---------------------------------------------------------
+// SETS
+// ---------------------------------------------------------
 activePhase.value = role.value && role.value < 5 ? role.value : 1;
-
-const vendor = ref("");
-if (
-    (props.currentOperation === operations.show ||
-        props.currentOperation === operations.update) &&
-    props.certification.vendor
-)
-    vendor.value = props.certification.vendor.name;
-
-const steps = [
-    {
-        id: 1,
-        label: "Secretaría CGF",
-    },
-    {
-        id: 2,
-        label: "Secretaría JAPC",
-    },
-    {
-        id: 3,
-        label: "Analista de Certificación",
-    },
-    {
-        id: 4,
-        label: "Coordinación General Financiera",
-    },
-];
 
 // ---------------------------------------------------------
 // SELECTS
@@ -149,84 +144,82 @@ let selectOptions = {
 // ---------------------------------------------------------
 // FORM
 // ---------------------------------------------------------
-const form = useForm(
-    props.currentOperation === operations.create
-        ? {
-              certification_memo: "",
-              content: "",
-              contract_object: "",
-              process_type_id: "",
-              expense_type_id: "",
-              department_id: "",
-              sec_cgf_comments: "",
-              sec_cgf_date: new Date().toLocaleDateString(),
-              customer_id: "",
-              japc_comments: "",
-              assignment_date: new Date().toLocaleDateString(),
-              process_number: "",
-              budget_line_id: "",
-              vendor_id: "",
-              certified_amount: "",
-              record_status_id: "",
-              certification_number: "",
-              certification_comments: "",
-              cp_date: new Date().toLocaleDateString(),
-              treasury_approved: "",
-              returned_document_number: "",
-              coord_cgf_comments: "",
-              coord_cgf_date: new Date().toLocaleDateString(),
-              current_management: "",
-          }
-        : {
-              certification_memo: props.certification.certification_memo,
-              content: props.certification.content,
-              contract_object: props.certification.contract_object,
-              process_type_id: props.certification.process_type_id,
-              expense_type_id: props.certification.expense_type_id,
-              department_id: props.certification.department_id,
-              sec_cgf_comments: props.certification.sec_cgf_comments,
-              sec_cgf_date:
-                  props.certification.sec_cgf_date ??
-                  new Date().toLocaleDateString(),
-              customer_id: props.certification.customer_id ?? "",
-              japc_comments: props.certification.japc_comments,
-              assignment_date:
-                  props.certification.assignment_date ??
-                  new Date().toLocaleDateString(),
-              process_number: props.certification.process_number,
-              budget_line_id: props.certification.budget_line_id,
-              vendor_id: props.certification.vendor_id,
-              certified_amount: props.certification.certified_amount,
-              certification_number: props.certification.certification_number,
-              record_status_id:
-                  props.certification.record_status_id &&
-                  props.certification.record_status_id <= statuses.registered
-                      ? props.certification.record_status_id
-                      : "",
-              certification_comments:
-                  props.certification.certification_comments,
-              cp_date:
-                  props.certification.cp_date ??
-                  new Date().toLocaleDateString(),
-              treasury_approved: props.certification.treasury_approved,
-              returned_document_number:
-                  props.certification.returned_document_number,
-              coord_cgf_comments: props.certification.coord_cgf_comments,
-              coord_cgf_date:
-                  props.certification.coord_cgf_date ??
-                  new Date().toLocaleDateString(),
-              current_management: props.certification.current_management,
-          }
-);
+const form = useForm({
+    certification_memo: "",
+    content: "",
+    contract_object: "",
+    process_type_id: "",
+    expense_type_id: "",
+    department_id: "",
+    sec_cgf_comments: "",
+    sec_cgf_date: new Date().toLocaleDateString(),
+    customer_id: "",
+    japc_comments: "",
+    assignment_date: new Date().toLocaleDateString(),
+    process_number: "",
+    budget_line_id: "",
+    vendor_id: "",
+    certified_amount: "",
+    record_status_id: "",
+    certification_number: "",
+    certification_comments: "",
+    cp_date: new Date().toLocaleDateString(),
+    treasury_approved: "",
+    returned_document_number: "",
+    coord_cgf_comments: "",
+    coord_cgf_date: new Date().toLocaleDateString(),
+    current_management: "",
+});
+
+onMounted(() => {
+    if (props.currentOperation !== operations.create) {
+        form.certification_memo = props.certification.certification_memo;
+        form.content = props.certification.content;
+        form.contract_object = props.certification.contract_object;
+        form.process_type_id = props.certification.process_type_id;
+        form.expense_type_id = props.certification.expense_type_id;
+        form.department_id = props.certification.department_id;
+        form.sec_cgf_comments = props.certification.sec_cgf_comments;
+        form.sec_cgf_date =
+            props.certification.sec_cgf_date ?? new Date().toLocaleDateString();
+        form.customer_id = props.certification.customer_id ?? "";
+        form.japc_comments = props.certification.japc_comments;
+        form.assignment_date =
+            props.certification.assignment_date ??
+            new Date().toLocaleDateString();
+        form.process_number = props.certification.process_number;
+        form.budget_line_id = props.certification.budget_line_id;
+        form.vendor_id = props.certification.vendor_id;
+        form.certified_amount = props.certification.certified_amount;
+        form.certification_number = props.certification.certification_number;
+        form.record_status_id = props.certification.record_status_id ?? "";
+        form.certification_comments =
+            props.certification.certification_comments;
+        form.cp_date =
+            props.certification.cp_date ?? new Date().toLocaleDateString();
+        form.treasury_approved = props.certification.treasury_approved;
+        form.returned_document_number =
+            props.certification.returned_document_number;
+        form.coord_cgf_comments = props.certification.coord_cgf_comments;
+        form.coord_cgf_date =
+            props.certification.coord_cgf_date ??
+            new Date().toLocaleDateString();
+        form.current_management = props.certification.current_management;
+    }
+});
 
 const formSearchVendor = useForm(
     props.currentOperation === operations.create
         ? {
               nit: "",
+              name: "",
           }
         : {
               nit: props.certification.vendor
                   ? props.certification.vendor.nit
+                  : "",
+              name: props.certification.vendor
+                  ? props.certification.vendor.name
                   : "",
           }
 );
@@ -307,9 +300,6 @@ const transaction = () => {
 // --------------------------------------------
 // BUSCAR PROVEEDOR
 // --------------------------------------------
-const toast = ref(false);
-const messageVendor = ref("");
-
 const searchVendorByNit = (alert = "") => {
     axios
         .get("/vendors/getVendorByNit?nit=" + formSearchVendor.nit)
@@ -319,7 +309,7 @@ const searchVendorByNit = (alert = "") => {
                 router.reload({ only: ["FormControl"] });
                 form.vendor_id = response.data.vendor.id;
                 formSearchVendor.nit = response.data.vendor.nit;
-                vendor.value = response.data.vendor.name;
+                formSearchVendor.name = response.data.vendor.name;
 
                 if (alert === "alert") {
                     toast.value = true;
@@ -339,7 +329,7 @@ const searchVendorByNit = (alert = "") => {
             );
             router.reload({ only: ["FormControl"] });
             form.vendor_id = null;
-            vendor.value = "";
+            formSearchVendor.name = "";
             console.log(error);
         });
 };
@@ -347,9 +337,6 @@ const searchVendorByNit = (alert = "") => {
 // --------------------------------------------
 // MODAL DE CREAR PROVEEDOR: 1 Create, 2 Show, 3 Update, 4 Delete
 // --------------------------------------------
-const isModalActive = ref(false);
-const newVendor = ref({});
-
 const openModal = () => {
     isModalActive.value = true;
 };
@@ -366,6 +353,13 @@ const closeModal = (event) => {
     }
     isModalActive.value = false;
 };
+
+// --------------------------------------------
+// MANEJO DE FECHAS
+// --------------------------------------------
+const formattedDate = (date) => {
+    return dayjs(date).format("YYYY-MM-DD");
+};
 </script>
 
 <template>
@@ -381,7 +375,7 @@ const closeModal = (event) => {
 
     <Stepper
         v-model="activePhase"
-        :steps="steps"
+        :steps="roles"
         :operation="currentOperation"
         :current-management="
             currentOperation !== operations.create
@@ -396,10 +390,6 @@ const closeModal = (event) => {
             v-show="activePhase === 1"
             class="transition duration-500 ease-in-out"
         >
-            <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de ingreso: </strong>
-                {{ form.sec_cgf_date }}
-            </div>
             <FormField
                 label="Objeto de contrato"
                 label-for="contract_object"
@@ -532,11 +522,6 @@ const closeModal = (event) => {
             v-show="activePhase === 2"
             class="transition duration-500 ease-in-out"
         >
-            <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de asignación JAPC: </strong>
-                {{ form.assignment_date }}
-            </div>
-
             <div
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
@@ -598,11 +583,6 @@ const closeModal = (event) => {
             v-show="activePhase === 3"
             class="transition duration-500 ease-in-out"
         >
-            <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de certificación: </strong>
-                {{ form.cp_date }}
-            </div>
-
             <FormField
                 label="Código presupuestario"
                 label-for="budget_line_id"
@@ -717,7 +697,7 @@ const closeModal = (event) => {
                 </FormField>
                 <FormField label="Nombre de proveedor" label-for="name">
                     <FormControl
-                        v-model="vendor"
+                        v-model="formSearchVendor.name"
                         id="name"
                         name="name"
                         :icon="mdiCardAccountDetails"
@@ -792,11 +772,6 @@ const closeModal = (event) => {
             v-show="activePhase === 4"
             class="transition duration-500 ease-in-out"
         >
-            <div class="gap-x-3 mb-4 text-right">
-                <strong>Fecha de revisión: </strong>
-                {{ form.coord_cgf_date }}
-            </div>
-
             <FormField label="Revisión de certificación">
                 <FormCheckRadioGroup
                     v-model="form.treasury_approved"
@@ -805,6 +780,7 @@ const closeModal = (event) => {
                     :options="{
                         approved: 'Aprobado',
                         returned: 'Devuelto',
+                        canceled: 'Anulado',
                         liquidated: 'Liquidado',
                     }"
                     :disabled="disabled.global.value"
@@ -845,28 +821,38 @@ const closeModal = (event) => {
                 />
             </FormField>
         </div>
-        <BaseDivider v-if="!inModal" />
-        <BaseButtons v-if="withButton">
-            <BaseButton
-                type="submit"
-                color="success"
-                :label="elementProps.label"
-                :class="{
-                    'opacity-25': disabled.button.value,
-                }"
-                :disabled="disabled.button.value"
-                :icon="
-                    currentOperation === operations.show
-                        ? mdiPrinter
-                        : mdiContentSaveAll
-                "
+        <BaseDivider v-show="!inModal" />
+        <BaseLevel>
+            <BaseButtons type="justify-start" v-show="withButton">
+                <BaseButton
+                    type="submit"
+                    color="success"
+                    :label="elementProps.label"
+                    :class="{
+                        'opacity-25': disabled.button.value,
+                    }"
+                    :disabled="disabled.button.value"
+                    :icon="
+                        currentOperation === operations.show
+                            ? mdiPrinter
+                            : mdiContentSaveAll
+                    "
+                />
+                <BaseButton
+                    route-name="certifications.index"
+                    color="slate"
+                    label="Regresar"
+                    :icon="mdiBackspace"
+                />
+            </BaseButtons>
+            <LabelDate
+                v-if="currentOperation !== 1"
+                :dateOne="formattedDate(certification.sec_cgf_date)"
+                :dateTwo="formattedDate(certification.assignment_date)"
+                :dateThree="formattedDate(certification.cp_date)"
+                :dateFour="formattedDate(certification.coord_cgf_date)"
+                v-model:activePhase="activePhase"
             />
-            <BaseButton
-                route-name="certifications.index"
-                color="slate"
-                label="Regresar"
-                :icon="mdiBackspace"
-            />
-        </BaseButtons>
+        </BaseLevel>
     </CardBox>
 </template>

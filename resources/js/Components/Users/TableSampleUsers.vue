@@ -9,13 +9,13 @@ import {
     mdiFileExcel,
 } from "@mdi/js";
 import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
-import BaseLevel from "@/components/BaseLevel.vue";
-import BaseButtons from "@/components/BaseButtons.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import ExportButton from "@/components/ExportButton.vue";
+import BaseLevel from "@/Components/BaseLevel.vue";
+import BaseButtons from "@/Components/BaseButtons.vue";
+import BaseButton from "@/Components/BaseButton.vue";
+import ExportButton from "@/Components/ExportButton.vue";
 import SpanState from "@/components/SpanState.vue";
 // import CardBoxModalCommitment from "@/components/commitments/CardBoxModalCommitment.vue";
-import CardBox from "@/components/CardBox.vue";
+import CardBox from "@/Components/CardBox.vue";
 
 const props = defineProps({
     checkable: Boolean,

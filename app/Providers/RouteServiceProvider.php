@@ -2,11 +2,12 @@
 
 namespace App\Providers;
 
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -48,5 +49,30 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+    }
+
+    protected function mapInertiaRoutes()
+    {
+        Route::group(
+            [
+                'middleware' => 'web',
+                'as' => 'inertia.',
+                'inertia' => 'inertia',
+            ],
+            function () {
+                // Load the Inertia routes
+                require base_path('routes/inertia.php');
+            }
+        );
+
+        // Capitalize the route names
+        $routeCollection = Route::getRoutes();
+        foreach ($routeCollection as $route) {
+            $name = $route->getName();
+            if ($name && Str::startsWith($name, 'inertia.')) {
+                $capitalizedName = str_replace(' ', '', ucwords(str_replace('.', ' ', $name)));
+                Route::getRoutes()->getByName($name)->setName($capitalizedName);
+            }
+        }
     }
 }

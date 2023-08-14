@@ -1,7 +1,7 @@
 import "../css/main.css";
 
 import { createPinia } from "pinia";
-import { useStyleStore } from "@/stores/style.js";
+import { useStyleStore } from "@/Stores/style.js";
 
 import { darkModeKey, styleKey } from "@/config.js";
 

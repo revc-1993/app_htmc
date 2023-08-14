@@ -1,15 +1,16 @@
 <script setup>
 import { mdiTextBoxMultipleOutline, mdiBackspace } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
-import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-import SectionMain from "@/components/SectionMain.vue";
-import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import FormCommitment from "@/components/commitments/FormCommitment.vue";
-import BaseButton from "@/components/BaseButton.vue";
+import LayoutAuthenticated from "@/Layouts/LayoutAuthenticated.vue";
+import SectionMain from "@/Components/SectionMain.vue";
+import SectionTitleLineWithButton from "@/Components/SectionTitleLineWithButton.vue";
+import FormCommitment from "@/Components/Commitments/FormCommitment.vue";
+import BaseButton from "@/Components/BaseButton.vue";
 
 // --------------------------------------------
 const props = defineProps({
     users: Object,
+    roles: Object,
     recordStatuses: Object,
 });
 
@@ -38,6 +39,7 @@ const elementProps = {
 
             <FormCommitment
                 :users="users"
+                :roles="roles"
                 :record-statuses="recordStatuses"
                 :current-operation="1"
                 :element-props="elementProps"

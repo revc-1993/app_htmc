@@ -27,10 +27,32 @@ class DatabaseSeeder extends Seeder
     {
         // *---- ROLES ----*
         $roles = [
-            'cgf_secretary_role', 'japc_secretary_role', 'analyst_role', 'cgf_coord_role', 'admin_role',
+            (object) [
+                "name" => "cgf_secretary_role",
+                "nickname" => "Secretaría CGF"
+            ],
+            (object) [
+                "name" => "japc_secretary_role",
+                "nickname" => "Secretaría JAPC"
+            ],
+            (object) [
+                "name" => "analyst_role",
+                "nickname" => "Analista"
+            ],
+            (object) [
+                "name" => "cgf_coord_role",
+                "nickname" => "Coordinador CGF"
+            ],
+            (object) [
+                "name" => "admin_role",
+                "nickname" => "Administrador"
+            ],
         ];
         foreach ($roles as $role) {
-            ${$role} = Role::create(['name' => $role]);
+            ${$role->name} = Role::create([
+                'name' => $role->name,
+                'nickname' => $role->nickname
+            ]);
         }
 
         // *---- PERMISOS ----*
@@ -39,6 +61,8 @@ class DatabaseSeeder extends Seeder
             'create_certification', 'show_certification', 'update_certification', 'delete_certification',
             // Commitments
             'create_commitment', 'show_commitment', 'update_commitment', 'delete_commitment',
+            // Accruals
+            'create_accrual', 'show_accrual', 'update_accrual', 'delete_accrual',
             // Currents Management
             'cgf_sec', 'japc', 'financial', 'cgf_coord',
             // Roles
@@ -53,27 +77,32 @@ class DatabaseSeeder extends Seeder
         // *---- ASIGNA PERMISOS A ROLES ----*
         $cgf_secretary_role->syncPermissions([
             $create_certification, $show_certification, $update_certification,
+            $create_commitment, $show_commitment, $update_commitment,
             $cgf_sec,
         ]);
         $japc_secretary_role->syncPermissions([
             $show_certification, $update_certification,
-            $create_commitment, $show_commitment, $update_commitment,
+            $show_commitment, $update_commitment,
+            $create_accrual, $show_accrual, $update_accrual,
             $cgf_sec, $japc,
         ]);
         $analyst_role->syncPermissions([
             $show_certification, $update_certification,
             $show_commitment, $update_commitment,
+            $show_accrual, $update_accrual,
             $cgf_sec, $japc, $financial,
         ]);
         $cgf_coord_role->syncPermissions([
             $show_certification, $update_certification,
             $show_commitment, $update_commitment,
+            $show_accrual, $update_accrual,
             $cgf_sec, $japc, $financial, $cgf_coord,
 
         ]);
         $admin_role->syncPermissions([
             $create_certification, $show_certification, $update_certification, $delete_certification,
             $create_commitment, $show_commitment, $update_commitment, $delete_commitment,
+            $create_accrual, $show_accrual, $update_accrual, $delete_accrual,
             $create_role, $show_role, $update_role, $delete_role,
             $create_user, $show_user, $update_user, $delete_user,
             $cgf_sec, $japc, $financial, $cgf_coord,
@@ -107,9 +136,10 @@ class DatabaseSeeder extends Seeder
             "PENDIENTE DE REVISIÓN",
             "EN REVISIÓN",
             "OBSERVADO",
-            "REGISTRADO",
             "DEVUELTO",
+            "REGISTRADO",
             "APROBADO",
+            "ANULADO",
             "LIQUIDADO",
         ];
         foreach ($statuses as $status) {

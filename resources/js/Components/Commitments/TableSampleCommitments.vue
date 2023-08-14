@@ -8,19 +8,28 @@ import {
     mdiFileDelimited,
     mdiFileExcel,
 } from "@mdi/js";
-import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
-import BaseLevel from "@/components/BaseLevel.vue";
-import BaseButtons from "@/components/BaseButtons.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import ExportButton from "@/components/ExportButton.vue";
+import TableCheckboxCell from "@/Components/TableCheckboxCell.vue";
+import BaseLevel from "@/Components/BaseLevel.vue";
+import BaseButtons from "@/Components/BaseButtons.vue";
+import BaseButton from "@/Components/BaseButton.vue";
+import ExportButton from "@/Components/ExportButton.vue";
 import SpanState from "@/components/SpanState.vue";
-import CardBoxModalCommitment from "@/components/commitments/CardBoxModalCommitment.vue";
-import CardBox from "@/components/CardBox.vue";
+import CardBoxModalCommitment from "@/Components/Commitments/CardBoxModalCommitment.vue";
+import CardBox from "@/Components/CardBox.vue";
+import { usePage } from "@inertiajs/vue3";
+
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime"; // Importa el complemento de fechas relativas
+import "dayjs/locale/es"; // Si deseas utilizar el idioma español
+
+dayjs.locale("es");
+dayjs.extend(relativeTime);
 
 const props = defineProps({
     checkable: Boolean,
     commitments: Object,
     users: Object,
+    roles: Object,
     recordStatuses: Object,
     instance: {
         type: String,
@@ -31,24 +40,18 @@ const props = defineProps({
 // ---------------------------------------------------------
 // CONSTANTES
 // ---------------------------------------------------------
-// Objeto Certificación
+// Objeto Compromiso
 const commitment = ref({});
 // Modal abierto o cerrado
 const isModalActive = ref(false);
 // Operación escogida para modal
 const currentOperation = ref("");
-// Operaciones
-const operations = {
-    1: "create",
-    2: "show",
-    3: "update",
-    4: "delete",
-};
 
 // Características de botones por operación
 const elementProps = {
     create: {
         tag: 1,
+        operation: "create",
         color: "success",
         label: "Crear " + props.instance,
         tooltip: "Crear " + props.instance,
@@ -56,6 +59,7 @@ const elementProps = {
     },
     show: {
         tag: 2,
+        operation: "show",
         color: "info",
         label: "Ver " + props.instance,
         tooltip: "Ver detalles",
@@ -63,6 +67,7 @@ const elementProps = {
     },
     update: {
         tag: 3,
+        operation: "update",
         color: "warning",
         label: "Actualizar " + props.instance,
         tooltip: "Actualizar",
@@ -70,18 +75,12 @@ const elementProps = {
     },
     delete: {
         tag: 4,
+        operation: "delete",
         color: "danger",
         label: "Eliminar " + props.instance,
         tooltip: "Eliminar " + props.instance,
         icon: mdiTrashCan,
     },
-};
-
-const currentManagements = {
-    1: "1. Secretaría CGF",
-    2: "2. Secretaría JAPC",
-    3: "3. Analista de Compromiso",
-    4: "4. Coordinación General Financiera",
 };
 
 // ---------------------------------------------------------
@@ -152,9 +151,49 @@ const openModal = (action, commitments = {}) => {
 // CERRAR MODAL: CONFIRMAR O CANCELAR
 // --------------------------------------------
 const closeModal = (isconfirm) => {
+    commitment.value = {};
     if (isconfirm === "confirm") alert(currentOperation.value);
     currentOperation.value = "";
     isModalActive.value = false;
+};
+
+// --------------------------------------------
+// PERMISOS
+// --------------------------------------------
+const hasPermissions = (permission) => {
+    return usePage().props.user.permissions.includes(permission);
+};
+
+// --------------------------------------------
+// FECHAS
+// --------------------------------------------
+const timeAgo = (date) => {
+    return dayjs(date).fromNow();
+};
+
+const manageDate = (commitment) => {
+    const startDate = {
+        // 1: certification.sec_cgf_date,
+        2: commitment.sec_cgf_date,
+        3: commitment.assignment_date,
+        4: commitment.cp_date,
+    }[commitment.current_management];
+
+    return timeAgo(startDate);
+};
+
+// --------------------------------------------
+// FORMATEO DE MONEDA
+// --------------------------------------------
+const formattedNumber = (number) => {
+    const f = new Intl.NumberFormat("eng-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    return f.format(number);
 };
 </script>
 
@@ -205,9 +244,7 @@ const closeModal = (isconfirm) => {
                 :tooltip="elementProps.create.tooltip"
                 route-name="commitments.create"
                 small
-                v-if="
-                    $page.props.user.permissions.includes('create_commitment')
-                "
+                v-show="hasPermissions('create_commitment')"
             />
         </BaseButtons>
     </BaseLevel>
@@ -216,25 +253,25 @@ const closeModal = (isconfirm) => {
         v-model="isModalActive"
         v-model:commitment="commitment"
         :users="users"
+        :roles="roles"
         :record-statuses="recordStatuses"
-        :element-props="elementProps[operations[currentOperation]]"
+        :element-props="Object.values(elementProps)[currentOperation - 1]"
         :current-operation="currentOperation"
         @confirm="closeModal"
     />
 
     <CardBox class="mb-6" has-table>
-        <div
-            v-if="checkedRows.length"
-            class="p-3 bg-gray-100/50 dark:bg-slate-800"
-        >
-            <span
-                v-for="checkedRow in checkedRows"
-                :key="checkedRow.id"
-                class="inline-block px-2 py-1 rounded-sm mr-2 text-sm bg-gray-100 dark:bg-slate-700"
-            >
-                {{ checkedRow.name }}
-            </span>
-        </div>
+        <template v-show="checkedRows.length">
+            <div class="p-3 bg-gray-100/50 dark:bg-slate-800">
+                <span
+                    v-for="checkedRow in checkedRows"
+                    :key="checkedRow.id"
+                    class="inline-block px-2 py-1 rounded-sm mr-2 text-sm bg-gray-100 dark:bg-slate-700"
+                >
+                    {{ checkedRow.name }}
+                </span>
+            </div>
+        </template>
 
         <table class="table">
             <thead>
@@ -242,12 +279,14 @@ const closeModal = (isconfirm) => {
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-if="checkable" class="text-center" />
                     <th class="text-center">N.</th>
-                    <th class="text-center">N. Certificación</th>
+                    <th class="text-center">N. Certif.</th>
                     <th class="text-center">Administrador de contrato</th>
                     <th class="text-center">Estado</th>
-                    <th class="text-center">Monto</th>
+                    <th class="text-center">N. Compromiso</th>
+                    <th class="text-center">Monto comprometido</th>
                     <th class="text-center">Gestión actual</th>
-                    <th class="text-center">Usuario asignado</th>
+                    <th class="text-center">Asignado</th>
+                    <th class="text-center">Tiempo</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -268,12 +307,11 @@ const closeModal = (isconfirm) => {
                         class="w-24 h-24 mx-auto lg:w-6 lg:h-6"
                     /> -->
                     </td>
-                    <td data-label="N. Proceso" class="text-center">
-                        {{
-                            commitment.certification
-                                ? commitment.certification.certification_number
-                                : ""
-                        }}
+                    <td data-label="N. Certif." class="text-center">
+                        <template v-if="commitment.certification">
+                            {{ commitment.certification.certification_number }}
+                        </template>
+                        <template v-else>-</template>
                     </td>
                     <td
                         data-label="Administrador de contrato"
@@ -282,39 +320,59 @@ const closeModal = (isconfirm) => {
                         {{ commitment.contract_administrator }}
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
-                        <SpanState
-                            v-if="commitment.record_status"
-                            :state="commitment.record_status"
-                        />
-                        <div v-else>-</div>
+                        <template v-if="commitment.record_status">
+                            <SpanState :state="commitment.record_status" />
+                        </template>
+                        <template v-else>-</template>
+                    </td>
+                    <td data-label="Nro. Comp." class="text-center">
+                        <template v-if="commitment.commitment_cur">
+                            <strong>
+                                {{ commitment.commitment_cur }}
+                            </strong>
+                        </template>
+                        <template v-else>-</template>
                     </td>
                     <td data-label="Monto" class="text-center">
-                        <strong v-if="commitment.commitment_amount"
-                            >$ {{ commitment.commitment_amount }}</strong
-                        >
-                        <div v-else>-</div>
+                        <template v-if="commitment.commitment_amount">
+                            <strong>
+                                {{
+                                    formattedNumber(
+                                        commitment.commitment_amount
+                                    )
+                                }}</strong
+                            >
+                        </template>
+                        <template v-else>-</template>
                     </td>
                     <td
                         data-label="Gestión actual"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
                         <strong>
+                            {{ roles[commitment.current_management - 1].id }}.
                             {{
-                                currentManagements[
-                                    commitment.current_management
-                                ]
+                                roles[commitment.current_management - 1]
+                                    .nickname
                             }}
                         </strong>
                     </td>
                     <td
-                        data-label="Usuario asignado"
+                        data-label="Asignado a"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        <strong v-if="commitment.user">
-                            @{{ commitment.user.username }}
-                        </strong>
-                        <div v-else>-</div>
+                        <template v-if="commitment.user">
+                            <strong> @{{ commitment.user.username }} </strong>
+                        </template>
+                        <template v-else>-</template>
                     </td>
+                    <td
+                        data-label="Tiempo"
+                        class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400 text-xs text-bold"
+                    >
+                        {{ manageDate(commitment) }}
+                    </td>
+
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"
                     >
@@ -326,11 +384,7 @@ const closeModal = (isconfirm) => {
                                 :color="elementProps.show.color"
                                 :icon="elementProps.show.icon"
                                 :tooltip="elementProps.show.tooltip"
-                                v-if="
-                                    $page.props.user.permissions.includes(
-                                        'show_commitment'
-                                    )
-                                "
+                                v-show="hasPermissions('show_commitment')"
                                 @click="
                                     openModal(elementProps.show.tag, commitment)
                                 "
@@ -340,31 +394,23 @@ const closeModal = (isconfirm) => {
                                 :color="elementProps.update.color"
                                 :icon="elementProps.update.icon"
                                 :tooltip="elementProps.update.tooltip"
-                                v-if="
-                                    $page.props.user.permissions.includes(
-                                        'update_commitment'
-                                    )
-                                "
+                                small
+                                v-show="hasPermissions('update_commitment')"
                                 route-name="commitments.edit"
                                 :id="commitment.id"
-                                small
                             />
                             <BaseButton
                                 :color="elementProps.delete.color"
                                 :icon="elementProps.delete.icon"
                                 :tooltip="elementProps.delete.tooltip"
-                                v-if="
-                                    $page.props.user.permissions.includes(
-                                        'delete_commitment'
-                                    )
-                                "
+                                small
+                                v-show="hasPermissions('delete_commitment')"
                                 @click="
                                     openModal(
                                         elementProps.delete.tag,
                                         commitment
                                     )
                                 "
-                                small
                             />
                         </BaseButtons>
                     </td>

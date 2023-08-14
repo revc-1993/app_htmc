@@ -18,13 +18,23 @@ class RecordStatus extends Model
         return $this->hasMany(Certification::class, 'record_status_id'); //->withPivot();
     }
 
+    public function commitments()
+    {
+        return $this->hasMany(Commitment::class, 'record_status_id'); //->withPivot();
+    }
+
+    public function accruals()
+    {
+        return $this->hasMany(Accrual::class, 'record_status_id'); //->withPivot();
+    }
+
     public function scopeGetRecordStatus($query)
     {
         $role = $this->getRole();
 
         if ($role === 3) {
             $operator = $role === 3 ? "<=" : ">";
-            $query->where('id', $operator, 4);
+            $query->where('id', $operator, 5);
         } else if ($role === 4) {
             $query;
         }

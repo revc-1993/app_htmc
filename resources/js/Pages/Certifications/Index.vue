@@ -1,11 +1,11 @@
 <script setup>
 import { mdiCardBulleted, mdiCheckBold } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
-import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-import SectionMain from "@/components/SectionMain.vue";
-import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import TableSampleCertifications from "@/components/certifications/TableSampleCertifications.vue";
-import Toast from "@/components/Toast.vue";
+import LayoutAuthenticated from "@/Layouts/LayoutAuthenticated.vue";
+import SectionMain from "@/Components/SectionMain.vue";
+import SectionTitleLineWithButton from "@/Components/SectionTitleLineWithButton.vue";
+import TableSampleCertifications from "@/Components/Certifications/TableSampleCertifications.vue";
+import Toast from "@/Components/Toast.vue";
 
 // --------------------------------------------
 const props = defineProps({
@@ -16,6 +16,7 @@ const props = defineProps({
     budgetLines: Object,
     users: Object,
     recordStatuses: Object,
+    roles: Object,
 });
 </script>
 
@@ -40,7 +41,8 @@ const props = defineProps({
                 :expense-types="expenseTypes"
                 :budget-lines="budgetLines"
                 :users="users"
-                :recordStatuses="recordStatuses"
+                :record-statuses="recordStatuses"
+                :roles="roles"
                 instance="certificación"
             />
         </SectionMain>

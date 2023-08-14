@@ -1,16 +1,17 @@
 <script setup>
 import { mdiTextBoxMultipleOutline, mdiCheckBold } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
-import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-import SectionMain from "@/components/SectionMain.vue";
-import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import Toast from "@/components/Toast.vue";
-import TableSampleCommitments from "@/components/commitments/TableSampleCommitments.vue";
+import LayoutAuthenticated from "@/Layouts/LayoutAuthenticated.vue";
+import SectionMain from "@/Components/SectionMain.vue";
+import SectionTitleLineWithButton from "@/Components/SectionTitleLineWithButton.vue";
+import Toast from "@/Components/Toast.vue";
+import TableSampleCommitments from "@/Components/Commitments/TableSampleCommitments.vue";
 
 // --------------------------------------------
 const props = defineProps({
     commitments: Object,
     users: Object,
+    roles: Object,
     recordStatuses: Object,
 });
 </script>
@@ -33,6 +34,7 @@ const props = defineProps({
             <TableSampleCommitments
                 :commitments="commitments"
                 :users="users"
+                :roles="roles"
                 :record-statuses="recordStatuses"
                 instance="compromiso"
             />

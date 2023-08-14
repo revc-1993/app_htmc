@@ -8,14 +8,22 @@ import {
     mdiFileDelimited,
     mdiUpdate,
 } from "@mdi/js";
-import TableCheckboxCell from "@/components/TableCheckboxCell.vue";
-import BaseLevel from "@/components/BaseLevel.vue";
-import BaseButtons from "@/components/BaseButtons.vue";
-import BaseButton from "@/components/BaseButton.vue";
-import ExportButton from "@/components/ExportButton.vue";
+import TableCheckboxCell from "@/Components/TableCheckboxCell.vue";
+import BaseLevel from "@/Components/BaseLevel.vue";
+import BaseButtons from "@/Components/BaseButtons.vue";
+import BaseButton from "@/Components/BaseButton.vue";
+import ExportButton from "@/Components/ExportButton.vue";
 import SpanState from "@/components/SpanState.vue";
-import CardBoxModalCertification from "@/components/certifications/CardBoxModalCertification.vue";
-import CardBox from "@/components/CardBox.vue";
+import CardBoxModalCertification from "@/Components/Certifications/CardBoxModalCertification.vue";
+import CardBox from "@/Components/CardBox.vue";
+import { usePage } from "@inertiajs/vue3";
+
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime"; // Importa el complemento de fechas relativas
+import "dayjs/locale/es"; // Si deseas utilizar el idioma español
+
+dayjs.locale("es");
+dayjs.extend(relativeTime);
 
 const props = defineProps({
     checkable: Boolean,
@@ -29,6 +37,7 @@ const props = defineProps({
     expenseTypes: Object,
     budgetLines: Object,
     users: Object,
+    roles: Object,
     recordStatuses: Object,
 });
 
@@ -41,18 +50,12 @@ const certification = ref({});
 const isModalActive = ref(false);
 // Operación escogida para modal
 const currentOperation = ref("");
-// Operaciones
-const operations = {
-    1: "create",
-    2: "show",
-    3: "update",
-    4: "delete",
-};
 
 // Características de botones por operación
 const elementProps = {
     create: {
         tag: 1,
+        operation: "create",
         color: "success",
         label: "Crear " + props.instance,
         tooltip: "Crear " + props.instance,
@@ -60,6 +63,7 @@ const elementProps = {
     },
     show: {
         tag: 2,
+        operation: "show",
         color: "info",
         label: "Ver " + props.instance,
         tooltip: "Ver detalles",
@@ -67,6 +71,7 @@ const elementProps = {
     },
     update: {
         tag: 3,
+        operation: "update",
         color: "warning",
         label: "Actualizar " + props.instance,
         tooltip: "Actualizar",
@@ -74,18 +79,12 @@ const elementProps = {
     },
     delete: {
         tag: 4,
+        operation: "delete",
         color: "danger",
         label: "Eliminar " + props.instance,
         tooltip: "Eliminar " + props.instance,
         icon: mdiTrashCan,
     },
-};
-
-const currentManagements = {
-    1: "1. Secretaría CGF",
-    2: "2. Secretaría JAPC",
-    3: "3. Analista de Certificación",
-    4: "4. Coordinación General Financiera",
 };
 
 // ---------------------------------------------------------
@@ -156,9 +155,56 @@ const openModal = (action, certifications = {}) => {
 // CERRAR MODAL: CONFIRMAR O CANCELAR
 // --------------------------------------------
 const closeModal = (event) => {
+    certification.value = {};
     if (event === "confirm") alert(currentOperation.value);
     currentOperation.value = "";
     isModalActive.value = false;
+};
+
+// --------------------------------------------
+// PERMISOS
+// --------------------------------------------
+const hasPermissions = (permission) => {
+    return usePage().props.user.permissions.includes(permission);
+};
+
+// --------------------------------------------
+// FECHAS
+// --------------------------------------------
+const timeAgo = (date) => {
+    return dayjs(date).fromNow();
+};
+
+const daysDifference = (startDate, endDate) => {
+    const start = dayjs(startDate);
+    const end = dayjs(endDate);
+    const differenceInDays = end.from(start, true); // Calcula la diferencia en días
+    return `Hace ${differenceInDays}`;
+};
+
+const manageDate = (certification) => {
+    const startDate = {
+        // 1: certification.sec_cgf_date,
+        2: certification.sec_cgf_date,
+        3: certification.assignment_date,
+        4: certification.cp_date,
+    }[certification.current_management];
+
+    return timeAgo(startDate);
+};
+
+// --------------------------------------------
+// FORMATEO DE MONEDA
+// --------------------------------------------
+const formattedNumber = (number) => {
+    const f = new Intl.NumberFormat("eng-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+
+    return f.format(number);
 };
 </script>
 
@@ -196,11 +242,7 @@ const closeModal = (event) => {
                 :tooltip="elementProps.create.tooltip"
                 route-name="certifications.create"
                 small
-                v-if="
-                    $page.props.user.permissions.includes(
-                        'create_certification'
-                    )
-                "
+                v-show="hasPermissions('create_certification')"
             />
         </BaseButtons>
     </BaseLevel>
@@ -212,39 +254,42 @@ const closeModal = (event) => {
         :process-types="processTypes"
         :expense-types="expenseTypes"
         :budget-lines="budgetLines"
-        :users="users"
-        :record-statuses="recordStatuses"
-        :element-props="elementProps[operations[currentOperation]]"
         :current-operation="currentOperation"
+        :users="users"
+        :roles="roles"
+        :record-statuses="recordStatuses"
+        :element-props="Object.values(elementProps)[currentOperation - 1]"
         @confirm="closeModal"
     />
 
     <CardBox class="mb-6" has-table>
-        <div
-            v-if="checkedRows.length"
-            class="p-3 bg-gray-100/50 dark:bg-slate-800"
-        >
-            <span
-                v-for="checkedRow in checkedRows"
-                :key="checkedRow.id"
-                class="inline-block px-2 py-1 rounded-sm mr-2 text-sm bg-gray-100 dark:bg-slate-700"
-            >
-                {{ checkedRow.name }}
-            </span>
-        </div>
+        <template v-show="checkedRows.length">
+            <div class="p-3 bg-gray-100/50 dark:bg-slate-800">
+                <span
+                    v-for="checkedRow in checkedRows"
+                    :key="checkedRow.id"
+                    class="inline-block px-2 py-1 rounded-sm mr-2 text-sm bg-gray-100 dark:bg-slate-700"
+                >
+                    {{ checkedRow.name }}
+                </span>
+            </div>
+        </template>
 
         <table class="table">
             <thead>
                 <tr>
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
-                    <th v-if="checkable" class="text-center" />
+                    <th v-show="checkable" class="text-center" />
                     <th class="text-center">N.</th>
                     <th class="text-center">Objeto de contrato</th>
                     <th class="text-center">Area requirente</th>
                     <th class="text-center">Estado</th>
-                    <th class="text-center">Monto certificado</th>
+                    <th class="text-center">N. certif.</th>
+                    <th class="text-center">Monto</th>
+                    <th class="text-center">Saldo</th>
                     <th class="text-center">Gestión actual</th>
-                    <th class="text-center">Usuario asignado</th>
+                    <th class="text-center">Asignado</th>
+                    <th class="text-center">Fecha</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -255,7 +300,7 @@ const closeModal = (event) => {
                     class="border-b border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                     <TableCheckboxCell
-                        v-if="checkable"
+                        v-show="checkable"
                         @checked="checked($event, certification)"
                     />
                     <td class="border-b-0 lg:w-6 before:hidden text-center">
@@ -272,17 +317,41 @@ const closeModal = (event) => {
                         {{ certification.department.department }}
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
-                        <SpanState
-                            v-if="certification.record_status"
-                            :state="certification.record_status"
-                        />
-                        <div v-else>-</div>
+                        <template v-if="certification.record_status">
+                            <SpanState :state="certification.record_status" />
+                        </template>
+                        <template v-else>-</template>
                     </td>
+                    <td data-label="Nro. Certif." class="text-center">
+                        <template v-if="certification.certification_number">
+                            <strong>
+                                {{ certification.certification_number }}
+                            </strong>
+                        </template>
+                        <template v-else>-</template>
+                    </td>
+
                     <td data-label="Monto" class="text-center">
-                        <strong v-if="certification.certified_amount"
-                            >$ {{ certification.certified_amount }}</strong
-                        >
-                        <div v-else>-</div>
+                        <template v-if="certification.certified_amount">
+                            <strong>
+                                {{
+                                    formattedNumber(
+                                        certification.certified_amount
+                                    )
+                                }}</strong
+                            >
+                        </template>
+                        <template v-else>-</template>
+                    </td>
+                    <td data-label="Saldo" class="text-center">
+                        <template v-if="certification.balance">
+                            <strong>
+                                {{
+                                    formattedNumber(certification.balance)
+                                }}</strong
+                            >
+                        </template>
+                        <template v-else>-</template>
                     </td>
                     <td
                         data-label="Gestión actual"
@@ -290,20 +359,30 @@ const closeModal = (event) => {
                     >
                         <strong>
                             {{
-                                currentManagements[
-                                    certification.current_management
-                                ]
+                                roles[certification.current_management - 1].id
+                            }}.
+                            {{
+                                roles[certification.current_management - 1]
+                                    .nickname
                             }}
                         </strong>
                     </td>
                     <td
-                        data-label="Usuario asignado"
+                        data-label="Asignado a"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        <strong v-if="certification.user">
-                            @{{ certification.user.username }}
-                        </strong>
-                        <div v-else>-</div>
+                        <template v-if="certification.user">
+                            <strong>
+                                @{{ certification.user.username }}
+                            </strong>
+                        </template>
+                        <template v-else>-</template>
+                    </td>
+                    <td
+                        data-label="Tiempo"
+                        class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400 text-xs text-bold"
+                    >
+                        {{ manageDate(certification) }}
                     </td>
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"
@@ -316,48 +395,36 @@ const closeModal = (event) => {
                                 :color="elementProps.show.color"
                                 :icon="elementProps.show.icon"
                                 :tooltip="elementProps.show.tooltip"
-                                v-if="
-                                    $page.props.user.permissions.includes(
-                                        'show_certification'
-                                    )
-                                "
+                                small
+                                v-show="hasPermissions('show_certification')"
                                 @click="
                                     openModal(
                                         elementProps.show.tag,
                                         certification
                                     )
                                 "
-                                small
                             />
                             <BaseButton
                                 :color="elementProps.update.color"
                                 :icon="elementProps.update.icon"
                                 :tooltip="elementProps.update.tooltip"
-                                v-if="
-                                    $page.props.user.permissions.includes(
-                                        'update_certification'
-                                    )
-                                "
+                                small
+                                v-show="hasPermissions('update_certification')"
                                 route-name="certifications.edit"
                                 :id="certification.id"
-                                small
                             />
                             <BaseButton
                                 :color="elementProps.delete.color"
                                 :icon="elementProps.delete.icon"
                                 :tooltip="elementProps.delete.tooltip"
-                                v-if="
-                                    $page.props.user.permissions.includes(
-                                        'delete_certification'
-                                    )
-                                "
+                                small
+                                v-show="hasPermissions('delete_certification')"
                                 @click="
                                     openModal(
                                         elementProps.delete.tag,
                                         certification
                                     )
                                 "
-                                small
                             />
                         </BaseButtons>
                     </td>

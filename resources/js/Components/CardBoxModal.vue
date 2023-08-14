@@ -1,12 +1,12 @@
 <script setup>
 import { computed } from "vue";
 import { mdiClose, mdiContentSaveAll, mdiBackspace, mdiPrinter } from "@mdi/js";
-import BaseButton from "@/components/BaseButton.vue";
-import BaseButtons from "@/components/BaseButtons.vue";
-import CardBox from "@/components/CardBox.vue";
+import BaseButton from "@/Components/BaseButton.vue";
+import BaseButtons from "@/Components/BaseButtons.vue";
+import CardBox from "@/Components/CardBox.vue";
 import OverlayLayer from "@/components/OverlayLayer.vue";
-import CardBoxComponentTitle from "@/components/CardBoxComponentTitle.vue";
-import NotificationBarInCard from "@/components/NotificationBarInCard.vue";
+import CardBoxComponentTitle from "@/Components/CardBoxComponentTitle.vue";
+import NotificationBarInCard from "@/Components/NotificationBarInCard.vue";
 
 const props = defineProps({
     title: {

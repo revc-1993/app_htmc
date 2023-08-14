@@ -5,14 +5,41 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Commitment;
+use App\Models\CustomRole;
 use App\Models\RecordStatus;
-use Illuminate\Http\Request;
-use App\Models\Certification;
 use App\Http\Requests\StoreCommitmentRequest;
 use App\Http\Requests\UpdateCommitmentRequest;
+use App\Services\CommitmentService;
 
 class CommitmentController extends Controller
 {
+    protected $commitmentService;
+
+    public function __construct(CommitmentService $commitmentService)
+    {
+        $this->middleware(
+            'permission:create_commitment|show_commitment|update_commitment|delete_commitment',
+            ['only' => ['index']]
+        );
+
+        $this->middleware(
+            'permission:create_commitment',
+            ['only' => ['create', 'store']]
+        );
+
+        $this->middleware(
+            'permission:update_commitment',
+            ['only' => ['edit', 'update']]
+        );
+
+        $this->middleware(
+            'permission:delete_commitment',
+            ['only' => ['destroy']]
+        );
+
+        $this->commitmentService = $commitmentService;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -20,35 +47,17 @@ class CommitmentController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Commitments/Index', [
-            'commitments' => Commitment
-                ::with([
-                    'certification' => function ($query) {
-                        $query->select(
-                            'certifications.id',
-                            'certifications.certification_number',
-                            'certifications.contract_object',
-                            'certifications.vendor_id'
-                        );
-                    },
-                    'certification.vendor' => function ($query) {
-                        $query->select(
-                            'vendors.id',
-                            'vendors.name',
-                        );
-                    },
-                    'user' => function ($query) {
-                        $query->select('id', 'username');
-                    },
-                    'recordStatus' => function ($query) {
-                        $query->select('id', 'status');
-                    },
-                ])
-                ->filtered()
-                ->get(),
-            'users' => User::analystRole()->get(),
-            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
-        ]);
+        $commitments = $this->commitmentService->getAllCommitments();
+        $users = User::analystRole()->get();
+        $roles = CustomRole::allRoles();
+        $recordStatuses = RecordStatus::all(['id', 'status']);
+
+        return Inertia::render('Commitments/Index', compact(
+            'commitments',
+            'users',
+            'roles',
+            'recordStatuses'
+        ));
     }
 
     /**
@@ -58,10 +67,15 @@ class CommitmentController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Commitments/Create', [
-            'users' => User::analystRole()->get(),
-            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
-        ]);
+        $users = User::analystRole()->get();
+        $roles = CustomRole::allRoles();
+        $recordStatuses = RecordStatus::getRecordStatus()->get(['id', 'status']);
+
+        return Inertia::render('Commitments/Create', compact(
+            'users',
+            'roles',
+            'recordStatuses'
+        ));
     }
 
     /**
@@ -71,19 +85,17 @@ class CommitmentController extends Controller
      * @param  \App\Models\Commitment  $commitment
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreCommitmentRequest $request, Commitment $commitment)
+    public function store(StoreCommitmentRequest $request)
     {
-        $adjustedRequest = $this->paramsControl($request);
-
-        $commitment = Commitment::create($adjustedRequest);
+        $commitment = $this->commitmentService->createCommitment($request);
 
         $message = [
             "response" => "Registro creado correctamente.",
             "operation" => 1,
         ];
 
-        if ($commitment->commitment_memo === null)
-            $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de compromiso."];
+        if (is_null($commitment->commitment_memo))
+            $message['comments'] = "Atención: No se especificó un Nro. de Memorando de compromiso.";
 
         return to_route('commitments.index')->with(compact('message'));
     }
@@ -94,33 +106,19 @@ class CommitmentController extends Controller
      * @param  \App\Models\Certification $certification
      * @return \Illuminate\Http\Response
      */
-    public function edit($commitment_id)
+    public function edit(int $id)
     {
-        $commitment = Commitment::with([
-            'certification' => function ($query) {
-                $query->select(
-                    'certifications.id',
-                    'certifications.certification_number',
-                    'certifications.contract_object',
-                    'certifications.vendor_id',
-                );
-            },
-            'certification.vendor' => function ($query) {
-                $query->select(
-                    'vendors.id',
-                    'vendors.nit',
-                    'vendors.name',
-                );
-            },
-        ])
-            ->where('commitments.id', '=', $commitment_id)
-            ->first();
+        $commitment = $this->commitmentService->getCommitmentForEdit($id);
+        $users = User::analystRole()->get();
+        $roles = CustomRole::allRoles();
+        $recordStatuses = RecordStatus::getRecordStatus()->get(['id', 'status']);
 
-        return Inertia::render('Commitments/Edit', [
-            'commitment' => $commitment,
-            'users' => User::analystRole()->get(),
-            'recordStatuses' => RecordStatus::getRecordStatus()->get(['id', 'status']),
-        ]);
+        return Inertia::render('Commitments/Edit', compact(
+            'commitment',
+            'users',
+            'roles',
+            'recordStatuses'
+        ));
     }
 
     /**
@@ -132,20 +130,16 @@ class CommitmentController extends Controller
      */
     public function update(UpdateCommitmentRequest $request, Commitment $commitment)
     {
-        // dd($request);
-
-        $role = $this->getRole();
-
-        $adjustedRequest = $this->paramsControl($request);
-
-        $commitment->update($adjustedRequest);
+        $role = $this->commitmentService->getRole();
+        $adjustedRequest = $this->commitmentService->adjustParams($request);
+        $this->commitmentService->updateCommitment($commitment, $adjustedRequest);
 
         $message = [
             "response" => "Registro actualizado correctamente.",
             "operation" => 3,
         ];
 
-        if ($commitment->commitment_memo === null && $role <= 2)
+        if (is_null($commitment->commitment_memo) && $role <= 2)
             $message += ["comments" => "Atención: No se especificó un Nro. de Memorando de compromiso."];
 
         return to_route('commitments.index')->with(compact('message'));
@@ -159,106 +153,12 @@ class CommitmentController extends Controller
      */
     public function destroy(Commitment $commitment)
     {
-        $commitment->delete();
+        $this->commitmentService->deleteCommitment($commitment);
+
         $message = [
             "response" => "Registro eliminado correctamente.",
             "operation" => 4,
         ];
         return to_route('commitments.index')->with(compact('message'));
-    }
-
-    protected function getRole()
-    {
-        return auth()->user()->roles()->first()->id;
-    }
-
-    protected function paramsControl($request)
-    {
-        $adjustedRequest = $request->validated() +
-            $this->manageDate($request->current_management);
-
-        $adjustedRequest['current_management'] = $this->manageAssignment($request);
-        $adjustedRequest['record_status_id'] = $this->manageRecordStatus($request);
-
-        return $adjustedRequest;
-    }
-
-    protected function manageDate(int $current_management)
-    {
-        if ($current_management === 2)          return  ['assignment_date' => now()];
-        else if ($current_management === 3)     return  ['commitment_date' => now()];
-        else if ($current_management === 4)     return  ['coord_cgf_date' => now()];
-        else return [];
-    }
-
-    protected function manageAssignment($request)
-    {
-
-        if (
-            !is_null($request->certification_id)
-            && (
-                // 1
-                (is_null($request->record_status_id) && is_null($request->treasury_approved))
-                // 2 
-                || ($request->record_status_id < 4
-                    && (is_null($request->treasury_approved) || $request->treasury_approved === "returned"
-                    )
-                )
-                // 3
-                || (
-                    ($request->record_status_id > 4 || is_null($request->record_status_id))
-                    && $request->treasury_approved === "returned"
-                )
-                // 4
-                || ($request->record_status_id === 4 && $request->treasury_approved === "returned" && $request->current_management === 4)
-            )
-        ) {
-            return 3;
-        }
-
-        if (
-            !is_null($request->certification_id)
-            && (
-                // 1
-                ($request->record_status_id === 4 && is_null($request->treasury_approved))
-                // 2
-                || (
-                    ($request->record_status_id >= 4 || is_null($request->record_status_id))
-                    && ($request->treasury_approved === "approved" || $request->treasury_approved === "liquidated")
-                )
-                // 3
-                || ($request->record_status_id === 4 && $request->treasury_approved === "returned" && $request->current_management === 3)
-            )
-        ) {
-            return 4;
-        }
-    }
-
-    protected function manageRecordStatus($request)
-    {
-        if (
-            // 1
-            (($request->record_status_id > 4 || is_null($request->record_status_id)) && $request->treasury_approved === "returned")
-            // 2
-            || ($request->record_status_id === 4 && $request->treasury_approved === "returned" && $request->current_management === 4)
-        ) {
-            return 5;
-        }
-
-        if (
-            // 1
-            (($request->record_status_id >= 4 || is_null($request->record_status_id)) && $request->treasury_approved === "approved")
-        ) {
-            return 6;
-        }
-
-        if (
-            // 1
-            (($request->record_status_id >= 4 || is_null($request->record_status_id)) && $request->treasury_approved === "liquidated")
-        ) {
-            return 7;
-        }
-
-        return $request->record_status_id;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\FormRequestValidator\Certification\CertificationRoleValidatorFactory;
 
 class UpdateCertificationRequest extends FormRequest
 {
@@ -23,57 +24,16 @@ class UpdateCertificationRequest extends FormRequest
      */
     public function rules()
     {
-        $role = auth()->user()->roles()->first()->id;
-        $validationRules = [];
+        $roleValidator = CertificationRoleValidatorFactory::make($this->getCurrentRole(), $this->input());
+        return $roleValidator->getRules();
+    }
 
+    protected function getCurrentRole()
+    {
+        $role = auth()->user()->roles()->first()->id;
         if ($role === 5)    $currentRole = $this->current_management;
         else                $currentRole = $role;
-
-        if ($currentRole === 1) {
-            $validationRules += [
-                'certification_memo' => [
-                    'nullable',
-                    'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/'
-                ],
-                'content' => ['nullable', 'min:8'],
-                'contract_object' => ['required', 'string', 'min:15', 'max:255'],
-                'process_type_id' => ['required'],
-                'expense_type_id' => ['required'],
-                'department_id' => ['required'],
-                'sec_cgf_comments' => ['nullable'],
-            ];
-        } else if ($currentRole === 2) {
-            $validationRules += [
-                'content' => ['nullable', 'min:10'],
-                'japc_comments' => ['nullable'],
-                'customer_id' => ['required'],
-            ];
-        } else if ($currentRole === 3) {
-            $validationRules += [
-                'process_number' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']) + ['alphadash', 'string', 'min:15', 'max:100'],
-                'vendor_id' => ($this->expense_type_id === 1 ? ['nullable'] : ['required']),
-                'budget_line_id' => ['required'],
-                'certified_amount' => ['nullable', 'numeric', 'min:10'],
-                'certification_number' => ['required_if:record_status_id,4', 'numeric', 'min:1', 'nullable'],
-                'record_status_id' => ['required', 'in:1,2,3,4'],
-                'certification_comments' => ['nullable'],
-            ];
-        } else if ($currentRole === 4) {
-            $validationRules += [
-                'treasury_approved' => ['required'],
-                'returned_document_number' => [
-                    'required',
-                    'regex: /^[A-Z]{4}-[A-Z]{4}-[A-Z]{1,10}-[0-9]{1,4}-[0-9]{2,6}-[MO]$/',
-                ],
-                'coord_cgf_comments' => ['nullable'],
-            ];
-        }
-
-        $validationRules += [
-            'current_management' => ['nullable'],
-        ];
-
-        return $validationRules;
+        return $currentRole;
     }
 
     public function messages(): array
