@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Commitment;
 use App\Models\CustomRole;
 use App\Models\RecordStatus;
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreCommitmentRequest;
 use App\Http\Requests\UpdateCommitmentRequest;
 use App\Services\CommitmentService;
@@ -160,5 +161,11 @@ class CommitmentController extends Controller
             "operation" => 4,
         ];
         return to_route('commitments.index')->with(compact('message'));
+    }
+
+    public function getCommitmentByNumber(Request $request)
+    {
+        $commitment = $this->commitmentService->getCommitmentByNumber($request->get('commitment_number'));
+        return response()->json(compact('commitment'), 200);
     }
 }

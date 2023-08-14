@@ -191,7 +191,7 @@ class CommitmentService
             // 2. 
             || ($recordStatusId === self::RECORD_STATUS['REGISTERED'] && $treasuryApproved === "returned" && $currentManagement === self::MANAGEMENTS['COORD_CGF'])
         ) {
-            return self::RECORD_STATUS['REGISTERED'];
+            return self::RECORD_STATUS['RETURNED'];
         }
 
         if (
@@ -219,6 +219,14 @@ class CommitmentService
         }
 
         return $recordStatusId;
+    }
+
+    public function getCommitmentByNumber($commitmentNumber)
+    {
+
+        // dd($certificationNumber);
+        return Commitment::approved($commitmentNumber)
+            ->first(['id', 'commitment_cur', 'contract_administrator', 'balance']);
     }
 
     function getRole()

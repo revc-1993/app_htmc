@@ -31,20 +31,20 @@ export default [
         icon: mdiTextBoxMultipleOutline,
     },
     {
-        to: "accruals.index",
+        route: "accruals.index",
         label: "Devengos",
         icon: mdiFileDocumentEditOutline,
     },
-    {
-        to: "accruals.index",
-        label: "Anticipos",
-        icon: mdiRefresh,
-    },
-    {
-        to: "accruals.index",
-        label: "Pagos",
-        icon: mdiCash,
-    },
+    // {
+    //     to: "accruals.index",
+    //     label: "Anticipos",
+    //     icon: mdiRefresh,
+    // },
+    // {
+    //     to: "accruals.index",
+    //     label: "Pagos",
+    //     icon: mdiCash,
+    // },
     // {
     //     to: "/forms",
     //     label: "Forms",

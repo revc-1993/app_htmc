@@ -17,7 +17,7 @@ class AnalystRoleValidator implements CommitmentRoleValidatorInterface
     {
         return [
             'certification_id' => ['required'],
-            'vendor_id' => ['nullable'],
+            'vendor_id' => ['required'],
             'commitment_amount' => ['nullable', 'min:0', new ValidateCommitmentAmount($this->inputData['certification_id'])],
             'record_status_id' => ['required', 'in:1,2,3,4,5'],
             'commitment_cur' => ['required_if:record_status_id,5', 'numeric', 'min:1', 'nullable'],

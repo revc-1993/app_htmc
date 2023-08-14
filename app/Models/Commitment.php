@@ -79,6 +79,12 @@ class Commitment extends Model
         return $this->belongsTo(RecordStatus::class, 'record_status_id');
     }
 
+    public function scopeApproved($query, $request)
+    {
+        $query->where('commitment_cur', $request)->where('record_status_id', '=', 6);
+    }
+
+
     public function scopeFiltered($query)
     {
         $query->orderBy("commitments.id", "desc");

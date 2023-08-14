@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Accrual;
 use App\Http\Requests\StoreAccrualRequest;
-use App\Http\Requests\StoreCommitmentRequest;
 
 class AccrualService
 {
@@ -26,9 +25,7 @@ class AccrualService
     {
         return Accrual::with([
             'commitment', 'user', 'recordStatus'
-        ])
-            ->filtered()
-            ->get();
+        ])->get();
     }
 
     public function getAccrualForEdit(int $id)
@@ -176,7 +173,7 @@ class AccrualService
             // 2. 
             || ($recordStatusId === self::RECORD_STATUS['REGISTERED'] && $treasuryApproved === "returned" && $currentManagement === self::MANAGEMENTS['COORD_CGF'])
         ) {
-            return self::RECORD_STATUS['REGISTERED'];
+            return self::RECORD_STATUS['RETURNED'];
         }
 
         if (

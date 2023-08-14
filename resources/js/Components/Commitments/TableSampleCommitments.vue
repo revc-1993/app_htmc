@@ -284,6 +284,7 @@ const formattedNumber = (number) => {
                     <th class="text-center">Estado</th>
                     <th class="text-center">N. Compromiso</th>
                     <th class="text-center">Monto comprometido</th>
+                    <th class="text-center">Saldo</th>
                     <th class="text-center">Gestión actual</th>
                     <th class="text-center">Asignado</th>
                     <th class="text-center">Tiempo</th>
@@ -345,6 +346,17 @@ const formattedNumber = (number) => {
                         </template>
                         <template v-else>-</template>
                     </td>
+                    <td data-label="Saldo" class="text-center">
+                        <template v-if="commitment.balance">
+                            <strong>
+                                {{
+                                    formattedNumber(commitment.balance)
+                                }}</strong
+                            >
+                        </template>
+                        <template v-else>-</template>
+                    </td>
+
                     <td
                         data-label="Gestión actual"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"

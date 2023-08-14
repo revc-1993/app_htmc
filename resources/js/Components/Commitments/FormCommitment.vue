@@ -596,58 +596,6 @@ const formattedDate = (date) => {
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
                 <FormField
-                    label="Número de Certificación"
-                    label-for="certificationNumber"
-                    :errors="form.errors.certification_id"
-                    help="Digite el número de certificación"
-                >
-                    <form
-                        @submit.prevent="searchCertificationByNumber('alert')"
-                    >
-                        <FormControlWithButton
-                            v-model="
-                                formSearchCertification.certificationNumber
-                            "
-                            id="certificationNumber"
-                            name="certificationNumber"
-                            :icon="mdiCardAccountDetails"
-                            autocomplete="certificationNumber"
-                            type="text"
-                            placeholder="Digite el número de certificación"
-                            :has-errors="form.errors.certification_id != null"
-                            :disabled="disabled.global.value"
-                        >
-                            <BaseButton
-                                type="submit"
-                                color="info"
-                                :disabled="disabled.global.value"
-                                :icon="mdiMagnify"
-                                tooltip="Buscar"
-                                location="end"
-                            />
-                        </FormControlWithButton>
-                    </form>
-                </FormField>
-                <FormField
-                    label="Objeto de contrato"
-                    label-for="contract_object"
-                >
-                    <FormControl
-                        v-model="certification.contract_object.value"
-                        id="contract_object"
-                        name="contract_object"
-                        :icon="mdiCardAccountDetails"
-                        placeholder="Objeto de contrato"
-                        autocomplete="contract_object"
-                        type="text"
-                        disabled
-                    />
-                </FormField>
-            </div>
-            <div
-                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
-            >
-                <FormField
                     label="NIT de Proveedor"
                     label-for="nit"
                     :errors="form.errors.vendor_id"
@@ -694,6 +642,58 @@ const formattedDate = (date) => {
                         :icon="mdiCardAccountDetails"
                         placeholder="Nombre de proveedor"
                         autocomplete="name"
+                        type="text"
+                        disabled
+                    />
+                </FormField>
+            </div>
+            <div
+                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+            >
+                <FormField
+                    label="Número de Certificación"
+                    label-for="certificationNumber"
+                    :errors="form.errors.certification_id"
+                    help="Digite el número de certificación"
+                >
+                    <form
+                        @submit.prevent="searchCertificationByNumber('alert')"
+                    >
+                        <FormControlWithButton
+                            v-model="
+                                formSearchCertification.certificationNumber
+                            "
+                            id="certificationNumber"
+                            name="certificationNumber"
+                            :icon="mdiCardAccountDetails"
+                            autocomplete="certificationNumber"
+                            type="text"
+                            placeholder="Digite el número de certificación"
+                            :has-errors="form.errors.certification_id != null"
+                            :disabled="disabled.global.value"
+                        >
+                            <BaseButton
+                                type="submit"
+                                color="info"
+                                :disabled="disabled.global.value"
+                                :icon="mdiMagnify"
+                                tooltip="Buscar"
+                                location="end"
+                            />
+                        </FormControlWithButton>
+                    </form>
+                </FormField>
+                <FormField
+                    label="Objeto de contrato"
+                    label-for="contract_object"
+                >
+                    <FormControl
+                        v-model="certification.contract_object.value"
+                        id="contract_object"
+                        name="contract_object"
+                        :icon="mdiCardAccountDetails"
+                        placeholder="Objeto de contrato"
+                        autocomplete="contract_object"
                         type="text"
                         disabled
                     />

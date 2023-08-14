@@ -22,7 +22,6 @@ import Stepper from "@/Components/Stepper.vue";
 import BaseButton from "@/Components/BaseButton.vue";
 import BaseDivider from "@/Components/BaseDivider.vue";
 import FormCheckRadioGroup from "@/Components/FormCheckRadioGroup.vue";
-import CardBoxModalVendor from "@/Components/Vendors/CardBoxModalVendor.vue";
 import BaseLevel from "@/Components/BaseLevel.vue";
 import FormValidationErrors from "@/Components/FormValidationErrors.vue";
 import BaseButtons from "@/Components/BaseButtons.vue";
@@ -87,18 +86,20 @@ const statuses = {
     canceled: 7,
 };
 
+const management = computed(() => props.roles.slice(1));
+
+// console.log(management.value);
+
 const role = computed(() => usePage().props.auth.user.roles[0].id);
-const activePhase = ref(1);
+const activePhase = ref(2);
 
 const toast = ref(false);
 const messageResource = ref("");
 
-const isModalActive = ref(false);
-
 // ---------------------------------------------------------
 // SETS
 // ---------------------------------------------------------
-activePhase.value = role.value && role.value < 5 ? role.value : 1;
+activePhase.value = role.value && role.value < 5 ? role.value : 2;
 
 const commitment = {
     contract_administrator: ref(""),
@@ -114,8 +115,6 @@ if (
     commitment.contract_administrator.value =
         props.accrual.commitment.contract_administrator;
     commitment.balance.value = props.accrual.commitment.balance;
-    // certification.vendor_name.value =
-    //     props.commitment.certification.vendor.name ?? "";
 }
 
 // ---------------------------------------------------------
@@ -198,7 +197,7 @@ const formSearchCommitment = useForm(
           }
         : {
               commitmentNumber: props.accrual.commitment
-                  ? props.accrual.commitment.commitment_number
+                  ? props.accrual.commitment.commitment_cur
                   : "",
           }
 );
@@ -216,9 +215,7 @@ const disabled = {
                         props.accrual.record_status_id >= statuses.approved &&
                         role.value !== 4)))
     ),
-    commitment_cur: computed(
-        () => form.record_status_id !== statuses.registered
-    ),
+    accrual_cur: computed(() => form.record_status_id !== statuses.registered),
     button: ref(false),
 };
 disabled.button.value =
@@ -276,7 +273,7 @@ const transaction = () => {
 const searchCommitmentByNumber = (alert = "") => {
     axios
         .get(
-            "/commitments/getCommitmentsByNumber?commitment_number=" +
+            "/commitments/getCommitmentByNumber?commitment_number=" +
                 formSearchCommitment.commitmentNumber
         )
         .then((response) => {
@@ -285,7 +282,9 @@ const searchCommitmentByNumber = (alert = "") => {
                 router.reload({ only: ["FormControl"] });
                 form.commitment_id = response.data.commitment.id;
                 formSearchCommitment.commitmentNumber =
-                    response.data.commitment.commitment_number;
+                    response.data.commitment.commitment_cur;
+                commitment.contract_administrator.value =
+                    response.data.commitment.contract_administrator;
                 commitment.balance.value = response.data.commitment.balance;
 
                 if (alert === "alert") {
@@ -325,7 +324,7 @@ const formattedDate = (date) => {
 
     <Stepper
         v-model="activePhase"
-        :steps="roles"
+        :steps="management"
         :operation="currentOperation"
         :current-management="
             currentOperation !== operations.create
@@ -335,103 +334,6 @@ const formattedDate = (date) => {
     />
 
     <CardBox is-form :in-modal="inModal" @submit.prevent="transaction">
-        <!-- STEP 1 -->
-        <!-- <div
-            v-show="activePhase === 1"
-            class="transition duration-500 ease-in-out"
-        >
-            <div
-                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
-            >
-                <FormField
-                    label="Nro. Memorando de compromiso"
-                    label-for="commitment_memo"
-                    help="Ingrese el Nro. de Memorando del compromiso"
-                    :errors="form.errors.commitment_memo"
-                >
-                    <FormControl
-                        v-model="form.commitment_memo"
-                        id="commitment_memo"
-                        :icon="mdiNumeric"
-                        autocomplete="commitment_memo"
-                        type="text"
-                        placeholder="Ej: IESS-HTMC-JATSGCME-2022-5073-M"
-                        :has-errors="form.errors.commitment_memo != null"
-                        :disabled="disabled.global.value"
-                    />
-                </FormField>
-                <FormField
-                    label="Nro. Proceso"
-                    label-for="process_number"
-                    help="Ingrese el Nro. de Proceso"
-                    :errors="form.errors.process_number"
-                >
-                    <FormControl
-                        v-model="form.process_number"
-                        id="process_number"
-                        :icon="mdiNumeric"
-                        autocomplete="process_number"
-                        type="text"
-                        placeholder="Ej: CE-2023000384849"
-                        :has-errors="form.errors.process_number != null"
-                        :disabled="disabled.global.value"
-                    />
-                </FormField>
-            </div>
-            <div
-                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
-            >
-                <FormField
-                    label="Administrador de contrato"
-                    label-for="contract_administrator"
-                    :errors="form.errors.contract_administrator"
-                >
-                    <FormControl
-                        v-model="form.contract_administrator"
-                        id="contract_administrator"
-                        :icon="mdiCardAccountDetails"
-                        autocomplete="contract_administrator"
-                        type="text"
-                        placeholder="Detalle los nombres del administrador de contrato"
-                        :has-errors="form.errors.contract_administrator != null"
-                        :disabled="disabled.global.value"
-                    />
-                </FormField>
-                <FormField
-                    label="Nro. de contrato - Convenio Marco"
-                    label-for="contract_number"
-                    :errors="form.errors.contract_number"
-                >
-                    <FormControl
-                        v-model="form.contract_number"
-                        id="contract_number"
-                        :icon="mdiCardAccountDetails"
-                        autocomplete="contract_number"
-                        type="text"
-                        placeholder="Detalle el Nro. de contrato del convenio marco"
-                        :has-errors="form.errors.contract_number != null"
-                        :disabled="disabled.global.value"
-                    />
-                </FormField>
-            </div>
-            <FormField
-                label="Observaciones"
-                label-for="sec_cgf_comments"
-                help="Máximo 255 caracteres."
-                :errors="form.errors.sec_cgf_comments"
-            >
-                <FormControl
-                    v-model="form.sec_cgf_comments"
-                    type="textarea"
-                    id="sec_cgf_comments"
-                    :icon="mdiTag"
-                    autocomplete="sec_cgf_comments"
-                    placeholder="Indique las principales observaciones."
-                    :has-errors="form.errors.sec_cgf_comments != null"
-                    :disabled="disabled.global.value"
-                />
-            </FormField>
-        </div> -->
         <!-- STEP 2 -->
         <div
             v-show="activePhase === 2"
@@ -563,22 +465,22 @@ const formattedDate = (date) => {
                     />
                 </FormField>
                 <FormField
-                    label="Monto del compromiso"
-                    label-for="commitment_amount"
-                    help="Ingrese el monto del compromiso"
-                    :errors="form.errors.commitment_amount"
+                    label="Monto del devengado"
+                    label-for="accrual_amount"
+                    help="Ingrese el monto del devengado"
+                    :errors="form.errors.accrual_amount"
                 >
                     <FormControl
-                        v-model="form.commitment_amount"
-                        id="commitment_amount"
+                        v-model="form.accrual_amount"
+                        id="accrual_amount"
                         :icon="mdiCurrencyUsd"
-                        autocomplete="commitment_amount"
+                        autocomplete="accrual_amount"
                         type="number"
                         inputmode="decimal"
                         placeholder="Ej: 1534.35"
                         :step="0.0001"
                         :min="0"
-                        :has-errors="form.errors.commitment_amount != null"
+                        :has-errors="form.errors.accrual_amount != null"
                         :disabled="disabled.global.value"
                     />
                 </FormField>
@@ -588,9 +490,9 @@ const formattedDate = (date) => {
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
                 <FormField
-                    label="Estado del compromiso"
+                    label="Estado del devengado"
                     label-for="record_status_id"
-                    help="Seleccione el estado del compromiso"
+                    help="Seleccione el estado del devengado"
                     :errors="form.errors.record_status_id"
                 >
                     <FormControl
@@ -605,40 +507,39 @@ const formattedDate = (date) => {
                     />
                 </FormField>
                 <FormField
-                    label="Nro. CUR del Compromiso"
-                    label-for="commitment_cur"
-                    help="Digite el número de CUR del compromiso"
-                    :errors="form.errors.commitment_cur"
+                    label="Nro. CUR del Devengado"
+                    label-for="accrual_cur"
+                    help="Digite el número de CUR del devengado"
+                    :errors="form.errors.accrual_cur"
                 >
                     <FormControl
-                        v-model="form.commitment_cur"
-                        id="commitment_cur"
+                        v-model="form.accrual_cur"
+                        id="accrual_cur"
                         :icon="mdiNumeric"
-                        autocomplete="commitment_cur"
+                        autocomplete="accrual_cur"
                         placeholder="Ej: 123"
                         type="number"
-                        :has-errors="form.errors.commitment_cur != null"
+                        :has-errors="form.errors.accrual_cur != null"
                         :disabled="
-                            disabled.global.value ||
-                            disabled.commitment_cur.value
+                            disabled.global.value || disabled.accrual_cur.value
                         "
                     />
                 </FormField>
             </div>
             <FormField
                 label="Observaciones"
-                label-for="commitment_comments"
+                label-for="accrual_comments"
                 help="Máximo 255 caracteres."
-                :errors="form.errors.commitment_comments"
+                :errors="form.errors.accrual_comments"
             >
                 <FormControl
-                    v-model="form.commitment_comments"
+                    v-model="form.accrual_comments"
                     type="textarea"
-                    id="commitment_comments"
+                    id="accrual_comments"
                     :icon="mdiTag"
-                    autocomplete="commitment_comments"
+                    autocomplete="accrual_comments"
                     placeholder="Indique las principales observaciones."
-                    :has-errors="form.errors.commitment_comments != null"
+                    :has-errors="form.errors.accrual_comments != null"
                     :disabled="disabled.global.value"
                 />
             </FormField>
@@ -648,7 +549,7 @@ const formattedDate = (date) => {
             v-show="activePhase === 4"
             class="transition duration-500 ease-in-out"
         >
-            <FormField label="Revisión de certificación">
+            <FormField label="Revisión de devengado">
                 <FormCheckRadioGroup
                     v-model="form.treasury_approved"
                     name="treasury_approved"
@@ -664,7 +565,7 @@ const formattedDate = (date) => {
             <FormField
                 label="Nro. Memorando"
                 label-for="returned_document_number"
-                help="Ingrese el Nro. de Memorando de la revisión de Compromiso"
+                help="Ingrese el Nro. de Memorando de la revisión de Devengado"
                 :errors="form.errors.returned_document_number"
             >
                 <FormControl
@@ -714,7 +615,7 @@ const formattedDate = (date) => {
                     "
                 />
                 <BaseButton
-                    route-name="commitments.index"
+                    route-name="accruals.index"
                     color="slate"
                     label="Regresar"
                     :icon="mdiBackspace"
