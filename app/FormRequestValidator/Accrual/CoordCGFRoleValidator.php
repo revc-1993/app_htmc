@@ -15,4 +15,18 @@ class CoordCGFRoleValidator implements AccrualRoleValidatorInterface
             'coord_cgf_comments' => ['nullable'],
         ];
     }
+
+    public function getAttributes(): array
+    {
+        return [
+            'treasury_approved' => "Estado Final de Expediente",
+            'returned_document_number' => "Nro. de Memorando",
+            'coord_cgf_comments' => "Observaciones",
+        ];
+    }
+
+    public function getMessages(): array
+    {
+        return [];
+    }
 }

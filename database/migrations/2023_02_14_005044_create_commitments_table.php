@@ -18,7 +18,8 @@ return new class extends Migration
             //Buscar certificación
             $table->string('commitment_memo')->nullable();
             $table->string('process_number')->nullable();
-            $table->string("contract_administrator")->nullable();
+            $table->unsignedBigInteger("contract_administrator_id")->nullable();
+            $table->string("purchase_order")->nullable();
             $table->timestamp('sec_cgf_date')->nullable();
             $table->string("contract_number")->nullable();
             $table->string('sec_cgf_comments')->nullable();
@@ -41,15 +42,17 @@ return new class extends Migration
             $table->timestamp('coord_cgf_date')->nullable();
             $table->string('coord_cgf_comments')->nullable();
 
-            $table->integer('current_management')->default(2);
+            $table->unsignedBigInteger('current_management')->default(2);
             $table->unsignedBigInteger("certification_id")->nullable();
             $table->softDeletes();
             $table->timestamps();
 
             $table->foreign('customer_id')->references('id')->on('users');
+            $table->foreign('contract_administrator_id')->references('id')->on('contract_administrators');
             $table->foreign('vendor_id')->references('id')->on('vendors');
             $table->foreign('record_status_id')->references('id')->on('record_statuses');
             $table->foreign('certification_id')->references('id')->on('certifications');
+            $table->foreign('current_management')->references('id')->on('current_management');
         });
     }
 

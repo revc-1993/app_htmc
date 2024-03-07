@@ -1,13 +1,13 @@
 <script setup>
 import exportFromJSON from "export-from-json";
 import { computed, ref } from "vue";
-import BaseButton from "@/components/BaseButton.vue";
+import { mdiCommaBox, mdiFileExcelBox } from "@mdi/js";
+import BaseButton from "@/Components/BaseButton.vue";
 
 const props = defineProps({
     data: Object,
     type: String,
     color: String,
-    icon: String,
     tooltip: String,
 });
 
@@ -22,12 +22,19 @@ const downloadFile = (type) => {
 
     if (data) exportFromJSON({ data, fileName, exportType });
 };
+
+const exportIcon = computed(() => {
+    return {
+        csv: mdiCommaBox,
+        xls: mdiFileExcelBox,
+    }[props.type];
+});
 </script>
 <template>
     <BaseButton
         small
         :color="color"
-        :icon="icon"
+        :icon="exportIcon"
         :tooltip="tooltip"
         @click="downloadFile(type)"
     />

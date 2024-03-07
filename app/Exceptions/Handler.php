@@ -47,4 +47,30 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    public function render($request, Throwable $e)
+    {
+        $response = parent::render($request, $e);
+        $status = $response->status();
+
+        if ($status === 419) {
+            return back()->with([
+                'message' => [
+                    'response' => '419 - La página ha caducado, inténtelo de nuevo.',
+                    'operation' => 4,
+                ],
+            ]);
+        }
+
+        if ($status === 403) {
+            return back()->with([
+                'message' => [
+                    'response' => '403 - No tienes permisos para acceder a este módulo.',
+                    'operation' => 4,
+                ],
+            ]);
+        }
+
+        return $response;
+    }
 }

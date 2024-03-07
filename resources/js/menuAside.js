@@ -1,17 +1,19 @@
 import {
-    mdiAccountCircle,
+    mdiAccount,
     mdiMonitor,
     mdiShieldCrown,
     mdiTextBoxMultipleOutline,
     mdiCash,
-    mdiNotebook,
-    mdiFileDocumentEditOutline,
-    mdiCardBulleted,
+    mdiWallet,
+    mdiBriefcase,
+    mdiBook,
+    mdiCreditCardMarker,
+    mdiAccountTie,
     mdiFolderAccount,
     mdiCheckbook,
     mdiAccountGroup,
     mdiBadgeAccountHorizontal,
-    mdiRefresh,
+    mdiCogs,
 } from "@mdi/js";
 
 export default [
@@ -23,17 +25,22 @@ export default [
     {
         route: "certifications.index",
         label: "Certificaciones",
-        icon: mdiCardBulleted,
+        icon: mdiBook,
     },
     {
         route: "commitments.index",
         label: "Compromisos",
-        icon: mdiTextBoxMultipleOutline,
+        icon: mdiCreditCardMarker,
     },
     {
         route: "accruals.index",
-        label: "Devengos",
-        icon: mdiFileDocumentEditOutline,
+        label: "Devengados",
+        icon: mdiWallet,
+    },
+    {
+        route: "payments.index",
+        label: "Tesorería",
+        icon: mdiCash,
     },
     // {
     //     to: "accruals.index",
@@ -68,60 +75,23 @@ export default [
     {
         to: "/profile",
         label: "Profile",
-        icon: mdiAccountCircle,
+        icon: mdiAccount,
     },
     {
         label: "Administrador",
-        icon: mdiShieldCrown,
+        icon: mdiCogs,
         menu: [
             {
-                route: "users.index",
+                route: "superadmin.users.index",
                 label: "Usuarios",
                 icon: mdiAccountGroup,
             },
             {
                 // route: "",
-                label: "Roles",
-                icon: mdiBadgeAccountHorizontal,
-            },
-            {
-                label: "Catálogo",
-                icon: mdiNotebook,
-                menu: [
-                    {
-                        // route: "",
-                        label: "Departamentos",
-                        icon: mdiFolderAccount,
-                    },
-                    {
-                        // route: "",
-                        label: "Tipos de gasto",
-                        icon: mdiCheckbook,
-                    },
-                ],
+                route: "superadmin.departments.index",
+                label: "Departamentos",
+                icon: mdiFolderAccount,
             },
         ],
     },
-    // {
-    //     to: "/login",
-    //     label: "Login",
-    //     icon: mdiLock,
-    // },
-    // {
-    //     to: "/error",
-    //     label: "Error",
-    //     icon: mdiAlertCircle,
-    // },
-    // {
-    //     label: "Dropdown",
-    //     icon: mdiViewList,
-    //     menu: [
-    //         {
-    //             label: "Item One",
-    //         },
-    //         {
-    //             label: "Item Two",
-    //         },
-    //     ],
-    // },
 ];

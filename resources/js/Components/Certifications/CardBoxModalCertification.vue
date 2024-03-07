@@ -1,9 +1,11 @@
 <script setup>
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { router } from "@inertiajs/vue3";
 import CardBoxModal from "@/Components/CardBoxModal.vue";
-import FormCertification from "@/components/certifications/FormCertification.vue";
+import FormCertification from "@/Components/Certifications/FormCertification.vue";
 import { mdiPrinter } from "@mdi/js";
+
+import { OPERATIONS } from "@/Utils/constants";
 
 // ---------------------------------------------------------
 // PROPS
@@ -22,7 +24,7 @@ const props = defineProps({
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
-        default: 1,
+        default: OPERATIONS.CREATE,
     },
     elementProps: {
         type: Object,
@@ -36,15 +38,7 @@ const props = defineProps({
     },
 });
 
-// ---------------------------------------------------------
-// CONSTANTES
-// ---------------------------------------------------------
-const operations = {
-    create: 1,
-    show: 2,
-    update: 3,
-    delete: 4,
-};
+const certificationSelected = ref(props.certification);
 
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
@@ -55,6 +49,7 @@ const value = computed({
     set: (value) => emit("update:modelValue", value),
 });
 const confirmCancel = (mode) => {
+    certificationSelected.value = {};
     value.value = false;
     emit(mode, mode);
 };
@@ -70,7 +65,7 @@ const destroy = () => {
 };
 
 const transaction = () => {
-    return props.currentOperation === operations.delete ? destroy() : "";
+    return props.currentOperation === OPERATIONS.DELETE ? destroy() : "";
 };
 </script>
 
@@ -79,19 +74,19 @@ const transaction = () => {
         v-model="value"
         :title="elementProps.label"
         :button="
-            props.currentOperation === operations.update
+            props.currentOperation === OPERATIONS.UPDATE
                 ? 'success'
                 : elementProps.color
         "
         :button-label="
-            props.currentOperation === operations.show
+            props.currentOperation === OPERATIONS.SHOW
                 ? 'Imprimir'
                 : elementProps.label
         "
         has-cancel
         @confirm="transaction"
     >
-        <template v-if="currentOperation !== operations.delete">
+        <template v-if="currentOperation !== OPERATIONS.DELETE">
             <FormCertification
                 in-modal
                 :certification="certification"
@@ -105,8 +100,8 @@ const transaction = () => {
                 :current-operation="currentOperation"
                 :element-props="elementProps"
                 :with-button="
-                    currentOperation === operations.create ||
-                    currentOperation === operations.update
+                    currentOperation === OPERATIONS.CREATE ||
+                    currentOperation === OPERATIONS.UPDATE
                 "
             />
         </template>

@@ -1,11 +1,11 @@
 <script setup>
 import { mdiAccountMultiple, mdiCheckBold } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
-import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-import SectionMain from "@/components/SectionMain.vue";
-import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import Toast from "@/components/Toast.vue";
-import TableSampleUsers from "@/components/users/TableSampleUsers.vue";
+import LayoutAuthenticated from "@/Layouts/LayoutAuthenticated.vue";
+import SectionMain from "@/Components/SectionMain.vue";
+import SectionTitleLineWithButton from "@/Components/SectionTitleLineWithButton.vue";
+import Toast from "@/Components/Toast.vue";
+import TableSampleUsers from "@/Components/Users/TableSampleUsers.vue";
 
 // --------------------------------------------
 const props = defineProps({

@@ -1,5 +1,5 @@
 <script setup>
-import { mdiCardBulleted, mdiCheckBold } from "@mdi/js";
+import { mdiBook, mdiCheckBold } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
 import LayoutAuthenticated from "@/Layouts/LayoutAuthenticated.vue";
 import SectionMain from "@/Components/SectionMain.vue";
@@ -25,7 +25,7 @@ const props = defineProps({
         <Head title="Certificaciones" />
         <SectionMain>
             <SectionTitleLineWithButton
-                :icon="mdiCardBulleted"
+                :icon="mdiBook"
                 title="Certificaciones"
                 main
             />
@@ -48,3 +48,26 @@ const props = defineProps({
         </SectionMain>
     </LayoutAuthenticated>
 </template>
+
+<style>
+.Vue-Toastification__toast--default.height-class {
+    height: max-content;
+}
+.Vue-Toastification__toast--default.danger-class {
+    background-color: rgb(220 38 38);
+}
+.Vue-Toastification__toast--default.warning-class {
+    background-color: rgb(202 138 4);
+}
+.Vue-Toastification__toast--default.success-class {
+    background-color: rgb(5 150 105);
+}
+.Vue-Toastification__toast--default.blue-class {
+    background-color: rgb(37 99 235);
+}
+
+.Vue-Toastification__toast-body.custom-class {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem; /* 20px */
+}
+</style>

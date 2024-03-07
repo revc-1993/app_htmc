@@ -29,6 +29,8 @@ import BaseButtons from "@/Components/BaseButtons.vue";
 import Toast from "@/Components/Toast.vue";
 import LabelDate from "@/Components/LabelDate.vue";
 
+import { ROLES, STEPS, STATUSES, OPERATIONS } from "@/Utils/constants";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"; // Importa el complemento de fechas relativas
 import "dayjs/locale/es"; // Si deseas utilizar el idioma español
@@ -49,7 +51,7 @@ const props = defineProps({
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
-        default: 1,
+        default: OPERATIONS.CREATE,
     },
     elementProps: {
         type: Object,
@@ -69,26 +71,10 @@ const props = defineProps({
 });
 
 // ---------------------------------------------------------
-// CONSTANTES
+// PROPIEDADES
 // ---------------------------------------------------------
-const operations = {
-    create: 1,
-    show: 2,
-    update: 3,
-};
-
-const statuses = {
-    pendingReview: 1,
-    reviewing: 2,
-    observed: 3,
-    returned: 4,
-    registered: 5,
-    approved: 6,
-    canceled: 7,
-};
-
-const role = computed(() => usePage().props.auth.user.roles[0].id);
-const activePhase = ref(1);
+const role = usePage().props.auth.user.roles;
+const activePhase = ref(STEPS.STEP_1);
 
 const toast = ref(false);
 const messageResource = ref("");
@@ -99,7 +85,18 @@ const newVendor = ref({});
 // ---------------------------------------------------------
 // SETS
 // ---------------------------------------------------------
-activePhase.value = role.value && role.value < 5 ? role.value : 1;
+activePhase.value =
+    role.name !== ROLES.ADMIN
+        ? role.step
+        : props.commitment &&
+          props.commitment.current_management &&
+          props.currentOperation === OPERATIONS.SHOW
+        ? props.commitment.current_management.step
+        : props.commitment &&
+          props.commitment.current_management &&
+          props.currentOperation === OPERATIONS.UPDATE
+        ? props.commitment.current_management
+        : STEPS.STEP_1;
 
 const certification = {
     contract_object: ref(""),
@@ -109,16 +106,14 @@ const certification = {
 };
 
 if (
-    (props.currentOperation === operations.show ||
-        props.currentOperation === operations.update) &&
+    (props.currentOperation === OPERATIONS.SHOW ||
+        props.currentOperation === OPERATIONS.UPDATE) &&
     props.commitment.certification
 ) {
     certification.contract_object.value =
-        props.commitment.certification.contract_object;
-    certification.vendor_id.value = props.commitment.certification.vendor_id;
+        props.commitment.certification?.contract_object;
+    // certification.vendor_id.value = props.commitment.certification.vendor_id;
     certification.balance.value = props.commitment.certification.balance;
-    // certification.vendor_name.value =
-    //     props.commitment.certification.vendor.name ?? "";
 }
 
 // ---------------------------------------------------------
@@ -143,90 +138,105 @@ let selectOptions = {
 // ---------------------------------------------------------
 // FORM
 // ---------------------------------------------------------
-const form = useForm({
-    certification_id: "",
-    commitment_memo: "",
-    process_number: "",
-    contract_administrator: "",
-    contract_number: "",
-    sec_cgf_date: new Date().toLocaleDateString(),
-    sec_cgf_comments: "",
+const form = useForm(
+    props.currentOperation === OPERATIONS.CREATE
+        ? {
+              certification_id: "",
+              commitment_memo: "",
+              process_number: "",
+              purchase_order: "",
+              contract_administrator_id: "",
+              contract_number: "",
+              sec_cgf_date: new Date().toLocaleDateString(),
+              sec_cgf_comments: "",
 
-    assignment_date: new Date().toLocaleDateString(),
-    japc_comments: "",
-    customer_id: "",
+              assignment_date: new Date().toLocaleDateString(),
+              japc_comments: "",
+              customer_id: "",
 
-    commitment_cur: "",
-    commitment_amount: "",
-    commitment_comments: "",
-    commitment_date: new Date().toLocaleDateString(),
-    vendor_id: "",
-    record_status_id: "",
-    treasury_approved: "",
-    returned_document_number: "",
-    coord_cgf_comments: "",
-    coord_cgf_date: new Date().toLocaleDateString(),
+              commitment_cur: "",
+              commitment_amount: "",
+              commitment_comments: "",
+              commitment_date: new Date().toLocaleDateString(),
+              vendor_id: "",
+              record_status_id: "",
+              treasury_approved: "",
+              returned_document_number: "",
+              coord_cgf_comments: "",
+              coord_cgf_date: new Date().toLocaleDateString(),
+              current_management: "",
+          }
+        : {
+              certification_id: props.commitment.certification_id,
+              commitment_memo: props.commitment.commitment_memo,
+              process_number: props.commitment.process_number,
+              purchase_order: props.commitment.purchase_order,
+              contract_number: props.commitment.contract_number,
+              contract_administrator_id:
+                  props.commitment.contract_administrator_id,
+              sec_cgf_comments: props.commitment.sec_cgf_comments,
+              sec_cgf_date: props.commitment.sec_cgf_date,
+              assignment_date:
+                  props.commitment.assignment_date ??
+                  new Date().toLocaleDateString(),
+              japc_comments: props.commitment.japc_comments,
+              customer_id: props.commitment.customer_id ?? "",
 
-    current_management: "",
-});
-
-onMounted(() => {
-    if (props.currentOperation !== operations.create) {
-        form.certification_id = props.commitment.certification_id;
-        form.commitment_memo = props.commitment.commitment_memo;
-        form.process_number = props.commitment.process_number;
-        form.contract_number = props.commitment.contract_number;
-        form.contract_administrator = props.commitment.contract_administrator;
-        form.sec_cgf_comments = props.commitment.sec_cgf_comments;
-        form.sec_cgf_date = props.commitment.sec_cgf_date;
-        form.assignment_date =
-            props.commitment.assignment_date ?? new Date().toLocaleDateString();
-        form.japc_comments = props.commitment.japc_comments;
-        form.customer_id = props.commitment.customer_id ?? "";
-
-        form.commitment_cur = props.commitment.commitment_cur;
-        form.commitment_amount = props.commitment.commitment_amount;
-        form.commitment_comments = props.commitment.commitment_comments;
-        form.commitment_date =
-            props.commitment.commitment_date ?? new Date().toLocaleDateString();
-        form.vendor_id = props.commitment.vendor_id;
-        form.record_status_id =
-            props.commitment.record_status_id &&
-            props.commitment.record_status_id <= statuses.registered
-                ? props.commitment.record_status_id
-                : "";
-        form.treasury_approved = props.commitment.treasury_approved;
-        form.returned_document_number =
-            props.commitment.returned_document_number;
-        form.coord_cgf_comments = props.commitment.coord_cgf_comments;
-        form.coord_cgf_date =
-            props.commitment.coord_cgf_date ?? new Date().toLocaleDateString();
-
-        form.current_management = props.commitment.current_management;
-    }
-});
+              commitment_cur: props.commitment.commitment_cur,
+              commitment_amount: props.commitment.commitment_amount,
+              commitment_comments: props.commitment.commitment_comments,
+              commitment_date:
+                  props.commitment.commitment_date ??
+                  new Date().toLocaleDateString(),
+              vendor_id: props.commitment.vendor_id,
+              record_status_id:
+                  props.commitment.record_status_id &&
+                  props.commitment.record_status_id <= STATUSES.REGISTERED
+                      ? props.commitment.record_status_id
+                      : "",
+              treasury_approved: props.commitment.treasury_approved,
+              returned_document_number:
+                  props.commitment.returned_document_number,
+              coord_cgf_comments: props.commitment.coord_cgf_comments,
+              coord_cgf_date:
+                  props.commitment.coord_cgf_date ??
+                  new Date().toLocaleDateString(),
+              current_management: props.commitment.current_management,
+          }
+);
 
 const formSearchCertification = useForm(
-    props.currentOperation === operations.create
+    props.currentOperation === OPERATIONS.CREATE
         ? {
               certificationNumber: "",
           }
         : {
-              certificationNumber: props.commitment.certification
-                  ? props.commitment.certification.certification_number
-                  : "",
+              certificationNumber:
+                  props.commitment.certification?.certification_number,
           }
 );
 
 const formSearchVendor = useForm(
-    props.currentOperation === operations.create
+    props.currentOperation === OPERATIONS.CREATE
         ? {
               nit: "",
               name: "",
           }
         : {
-              nit: props.commitment.vendor ? props.commitment.vendor.nit : "",
-              name: props.commitment.vendor ? props.commitment.vendor.name : "",
+              nit: props.commitment.vendor?.nit,
+              name: props.commitment.vendor?.name,
+          }
+);
+
+const formSearchContractAdministrator = useForm(
+    props.currentOperation === OPERATIONS.CREATE
+        ? {
+              ci: "",
+              names: "",
+          }
+        : {
+              ci: props.commitment.contract_administrator?.ci,
+              names: props.commitment.contract_administrator?.names,
           }
 );
 
@@ -236,28 +246,39 @@ const formSearchVendor = useForm(
 const disabled = {
     global: computed(
         () =>
-            props.currentOperation === operations.show ||
-            (role.value !== 5 &&
-                (activePhase.value !== role.value ||
+            // CONDICIONES PARA BLOQUEOS GLOBALES DE INPUTS
+            // 1. ESTAR EN OPERATION = SHOW
+            props.currentOperation === OPERATIONS.SHOW ||
+            // 2. ESTATUS CANCELADO O LIQUIDADO
+            (props.commitment.record_status_id &&
+                props.commitment.record_status_id >= STATUSES.CANCELED) ||
+            // 3.
+            // 3.1. ROL NO SEA ADMIN
+            (role.name !== ROLES.ADMIN &&
+                // 3.2.1. Y, QUE NO ESTÉ EN EL FORMULARIO QUE LE CORRESPONDE
+                (activePhase.value !== role.step ||
+                    // 3.2.2. O QUE ESTATUS SEA APROBADO U OTRO
                     (props.commitment.record_status_id &&
                         props.commitment.record_status_id >=
-                            statuses.approved &&
-                        role.value !== 4)))
+                            STATUSES.APPROVED)))
     ),
+    // CONDICIONES PARA BLOQUEO DE INPUT CERTIFICATION
+    // 1. CUANDO NO SEA IGUAL A REGISTRADO
     commitment_cur: computed(
-        () => form.record_status_id !== statuses.registered
+        () => form.record_status_id !== STATUSES.REGISTERED
     ),
     button: ref(false),
 };
+// CONDICIONES PARA BLOQUEO DE BOTON DE ENVIAR
 disabled.button.value =
-    (props.currentOperation !== operations.show &&
-        role.value !== 5 &&
-        (activePhase.value !== role.value ||
+    (props.currentOperation !== OPERATIONS.SHOW &&
+        role.name !== ROLES.ADMIN &&
+        (activePhase.value !== role.step ||
             (props.commitment.record_status_id &&
-                props.commitment.record_status_id >= statuses.approved &&
-                role.value !== 4))) ||
+                props.commitment.record_status_id >= STATUSES.APPROVED))) ||
     form.processing ||
-    formSearchCertification.processing;
+    formSearchCertification.processing ||
+    formSearchContractAdministrator.processing;
 
 // ---------------------------------------------------------
 // COMMITMENTS.STORE
@@ -265,7 +286,7 @@ disabled.button.value =
 const create = () => {
     form.transform((data) => ({
         ...data,
-        current_management: 1,
+        current_management: STEPS.STEP_1,
     })).post(route("commitments.store"), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
@@ -279,7 +300,7 @@ const update = () => {
     form.transform((data) => ({
         ...data,
         record_status_id:
-            form.record_status_id > statuses.registered
+            form.record_status_id > STATUSES.REGISTERED
                 ? props.commitment.record_status_id
                 : form.record_status_id,
     })).put(route("commitments.update", props.commitment.id), {
@@ -289,11 +310,11 @@ const update = () => {
 };
 
 const transaction = () => {
-    return props.currentOperation === operations.create
+    return props.currentOperation === OPERATIONS.CREATE
         ? create()
-        : props.currentOperation === operations.show
+        : props.currentOperation === OPERATIONS.SHOW
         ? ""
-        : props.currentOperation === operations.update
+        : props.currentOperation === OPERATIONS.UPDATE
         ? update()
         : "";
 };
@@ -381,6 +402,50 @@ const searchVendorByNit = (alert = "") => {
 };
 
 // --------------------------------------------
+// BUSCAR ADMINISTRADOR DE CONTRATO
+// --------------------------------------------
+const searchContractAdministratorByCi = (alert = "") => {
+    axios
+        .get(
+            "/contractAdministrators/getContractAdministratorByCi?ci=" +
+                formSearchContractAdministrator.ci
+        )
+        .then((response) => {
+            if (response) {
+                form.clearErrors("contract_administrator_id");
+                router.reload({ only: ["FormControl"] });
+                form.contract_administrator_id =
+                    response.data.contractAdministrator.id;
+                formSearchContractAdministrator.ci =
+                    response.data.contractAdministrator.ci;
+                formSearchContractAdministrator.names =
+                    response.data.contractAdministrator.names;
+
+                if (alert === "alert") {
+                    toast.value = true;
+                    messageResource.value = {
+                        response:
+                            "Se encontró el administrador de contrato con C.I. " +
+                            formSearchContractAdministrator.ci,
+                        operation: 1,
+                    };
+                }
+            }
+        })
+        .catch((error) => {
+            form.setError(
+                "contract_administrator_id",
+                "No se encontró este administrador de contrato en los registros."
+            );
+            router.reload({ only: ["FormControl"] });
+            form.contract_administrator_id = null;
+            formSearchContractAdministrator.ci = "";
+            formSearchContractAdministrator.names = "";
+            console.log(error);
+        });
+};
+
+// --------------------------------------------
 // MODAL DE CREAR PROVEEDOR: 1 Create, 2 Show, 3 Update, 4 Delete
 // --------------------------------------------
 const openModal = () => {
@@ -404,7 +469,9 @@ const closeModal = (event) => {
 // MANEJO DE FECHAS
 // --------------------------------------------
 const formattedDate = (date) => {
-    return dayjs(date).format("YYYY-MM-DD");
+    return dayjs(date).isValid()
+        ? dayjs(date).format("YYYY-MM-DD HH:mm:ss")
+        : "-";
 };
 </script>
 
@@ -412,7 +479,7 @@ const formattedDate = (date) => {
     <CardBoxModalVendor
         v-model="isModalActive"
         v-model:vendor="newVendor"
-        :current-operation="1"
+        :current-operation="OPERATIONS.CREATE"
         @confirm="closeModal"
     />
 
@@ -424,7 +491,7 @@ const formattedDate = (date) => {
         :steps="roles"
         :operation="currentOperation"
         :current-management="
-            currentOperation !== operations.create
+            currentOperation !== OPERATIONS.CREATE
                 ? commitment.current_management
                 : null
         "
@@ -433,7 +500,7 @@ const formattedDate = (date) => {
     <CardBox is-form :in-modal="inModal" @submit.prevent="transaction">
         <!-- STEP 1 -->
         <div
-            v-show="activePhase === 1"
+            v-show="activePhase === STEPS.STEP_1"
             class="transition duration-500 ease-in-out"
         >
             <div
@@ -457,46 +524,10 @@ const formattedDate = (date) => {
                     />
                 </FormField>
                 <FormField
-                    label="Nro. Proceso"
-                    label-for="process_number"
-                    help="Ingrese el Nro. de Proceso"
-                    :errors="form.errors.process_number"
-                >
-                    <FormControl
-                        v-model="form.process_number"
-                        id="process_number"
-                        :icon="mdiNumeric"
-                        autocomplete="process_number"
-                        type="text"
-                        placeholder="Ej: CE-2023000384849"
-                        :has-errors="form.errors.process_number != null"
-                        :disabled="disabled.global.value"
-                    />
-                </FormField>
-            </div>
-            <div
-                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
-            >
-                <FormField
-                    label="Administrador de contrato"
-                    label-for="contract_administrator"
-                    :errors="form.errors.contract_administrator"
-                >
-                    <FormControl
-                        v-model="form.contract_administrator"
-                        id="contract_administrator"
-                        :icon="mdiCardAccountDetails"
-                        autocomplete="contract_administrator"
-                        type="text"
-                        placeholder="Detalle los nombres del administrador de contrato"
-                        :has-errors="form.errors.contract_administrator != null"
-                        :disabled="disabled.global.value"
-                    />
-                </FormField>
-                <FormField
                     label="Nro. de contrato - Convenio Marco"
                     label-for="contract_number"
                     :errors="form.errors.contract_number"
+                    required
                 >
                     <FormControl
                         v-model="form.contract_number"
@@ -507,6 +538,100 @@ const formattedDate = (date) => {
                         placeholder="Detalle el Nro. de contrato del convenio marco"
                         :has-errors="form.errors.contract_number != null"
                         :disabled="disabled.global.value"
+                    />
+                </FormField>
+            </div>
+            <div
+                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+            >
+                <FormField
+                    label="Nro. Proceso"
+                    label-for="process_number"
+                    help="Ingrese el número del Proceso"
+                    :errors="form.errors.process_number"
+                    required
+                >
+                    <FormControl
+                        v-model="form.process_number"
+                        id="process_number"
+                        :icon="mdiNumeric"
+                        autocomplete="process_number"
+                        type="text"
+                        placeholder="Ej: IC-HTMC-084-2022"
+                        :has-errors="form.errors.process_number != null"
+                        :disabled="disabled.global.value"
+                    />
+                </FormField>
+                <FormField
+                    label="Orden de compra"
+                    label-for="purchase_order"
+                    help="Ingrese el número de orden de compra, si es necesario"
+                    :errors="form.errors.purchase_order"
+                >
+                    <FormControl
+                        v-model="form.purchase_order"
+                        id="purchase_order"
+                        :icon="mdiNumeric"
+                        autocomplete="purchase_order"
+                        type="text"
+                        placeholder="Ej: CE-2023000384849"
+                        :has-errors="form.errors.purchase_order != null"
+                        :disabled="disabled.global.value"
+                    />
+                </FormField>
+            </div>
+            <div
+                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+            >
+                <FormField
+                    label="Administrador de contrato"
+                    label-for="ci"
+                    :errors="form.errors.contract_administrator_id"
+                    help="Digite el número de cédula del administrador de contratou orden de compra"
+                    required
+                >
+                    <form
+                        @submit.prevent="
+                            searchContractAdministratorByCi('alert')
+                        "
+                    >
+                        <FormControlWithButton
+                            v-model="formSearchContractAdministrator.ci"
+                            id="ci"
+                            name="ci"
+                            :icon="mdiCardAccountDetails"
+                            autocomplete="ci"
+                            type="text"
+                            placeholder="Digite el número de cédula"
+                            :has-errors="
+                                form.errors.contract_administrator_id != null
+                            "
+                            :disabled="disabled.global.value"
+                        >
+                            <BaseButton
+                                type="submit"
+                                color="info"
+                                :disabled="disabled.global.value"
+                                :icon="mdiMagnify"
+                                tooltip="Buscar"
+                                location="end"
+                            />
+                        </FormControlWithButton>
+                    </form>
+                </FormField>
+                <FormField
+                    label="Nombres de Administrador de Contrato"
+                    label-for="names"
+                >
+                    <FormControl
+                        v-model="formSearchContractAdministrator.names"
+                        id="names"
+                        name="names"
+                        :icon="mdiCardAccountDetails"
+                        placeholder="Nombres de administrador de contrato"
+                        autocomplete="names"
+                        type="text"
+                        disabled
                     />
                 </FormField>
             </div>
@@ -530,25 +655,27 @@ const formattedDate = (date) => {
         </div>
         <!-- STEP 2 -->
         <div
-            v-show="activePhase === 2"
+            v-show="activePhase === STEPS.STEP_2"
             class="transition duration-500 ease-in-out"
         >
             <div
                 class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
             >
                 <FormField
-                    label="Administrador de contrato"
-                    label-for="contract_administrator"
-                    :errors="form.errors.contract_administrator"
+                    label="Nro. Proceso"
+                    label-for="process_number"
+                    help="Ingrese el número del Proceso"
+                    :errors="form.errors.process_number"
+                    required
                 >
                     <FormControl
-                        v-model="form.contract_administrator"
-                        id="contract_administrator"
-                        :icon="mdiCardAccountDetails"
-                        autocomplete="contract_administrator"
+                        v-model="form.process_number"
+                        id="process_number"
+                        :icon="mdiNumeric"
+                        autocomplete="process_number"
                         type="text"
-                        placeholder="Detalle los nombres del administrador de contrato"
-                        :has-errors="form.errors.contract_administrator != null"
+                        placeholder="Ej: IC-HTMC-084-2022"
+                        :has-errors="form.errors.process_number != null"
                         :disabled="disabled.global.value"
                     />
                 </FormField>
@@ -557,6 +684,7 @@ const formattedDate = (date) => {
                     label-for="customer_id"
                     help="Seleccione el usuario a reasignar la gestión"
                     :errors="form.errors.customer_id"
+                    required
                 >
                     <FormControl
                         v-model="form.customer_id"
@@ -589,7 +717,7 @@ const formattedDate = (date) => {
             </FormField>
         </div>
         <div
-            v-show="activePhase === 3"
+            v-show="activePhase === STEPS.STEP_3"
             class="transition duration-500 ease-in-out"
         >
             <div
@@ -600,6 +728,7 @@ const formattedDate = (date) => {
                     label-for="nit"
                     :errors="form.errors.vendor_id"
                     help="Digite el NIT del proveedor"
+                    required
                 >
                     <form @submit.prevent="searchVendorByNit('alert')">
                         <FormControlWithButton
@@ -655,6 +784,7 @@ const formattedDate = (date) => {
                     label-for="certificationNumber"
                     :errors="form.errors.certification_id"
                     help="Digite el número de certificación"
+                    required
                 >
                     <form
                         @submit.prevent="searchCertificationByNumber('alert')"
@@ -721,6 +851,7 @@ const formattedDate = (date) => {
                     label-for="commitment_amount"
                     help="Ingrese el monto del compromiso"
                     :errors="form.errors.commitment_amount"
+                    :required="form.record_status_id === STATUSES.REGISTERED"
                 >
                     <FormControl
                         v-model="form.commitment_amount"
@@ -746,6 +877,7 @@ const formattedDate = (date) => {
                     label-for="record_status_id"
                     help="Seleccione el estado del compromiso"
                     :errors="form.errors.record_status_id"
+                    required
                 >
                     <FormControl
                         v-model="form.record_status_id"
@@ -763,6 +895,7 @@ const formattedDate = (date) => {
                     label-for="commitment_cur"
                     help="Digite el número de CUR del compromiso"
                     :errors="form.errors.commitment_cur"
+                    :required="form.record_status_id === STATUSES.REGISTERED"
                 >
                     <FormControl
                         v-model="form.commitment_cur"
@@ -799,10 +932,15 @@ const formattedDate = (date) => {
         </div>
         <!-- STEP 4 -->
         <div
-            v-show="activePhase === 4"
+            v-show="activePhase === STEPS.STEP_4"
             class="transition duration-500 ease-in-out"
         >
-            <FormField label="Revisión de certificación">
+            <FormField
+                label="Revisión de compromiso"
+                label-for="treasury_approved"
+                :errors="form.errors.treasury_approved"
+                required
+            >
                 <FormCheckRadioGroup
                     v-model="form.treasury_approved"
                     name="treasury_approved"
@@ -820,6 +958,7 @@ const formattedDate = (date) => {
                 label-for="returned_document_number"
                 help="Ingrese el Nro. de Memorando de la revisión de Compromiso"
                 :errors="form.errors.returned_document_number"
+                required
             >
                 <FormControl
                     v-model="form.returned_document_number"
@@ -862,7 +1001,7 @@ const formattedDate = (date) => {
                     }"
                     :disabled="disabled.button.value"
                     :icon="
-                        currentOperation === operations.show
+                        currentOperation === OPERATIONS.SHOW
                             ? mdiPrinter
                             : mdiContentSaveAll
                     "
@@ -875,11 +1014,11 @@ const formattedDate = (date) => {
                 />
             </BaseButtons>
             <LabelDate
-                v-if="currentOperation !== 1"
-                :dateOne="formattedDate(commitment.sec_cgf_date)"
-                :dateTwo="formattedDate(commitment.assignment_date)"
-                :dateThree="formattedDate(commitment.commitment_date)"
-                :dateFour="formattedDate(commitment.coord_cgf_date)"
+                v-if="currentOperation !== OPERATIONS.CREATE"
+                :date-one="formattedDate(commitment.sec_cgf_date)"
+                :date-two="formattedDate(commitment.assignment_date)"
+                :date-three="formattedDate(commitment.commitment_date)"
+                :date-four="formattedDate(commitment.coord_cgf_date)"
                 v-model:activePhase="activePhase"
             />
         </BaseLevel>

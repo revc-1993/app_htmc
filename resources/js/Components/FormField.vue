@@ -17,6 +17,10 @@ defineProps({
     errors: {
         type: String,
     },
+    required: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 const slots = useSlots();
@@ -43,9 +47,10 @@ const wrapperClass = computed(() => {
 
 <template>
     <div class="mb-6 last:mb-0">
-        <label v-if="label" :for="labelFor" class="block font-bold mb-2">{{
-            label
-        }}</label>
+        <label v-if="label" :for="labelFor" class="block font-bold mb-2"
+            >{{ label }}
+            <b v-show="required" class="text-red-500">*</b>
+        </label>
         <div :class="wrapperClass">
             <slot />
         </div>

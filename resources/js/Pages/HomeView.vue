@@ -28,6 +28,7 @@ import CardBoxClient from "@/Components/CardBoxClient.vue";
 import LayoutAuthenticated from "@/Layouts/LayoutAuthenticated.vue";
 import SectionTitleLineWithButton from "@/Components/SectionTitleLineWithButton.vue";
 import SectionBannerStarOnGitHub from "@/Components/SectionBannerStarOnGitHub.vue";
+import Toast from "@/Components/Toast.vue";
 
 const props = defineProps({
     certifications_percent: Number,
@@ -58,6 +59,11 @@ const transactionBarItems = computed(() => mainStore.history);
     <LayoutAuthenticated>
         <Head title="Dashboard" />
         <SectionMain>
+            <Toast
+                v-if="$page.props.flash.message"
+                :message="$page.props.flash.message"
+            />
+
             <!-- <SectionTitleLineWithButton
                 :icon="mdiChartTimelineVariant"
                 title="Estadísticas"
@@ -177,3 +183,26 @@ const transactionBarItems = computed(() => mainStore.history);
         </SectionMain>
     </LayoutAuthenticated>
 </template>
+
+<style>
+.Vue-Toastification__toast--default.height-class {
+    height: max-content;
+}
+.Vue-Toastification__toast--default.danger-class {
+    background-color: rgb(220 38 38);
+}
+.Vue-Toastification__toast--default.warning-class {
+    background-color: rgb(202 138 4);
+}
+.Vue-Toastification__toast--default.success-class {
+    background-color: rgb(5 150 105);
+}
+.Vue-Toastification__toast--default.blue-class {
+    background-color: rgb(37 99 235);
+}
+
+.Vue-Toastification__toast-body.custom-class {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.25rem; /* 20px */
+}
+</style>

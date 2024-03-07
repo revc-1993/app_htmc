@@ -13,4 +13,18 @@ class SecJAPCRoleValidator implements CertificationRoleValidatorInterface
             'current_management' => ['nullable'],
         ];
     }
+
+    public function getAttributes(): array
+    {
+        return [
+            'content' => "Contenido de Expediente",
+            'customer_id' => "Usuario",
+            'japc_comments' => "Observaciones",
+        ];
+    }
+
+    public function getMessages(): array
+    {
+        return [];
+    }
 }

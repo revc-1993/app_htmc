@@ -16,6 +16,10 @@ return new class extends Migration
         Schema::create('accruals', function (Blueprint $table) {
             $table->id();
             $table->string('accrual_memo')->nullable();
+            $table->string('voucher_number')->nullable();
+            $table->timestamp('sec_cgf_date')->nullable();
+            $table->string('sec_cgf_comments')->nullable();
+
             $table->timestamp('assignment_date')->nullable();
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->string('japc_comments')->nullable();
@@ -33,7 +37,7 @@ return new class extends Migration
             $table->timestamp('coord_cgf_date')->nullable();
             $table->string('coord_cgf_comments')->nullable();
 
-            $table->integer('current_management')->default(2);
+            $table->unsignedBigInteger('current_management')->default(2);
 
             $table->softDeletes();
             $table->timestamps();
@@ -41,6 +45,7 @@ return new class extends Migration
             $table->foreign('customer_id')->references('id')->on('users');
             $table->foreign('record_status_id')->references('id')->on('record_statuses');
             $table->foreign('commitment_id')->references('id')->on('commitments');
+            $table->foreign('current_management')->references('id')->on('current_management');
         });
     }
 

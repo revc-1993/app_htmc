@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useForm } from "@inertiajs/vue3";
 import {
     mdiAccount,
@@ -9,14 +9,18 @@ import {
     mdiBackspace,
     mdiContentSaveAll,
 } from "@mdi/js";
-import CardBox from "@/Components/CardBox.vue";
+import CardBox from "@/components/CardBox.vue";
 import FormField from "@/Components/FormField.vue";
-import FormControl from "@/Components/FormControl.vue";
+import FormControl from "@/components/FormControl.vue";
 import BaseButton from "@/Components/BaseButton.vue";
 import BaseDivider from "@/Components/BaseDivider.vue";
 import FormCheckRadioGroup from "@/Components/FormCheckRadioGroup.vue";
-import FormValidationErrors from "@/components/FormValidationErrors.vue";
+import axios from "axios";
+import FormValidationErrors from "@/Components/FormValidationErrors.vue";
 import BaseButtons from "@/Components/BaseButtons.vue";
+import BaseLevel from "@/components/BaseLevel.vue";
+
+import { ROLES, STEPS, STATUSES, OPERATIONS } from "@/Utils/constants";
 
 // ---------------------------------------------------------
 // PROPS
@@ -29,7 +33,7 @@ const props = defineProps({
     roles: Object,
     currentOperation: {
         type: [String, Number, Boolean],
-        default: 1,
+        default: OPERATIONS.CREATE,
     },
     elementProps: {
         type: Object,
@@ -45,61 +49,53 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
+    modelValue: {
+        type: [String, Number, Boolean],
+        default: null,
+    },
 });
-
-console.log(props.roles);
-// ---------------------------------------------------------
-// CONSTANTES
-// ---------------------------------------------------------
-const operations = {
-    create: 1,
-    show: 2,
-    update: 3,
-};
 
 // ---------------------------------------------------------
 // SELECTS
 // ---------------------------------------------------------
-// const optionSelect = (array = []) => {
-//     let newArray = [];
-//     let i = 0;
-//     array.forEach((element) => {
-//         newArray.push({
-//             id: Object.values(element)[0],
-//             label: Object.values(element)[1],
-//         });
-//     });
-//     return newArray;
-// };
+const optionSelect = (array = []) => {
+    let newArray = [];
+    array.forEach((element) => {
+        newArray.push({
+            id: Object.values(element)[0],
+            label: Object.values(element)[1],
+        });
+    });
+    return newArray;
+};
 
-// let selectOptions = {
-//     roles: optionSelect(props.roles),
-// };
+let selectOptions = {
+    roles: optionSelect(props.roles),
+};
 
 // ---------------------------------------------------------
 // FORM
 // ---------------------------------------------------------
-const form = useForm(
-    props.currentOperation === operations.create
-        ? {
-              name: "",
-              email: "",
-              department: "",
-              role: "",
-              password: "",
-              password_confirmation: "",
-              //   terms: [],
-          }
-        : {
-              name: props.user.name,
-              email: props.user.email,
-              department: "", //props.user.department,
-              role: "",
-              password: "",
-              password_confirmation: "",
-              //   terms: [],
-          }
-);
+const form = useForm({
+    name: "",
+    email: "",
+    department: "",
+    role: "",
+    password: "",
+    password_confirmation: "",
+    //   terms: [],
+});
+
+onMounted(() => completeForm(props.user));
+
+const completeForm = (user) => {
+    if (props.currentOperation !== OPERATIONS.CREATE) {
+        form.name = user.name;
+        form.email = user.email;
+        form.department = user.department;
+        form.role = user.roles[0].id;
+    }
+};
 
 // const hasTermsAndPrivacyPolicyFeature = computed(
 //     () => usePage().props.value?.jetstream?.hasTermsAndPrivacyPolicyFeature
@@ -109,11 +105,11 @@ const form = useForm(
 // DISABLED
 // ---------------------------------------------------------
 const disabled = {
-    global: computed(() => props.currentOperation === operations.show),
+    global: computed(() => props.currentOperation === OPERATIONS.SHOW),
     button: ref(false),
 };
 disabled.button.value =
-    props.currentOperation !== operations.show || form.processing;
+    props.currentOperation === OPERATIONS.SHOW || form.processing;
 
 // ---------------------------------------------------------
 // USERS.STORE
@@ -121,10 +117,12 @@ disabled.button.value =
 const create = () => {
     form.transform((data) => ({
         ...data,
+        role: props.roles.find((role) => role.id === form.role).name,
         // terms: form.terms && form.terms.length,
-    })).post(route("users.store"), {
+    })).post(route("superadmin.users.store"), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
+        onFinish: () => form.reset("password", "password_confirmation"),
     });
 };
 
@@ -134,7 +132,8 @@ const create = () => {
 const update = () => {
     form.transform((data) => ({
         ...data,
-    })).put(route("users.update", props.user.id), {
+        role: props.roles.find((role) => role.id === form.role).name,
+    })).put(route("superadmin.users.update", props.user.id), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
         onFinish: () => form.reset("password", "password_confirmation"),
@@ -142,13 +141,28 @@ const update = () => {
 };
 
 const transaction = () => {
-    return props.currentOperation === operations.create
+    return props.currentOperation === OPERATIONS.CREATE
         ? create()
-        : props.currentOperation === operations.show
+        : props.currentOperation === OPERATIONS.SHOW
         ? ""
-        : props.currentOperation === operations.update
+        : props.currentOperation === OPERATIONS.UPDATE
         ? update()
         : "";
+};
+
+// SHOW
+const getUser = (id) => {
+    axios
+        .get(route("superadmin.users.show", id))
+        .then((response) => {
+            if (response) {
+                console.log(response.data);
+                completeForm(response.data);
+            }
+        })
+        .catch((error) => {
+            console.error(error);
+        });
 };
 </script>
 
@@ -176,23 +190,6 @@ const transaction = () => {
         </FormField>
 
         <FormField
-            label="Correo electrónico"
-            label-for="email"
-            help="Ingrese su correo electrónico"
-            :errors="form.errors.email"
-        >
-            <FormControl
-                v-model="form.email"
-                id="email"
-                :icon="mdiEmail"
-                autocomplete="email"
-                type="email"
-                required
-                :has-errors="form.errors.email != null"
-            />
-        </FormField>
-
-        <FormField
             label="Departamento"
             label-for="department"
             help="Escoja el departamento al que pertenece"
@@ -209,24 +206,48 @@ const transaction = () => {
             />
         </FormField>
 
-        <FormField
-            label="Función laboral"
-            label-for="role"
-            help="Por favor ingrese el cargo que desempeña"
-            :errors="form.errors.role"
+        <div
+            class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
         >
-            <FormControl
-                v-model="form.role"
-                name="role"
-                id="role"
-                :icon="mdiAccount"
-                autocomplete="role"
-                required
-                :has-errors="form.errors.role != null"
-            />
-        </FormField>
+            <FormField
+                label="Correo electrónico"
+                label-for="email"
+                help="Ingrese su correo electrónico"
+                :errors="form.errors.email"
+            >
+                <FormControl
+                    v-model="form.email"
+                    id="email"
+                    :icon="mdiEmail"
+                    autocomplete="email"
+                    type="email"
+                    required
+                    :has-errors="form.errors.email != null"
+                />
+            </FormField>
 
-        <div class="grid grid-cols-1 gap-x-3 lg:grid-cols-2">
+            <FormField
+                label="Rol"
+                label-for="role"
+                help="Por favor ingrese el rol a cumplir"
+                :errors="form.errors.role"
+            >
+                <FormControl
+                    v-model="form.role"
+                    name="role"
+                    id="role"
+                    :icon="mdiAccount"
+                    autocomplete="role"
+                    :options="selectOptions.roles"
+                    :has-errors="form.errors.role != null"
+                    :disabled="disabled.global.value"
+                />
+            </FormField>
+        </div>
+
+        <div
+            class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+        >
             <FormField
                 label="Contraseña"
                 label-for="password"
@@ -281,13 +302,13 @@ const transaction = () => {
                 }"
                 :disabled="disabled.button.value"
                 :icon="
-                    currentOperation === operations.show
+                    currentOperation === OPERATIONS.SHOW
                         ? mdiPrinter
                         : mdiContentSaveAll
                 "
             />
             <BaseButton
-                route-name="users.index"
+                route-name="superadmin.users.index"
                 color="slate"
                 label="Regresar"
                 :icon="mdiBackspace"

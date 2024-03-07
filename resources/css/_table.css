@@ -17,7 +17,7 @@
   }
   
   td:not(:first-child) {
-    @apply lg:border-l lg:border-t-0 lg:border-r-0 lg:border-b-0 lg:border-gray-100 lg:dark:border-slate-700 first-letter:capitalize lowercase;
+    @apply lg:border-l lg:border-t-0 lg:border-r-0 lg:border-b-0 lg:border-gray-100 lg:dark:border-slate-700;
   }
   
   th {

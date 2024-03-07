@@ -13,9 +13,10 @@ class Commitment extends Model
     protected $fillable = [
         "commitment_memo",
         "process_number",
-        "contract_administrator",
-        "contract_number",
+        "contract_administrator_id",
+        "purchase_order",
         "sec_cgf_date",
+        "contract_number",
         "sec_cgf_comments",
 
         "assignment_date",
@@ -50,6 +51,17 @@ class Commitment extends Model
     }
 
     /**
+     * Get the CurrentManagement that owns the Commitment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function currentManagement()
+    {
+        return $this->belongsTo(CurrentManagement::class, 'current_management');
+    }
+
+
+    /**
      * Get the User that owns the Commitment
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -60,13 +72,23 @@ class Commitment extends Model
     }
 
     /**
-     * Get the RecordStatus that owns the Commitment
+     * Get the Vendor that owns the Commitment
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function vendor()
     {
         return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
+
+    /**
+     * Get the ContractAdministrator that owns the Commitment
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function contractAdministrator()
+    {
+        return $this->belongsTo(ContractAdministrator::class, 'contract_administrator_id');
     }
 
     /**
@@ -83,7 +105,6 @@ class Commitment extends Model
     {
         $query->where('commitment_cur', $request)->where('record_status_id', '=', 6);
     }
-
 
     public function scopeFiltered($query)
     {

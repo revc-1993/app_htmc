@@ -28,6 +28,8 @@ import BaseButtons from "@/Components/BaseButtons.vue";
 import Toast from "@/Components/Toast.vue";
 import LabelDate from "@/Components/LabelDate.vue";
 
+import { ROLES, STEPS, STATUSES, OPERATIONS } from "@/Utils/constants";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"; // Importa el complemento de fechas relativas
 import "dayjs/locale/es"; // Si deseas utilizar el idioma español
@@ -48,7 +50,7 @@ const props = defineProps({
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
-        default: 1,
+        default: OPERATIONS.CREATE,
     },
     elementProps: {
         type: Object,
@@ -70,28 +72,8 @@ const props = defineProps({
 // ---------------------------------------------------------
 // CONSTANTES
 // ---------------------------------------------------------
-const operations = {
-    create: 1,
-    show: 2,
-    update: 3,
-};
-
-const statuses = {
-    pendingReview: 1,
-    reviewing: 2,
-    observed: 3,
-    returned: 4,
-    registered: 5,
-    approved: 6,
-    canceled: 7,
-};
-
-const management = computed(() => props.roles.slice(1));
-
-// console.log(management.value);
-
-const role = computed(() => usePage().props.auth.user.roles[0].id);
-const activePhase = ref(2);
+const role = usePage().props.auth.user.roles;
+const activePhase = ref(STEPS.STEP_1);
 
 const toast = ref(false);
 const messageResource = ref("");
@@ -99,22 +81,37 @@ const messageResource = ref("");
 // ---------------------------------------------------------
 // SETS
 // ---------------------------------------------------------
-activePhase.value = role.value && role.value < 5 ? role.value : 2;
+activePhase.value =
+    role.name !== ROLES.ADMIN
+        ? role.step
+        : props.accrual &&
+          props.accrual.current_management &&
+          props.currentOperation === OPERATIONS.SHOW
+        ? props.accrual.current_management.step
+        : props.accrual &&
+          props.accrual.current_management &&
+          props.currentOperation === OPERATIONS.UPDATE
+        ? props.accrual.current_management
+        : STEPS.STEP_1;
 
 const commitment = {
     contract_administrator: ref(""),
+    vendor_name: ref(""),
+    process_number: ref(""),
     commitment_cur: ref(""),
     balance: ref(0),
 };
 
 if (
-    (props.currentOperation === operations.show ||
-        props.currentOperation === operations.update) &&
+    (props.currentOperation === OPERATIONS.SHOW ||
+        props.currentOperation === OPERATIONS.UPDATE) &&
     props.accrual.commitment
 ) {
+    commitment.process_number.value = props.accrual.commitment?.process_number;
     commitment.contract_administrator.value =
-        props.accrual.commitment.contract_administrator;
-    commitment.balance.value = props.accrual.commitment.balance;
+        props.accrual.commitment.contract_administrator?.names;
+    commitment.vendor_name.value = props.accrual.commitment.vendor?.name;
+    commitment.balance.value = props.accrual.commitment?.balance;
 }
 
 // ---------------------------------------------------------
@@ -139,66 +136,61 @@ let selectOptions = {
 // ---------------------------------------------------------
 // FORM
 // ---------------------------------------------------------
-const form = useForm({
-    accrual_memo: "",
-    assignment_date: new Date().toLocaleDateString(),
-    japc_comments: "",
-    customer_id: "",
+const form = useForm(
+    props.currentOperation === OPERATIONS.CREATE
+        ? {
+              accrual_memo: "",
+              voucher_number: "",
+              sec_cgf_date: new Date().toLocaleDateString(),
+              assignment_date: new Date().toLocaleDateString(),
+              japc_comments: "",
+              customer_id: "",
 
-    commitment_id: "",
-    accrual_cur: "",
-    accrual_date: new Date().toLocaleDateString(),
-    record_status_id: "",
-    accrual_amount: "",
-    accrual_comments: "",
+              commitment_id: "",
+              accrual_cur: "",
+              accrual_date: new Date().toLocaleDateString(),
+              record_status_id: "",
+              accrual_amount: "",
+              accrual_comments: "",
 
-    treasury_approved: "",
-    returned_document_number: "",
-    coord_cgf_comments: "",
-    coord_cgf_date: new Date().toLocaleDateString(),
+              treasury_approved: "",
+              returned_document_number: "",
+              coord_cgf_comments: "",
+              coord_cgf_date: new Date().toLocaleDateString(),
 
-    current_management: "",
-});
+              current_management: "",
+          }
+        : {
+              accrual_memo: props.accrual.accrual_memo,
+              sec_cgf_date: props.accrual.sec_cgf_date,
+              voucher_number: props.accrual.voucher_number,
+              assignment_date: props.accrual.assignment_date,
+              japc_comments: props.accrual.japc_comments,
+              customer_id: props.accrual.customer_id,
 
-onMounted(() => {
-    if (props.currentOperation !== operations.create) {
-        form.accrual_memo = props.accrual.accrual_memo;
-        form.assignment_date =
-            props.accrual.assignment_date ?? new Date().toLocaleDateString();
-        form.japc_comments = props.accrual.japc_comments;
-        form.customer_id = props.accrual.customer_id ?? "";
+              commitment_id: props.accrual.commitment_id,
+              accrual_cur: props.accrual.accrual_cur,
+              accrual_date: props.accrual.accrual_date,
+              record_status_id: props.accrual.record_status_id,
+              accrual_amount: props.accrual.accrual_amount,
+              accrual_comments: props.accrual.accrual_comments,
 
-        form.commitment_id = props.accrual.commitment_id;
-        form.accrual_cur = props.accrual.accrual_cur;
-        form.accrual_date =
-            props.accrual.accrual_date ?? new Date().toLocaleDateString();
-        form.record_status_id =
-            props.accrual.record_status_id &&
-            props.accrual.record_status_id <= statuses.registered
-                ? props.accrual.record_status_id
-                : "";
-        form.accrual_amount = props.accrual.accrual_amount;
-        form.accrual_comments = props.accrual.accrual_comments;
+              treasury_approved: props.accrual.treasury_approved,
+              returned_document_number: props.accrual.returned_document_number,
+              coord_cgf_comments: props.accrual.coord_cgf_comments,
+              coord_cgf_date: props.accrual.coord_cgf_date,
 
-        form.treasury_approved = props.accrual.treasury_approved;
-        form.returned_document_number = props.accrual.returned_document_number;
-        form.coord_cgf_comments = props.accrual.coord_cgf_comments;
-        form.coord_cgf_date =
-            props.accrual.coord_cgf_date ?? new Date().toLocaleDateString();
-
-        form.current_management = props.accrual.current_management;
-    }
-});
+              current_management: props.accrual.current_management,
+          }
+);
 
 const formSearchCommitment = useForm(
-    props.currentOperation === operations.create
+    props.currentOperation === OPERATIONS.CREATE
         ? {
               commitmentNumber: "",
           }
         : {
-              commitmentNumber: props.accrual.commitment
-                  ? props.accrual.commitment.commitment_cur
-                  : "",
+              commitmentNumber: props.accrual.commitment?.commitment_cur,
           }
 );
 
@@ -208,23 +200,38 @@ const formSearchCommitment = useForm(
 const disabled = {
     global: computed(
         () =>
-            props.currentOperation === operations.show ||
-            (role.value !== 5 &&
-                (activePhase.value !== role.value ||
+            // CONDICIONES PARA BLOQUEOS GLOBALES DE INPUTS
+            // 1. ESTAR EN OPERATION = SHOW
+            props.currentOperation === OPERATIONS.SHOW ||
+            // 2. ESTATUS CANCELADO O LIQUIDADO
+            (props.accrual.record_status_id &&
+                props.accrual.record_status_id >= STATUSES.CANCELED) ||
+            // 3.
+            // 3.1. ROL NO SEA ADMIN
+            (role.name !== ROLES.ADMIN &&
+                // 3.2.1. Y, QUE NO ESTÉ EN EL FORMULARIO QUE LE CORRESPONDE
+                (activePhase.value !== role.step ||
+                    // 3.2.2. O QUE ESTATUS SEA APROBADO U OTRO
                     (props.accrual.record_status_id &&
-                        props.accrual.record_status_id >= statuses.approved &&
-                        role.value !== 4)))
+                        (props.accrual.record_status_id === STATUSES.CANCELED ||
+                            props.accrual.record_status_id ===
+                                STATUSES.LIQUIDATED ||
+                            (props.accrual.record_status_id ===
+                                STATUSES.APPROVED &&
+                                role.name !== ROLES.COORD)))))
     ),
-    accrual_cur: computed(() => form.record_status_id !== statuses.registered),
+    // CONDICIONES PARA BLOQUEO DE INPUT CERTIFICATION
+    // 1. CUANDO NO SEA IGUAL A REGISTRADO
+    accrual_cur: computed(() => form.record_status_id !== STATUSES.REGISTERED),
     button: ref(false),
 };
+// CONDICIONES PARA BLOQUEO DE BOTON DE ENVIAR
 disabled.button.value =
-    (props.currentOperation !== operations.show &&
-        role.value !== 5 &&
-        (activePhase.value !== role.value ||
+    (props.currentOperation !== OPERATIONS.SHOW &&
+        role.name !== ROLES.ADMIN &&
+        (activePhase.value !== role.step ||
             (props.accrual.record_status_id &&
-                props.accrual.record_status_id >= statuses.approved &&
-                role.value !== 4))) ||
+                props.accrual.record_status_id >= STATUSES.APPROVED))) ||
     form.processing ||
     formSearchCommitment.processing;
 
@@ -234,7 +241,7 @@ disabled.button.value =
 const create = () => {
     form.transform((data) => ({
         ...data,
-        current_management: 2,
+        current_management: STEPS.STEP_1,
     })).post(route("accruals.store"), {
         preserveScroll: true,
         onSuccess: () => form.reset(),
@@ -248,7 +255,7 @@ const update = () => {
     form.transform((data) => ({
         ...data,
         record_status_id:
-            form.record_status_id > statuses.registered
+            form.record_status_id > STATUSES.REGISTERED
                 ? props.accrual.record_status_id
                 : form.record_status_id,
     })).put(route("accruals.update", props.accrual.id), {
@@ -258,11 +265,11 @@ const update = () => {
 };
 
 const transaction = () => {
-    return props.currentOperation === operations.create
+    return props.currentOperation === OPERATIONS.CREATE
         ? create()
-        : props.currentOperation === operations.show
+        : props.currentOperation === OPERATIONS.SHOW
         ? ""
-        : props.currentOperation === operations.update
+        : props.currentOperation === OPERATIONS.UPDATE
         ? update()
         : "";
 };
@@ -281,12 +288,13 @@ const searchCommitmentByNumber = (alert = "") => {
                 form.clearErrors("commitment_id");
                 router.reload({ only: ["FormControl"] });
                 form.commitment_id = response.data.commitment.id;
-                formSearchCommitment.commitmentNumber =
-                    response.data.commitment.commitment_cur;
-                commitment.contract_administrator.value =
-                    response.data.commitment.contract_administrator;
                 commitment.balance.value = response.data.commitment.balance;
-
+                commitment.contract_administrator.value =
+                    response.data.commitment.contract_administrator.names;
+                commitment.process_number.value =
+                    response.data.commitment.process_number;
+                commitment.vendor_name.value =
+                    response.data.commitment.vendor.name;
                 if (alert === "alert") {
                     toast.value = true;
                     messageResource.value = {
@@ -306,6 +314,9 @@ const searchCommitmentByNumber = (alert = "") => {
             router.reload({ only: ["FormControl"] });
             if (form.commitment_id !== null) form.commitment_id = null;
             commitment.balance.value = "";
+            commitment.contract_administrator.value = "";
+            commitment.process_number.value = "";
+            commitment.vendor_name.value = "";
             console.log(error);
         });
 };
@@ -314,7 +325,7 @@ const searchCommitmentByNumber = (alert = "") => {
 // MANEJO DE FECHAS
 // --------------------------------------------
 const formattedDate = (date) => {
-    return dayjs(date).format("YYYY-MM-DD");
+    return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
 };
 </script>
 
@@ -324,19 +335,81 @@ const formattedDate = (date) => {
 
     <Stepper
         v-model="activePhase"
-        :steps="management"
+        :steps="roles"
         :operation="currentOperation"
         :current-management="
-            currentOperation !== operations.create
+            currentOperation !== OPERATIONS.CREATE
                 ? accrual.current_management
                 : null
         "
     />
 
     <CardBox is-form :in-modal="inModal" @submit.prevent="transaction">
+        <!-- STEP 1 -->
+        <div
+            v-show="activePhase === STEPS.STEP_1"
+            class="transition duration-500 ease-in-out"
+        >
+            <div
+                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+            >
+                <FormField
+                    label="Nro. Memorando de devengado"
+                    label-for="accrual_memo"
+                    help="Ingrese el Nro. de Memorando del devengado"
+                    :errors="form.errors.accrual_memo"
+                    required
+                >
+                    <FormControl
+                        v-model="form.accrual_memo"
+                        id="accrual_memo"
+                        :icon="mdiNumeric"
+                        autocomplete="accrual_memo"
+                        type="text"
+                        placeholder="Ej: IESS-HTMC-JATSGCME-2022-5073-M"
+                        :has-errors="form.errors.accrual_memo != null"
+                        :disabled="disabled.global.value"
+                    />
+                </FormField>
+                <FormField
+                    label="Nro. del comprobante"
+                    label-for="voucher_number"
+                    help="Ingrese el Nro. de Comprobante"
+                    :errors="form.errors.accrual_memo"
+                >
+                    <FormControl
+                        v-model="form.voucher_number"
+                        id="voucher_number"
+                        :icon="mdiNumeric"
+                        autocomplete="voucher_number"
+                        type="text"
+                        placeholder="Ej: FACT-001-002-000003948"
+                        :has-errors="form.errors.voucher_number != null"
+                        :disabled="disabled.global.value"
+                    />
+                </FormField>
+            </div>
+            <FormField
+                label="Observaciones"
+                label-for="sec_cgf_comments"
+                help="Máximo 255 caracteres."
+                :errors="form.errors.japc_comments"
+            >
+                <FormControl
+                    v-model="form.sec_cgf_comments"
+                    type="textarea"
+                    id="sec_cgf_comments"
+                    :icon="mdiTag"
+                    autocomplete="sec_cgf_comments"
+                    placeholder="Indique las principales observaciones."
+                    :has-errors="form.errors.sec_cgf_comments != null"
+                    :disabled="disabled.global.value"
+                />
+            </FormField>
+        </div>
         <!-- STEP 2 -->
         <div
-            v-show="activePhase === 2"
+            v-show="activePhase === STEPS.STEP_2"
             class="transition duration-500 ease-in-out"
         >
             <div
@@ -356,7 +429,7 @@ const formattedDate = (date) => {
                         type="text"
                         placeholder="Ej: IESS-HTMC-JATSGCME-2022-5073-M"
                         :has-errors="form.errors.accrual_memo != null"
-                        :disabled="disabled.global.value"
+                        disabled
                     />
                 </FormField>
                 <FormField
@@ -364,6 +437,7 @@ const formattedDate = (date) => {
                     label-for="customer_id"
                     help="Seleccione el usuario a reasignar la gestión"
                     :errors="form.errors.customer_id"
+                    required
                 >
                     <FormControl
                         v-model="form.customer_id"
@@ -396,7 +470,7 @@ const formattedDate = (date) => {
             </FormField>
         </div>
         <div
-            v-show="activePhase === 3"
+            v-show="activePhase === STEPS.STEP_3"
             class="transition duration-500 ease-in-out"
         >
             <div
@@ -407,6 +481,7 @@ const formattedDate = (date) => {
                     label-for="commitmentNumber"
                     :errors="form.errors.commitment_id"
                     help="Digite el número de compromiso"
+                    required
                 >
                     <form @submit.prevent="searchCommitmentByNumber('alert')">
                         <FormControlWithButton
@@ -431,6 +506,22 @@ const formattedDate = (date) => {
                         </FormControlWithButton>
                     </form>
                 </FormField>
+                <FormField label="Nro. de proceso" label-for="process_number">
+                    <FormControl
+                        v-model="commitment.process_number.value"
+                        id="process_number"
+                        name="process_number"
+                        :icon="mdiCardAccountDetails"
+                        placeholder="Nro. de proceso"
+                        autocomplete="process_number"
+                        type="text"
+                        disabled
+                    />
+                </FormField>
+            </div>
+            <div
+                class="grid grid-cols-1 gap-x-3 lg:grid-cols-2 mb-6 lg:mb-0 last:mb-0"
+            >
                 <FormField
                     label="Administrador de contrato"
                     label-for="contract_administrator"
@@ -443,6 +534,17 @@ const formattedDate = (date) => {
                         placeholder="Administrador de contrato"
                         autocomplete="contract_administrator"
                         type="text"
+                        disabled
+                    />
+                </FormField>
+                <FormField label="Proveedor" label-for="vendor_name">
+                    <FormControl
+                        v-model="commitment.vendor_name.value"
+                        id="vendor_name"
+                        :icon="mdiCurrencyUsd"
+                        autocomplete="vendor_name"
+                        type="text"
+                        placeholder="Proveedor"
                         disabled
                     />
                 </FormField>
@@ -469,6 +571,7 @@ const formattedDate = (date) => {
                     label-for="accrual_amount"
                     help="Ingrese el monto del devengado"
                     :errors="form.errors.accrual_amount"
+                    required
                 >
                     <FormControl
                         v-model="form.accrual_amount"
@@ -494,6 +597,7 @@ const formattedDate = (date) => {
                     label-for="record_status_id"
                     help="Seleccione el estado del devengado"
                     :errors="form.errors.record_status_id"
+                    required
                 >
                     <FormControl
                         v-model="form.record_status_id"
@@ -511,6 +615,7 @@ const formattedDate = (date) => {
                     label-for="accrual_cur"
                     help="Digite el número de CUR del devengado"
                     :errors="form.errors.accrual_cur"
+                    :required="form.record_status_id === STATUSES.REGISTERED"
                 >
                     <FormControl
                         v-model="form.accrual_cur"
@@ -546,7 +651,7 @@ const formattedDate = (date) => {
         </div>
         <!-- STEP 4 -->
         <div
-            v-show="activePhase === 4"
+            v-show="activePhase === STEPS.STEP_4"
             class="transition duration-500 ease-in-out"
         >
             <FormField label="Revisión de devengado">
@@ -557,7 +662,7 @@ const formattedDate = (date) => {
                     :options="{
                         approved: 'Aprobado',
                         returned: 'Devuelto',
-                        canceled: 'Reversado',
+                        canceled: 'Cancelado',
                     }"
                     :disabled="disabled.global.value"
                 />
@@ -609,7 +714,7 @@ const formattedDate = (date) => {
                     }"
                     :disabled="disabled.button.value"
                     :icon="
-                        currentOperation === operations.show
+                        currentOperation === OPERATIONS.SHOW
                             ? mdiPrinter
                             : mdiContentSaveAll
                     "
@@ -622,11 +727,11 @@ const formattedDate = (date) => {
                 />
             </BaseButtons>
             <LabelDate
-                v-if="currentOperation !== 1"
-                :dateOne="formattedDate(commitment.sec_cgf_date)"
-                :dateTwo="formattedDate(commitment.assignment_date)"
-                :dateThree="formattedDate(commitment.commitment_date)"
-                :dateFour="formattedDate(commitment.coord_cgf_date)"
+                v-if="currentOperation !== OPERATIONS.CREATE"
+                :date-one="formattedDate(accrual.sec_cgf_date)"
+                :date-two="formattedDate(accrual.assignment_date)"
+                :date-three="formattedDate(accrual.accrual_date)"
+                :date-four="formattedDate(accrual.coord_cgf_date)"
                 v-model:activePhase="activePhase"
             />
         </BaseLevel>

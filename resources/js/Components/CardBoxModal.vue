@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { mdiClose, mdiContentSaveAll, mdiBackspace, mdiPrinter } from "@mdi/js";
 import BaseButton from "@/Components/BaseButton.vue";
 import BaseButtons from "@/Components/BaseButtons.vue";
-import CardBox from "@/Components/CardBox.vue";
+import CardBox from "@/components/CardBox.vue";
 import OverlayLayer from "@/components/OverlayLayer.vue";
 import CardBoxComponentTitle from "@/Components/CardBoxComponentTitle.vue";
 import NotificationBarInCard from "@/Components/NotificationBarInCard.vue";
@@ -79,12 +79,7 @@ window.addEventListener("keydown", (e) => {
 
 <template>
     <OverlayLayer v-show="value" @overlay-click="cancel">
-        <CardBox
-            v-show="value"
-            :class="elementClass"
-            is-modal
-            :is-form="isForm"
-        >
+        <CardBox v-if="value" :class="elementClass" is-modal :is-form="isForm">
             <CardBoxComponentTitle :title="title">
                 <BaseButton
                     v-if="hasCancel"

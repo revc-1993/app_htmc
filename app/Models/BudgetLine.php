@@ -11,10 +11,6 @@ class BudgetLine extends Model
 
     protected $fillable = [
         'budget_line',
+        'description',
     ];
-
-    public function certifications()
-    {
-        return $this->hasMany(Certification::class, 'budget_line_id'); //->withPivot();
-    }
 }

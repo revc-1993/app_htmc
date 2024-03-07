@@ -39,11 +39,15 @@ const componentClass = computed(() => {
         props.isModal ? "dark:bg-slate-900" : "dark:bg-slate-900/70",
     ];
 
+    if (props.hasTable) {
+        base.push("overflow-x-auto");
+    }
+
     if (props.isHoverable) {
         base.push("hover:shadow-lg transition-shadow duration-500");
     }
 
-    if (props.isModal || props.isForm) {
+    if ((props.isModal || props.isForm) && !props.inModal) {
         base.push("overflow-y-auto");
         base.push(
             styleStore.darkMode

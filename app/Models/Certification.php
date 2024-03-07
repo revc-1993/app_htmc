@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use App\Constants\ManagementRoles;
+use App\Constants\ManagementRecordStatus;
+
 class Certification extends Model
 {
     use HasFactory, SoftDeletes;
@@ -26,10 +29,8 @@ class Certification extends Model
         'japc_comments',
 
         // ANALISTA DE CERTIFICACIÓN
-        'process_number',
-        'vendor_id',
+        // 'vendor_id',
         'cp_date',
-        'budget_line_id',
         'certified_amount',
         'balance',
         'certification_number',
@@ -88,16 +89,6 @@ class Certification extends Model
     }
 
     /**
-     * Get the BudgetLine that owns the Certification
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function budgetLine()
-    {
-        return $this->belongsTo(BudgetLine::class, 'budget_line_id');
-    }
-
-    /**
      * Get the RecordStatus that owns the Certification
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -108,13 +99,13 @@ class Certification extends Model
     }
 
     /**
-     * Get the RecordStatus that owns the Certification
+     * Get the CurrentManagement that owns the Certification
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function vendor()
+    public function currentManagement()
     {
-        return $this->belongsTo(Vendor::class, 'vendor_id');
+        return $this->belongsTo(CurrentManagement::class, 'current_management');
     }
 
     /**
@@ -127,22 +118,34 @@ class Certification extends Model
         return $this->hasMany(Commitment::class, 'certification_id');
     }
 
+    /**
+     * Get all of the Certifications for the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function certificationBudgetLines()
+    {
+        return $this->hasMany(CertificationBudgetLine::class, 'certification_id');
+    }
+
     public function scopeFiltered($query)
     {
         $role = $this->getRole();
         $user = $this->getUser();
-        if ($role < 3)
-            $query->where("certifications.record_status_id", "<=", 5)
+
+        if ($role === ManagementRoles::ANALYST)
+            return $query->where("certifications.customer_id", $user);
+
+        if ($role < ManagementRoles::ANALYST)
+            return $query->where("certifications.record_status_id", "<=", ManagementRecordStatus::REGISTERED)
                 ->orWhereNull("certifications.record_status_id");
-        else if ($role === 3)
-            $query->where("certifications.customer_id", $user);
 
         $query->orderBy("certifications.id", "desc");
     }
 
     public function scopeApproved($query, $request)
     {
-        $query->where('certification_number', $request)->where('record_status_id', '=', 6);
+        $query->where('certification_number', $request)->where('record_status_id', '=', ManagementRecordStatus::APPROVED);
     }
 
     public function scopeNotReviewed($query)
@@ -157,7 +160,7 @@ class Certification extends Model
 
     protected function getRole()
     {
-        return auth()->user()->roles()->first()->id;
+        return auth()->user()->roles->first()->step;
     }
 
     protected function getUser()

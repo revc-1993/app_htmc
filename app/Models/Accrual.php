@@ -12,6 +12,10 @@ class Accrual extends Model
 
     protected $fillable = [
         "accrual_memo",
+        "voucher_number",
+        "sec_cgf_comments",
+        "sec_cgf_date",
+
         "assignment_date",
         "japc_comments",
         "customer_id",
@@ -33,6 +37,21 @@ class Accrual extends Model
     public function commitment()
     {
         return $this->belongsTo(Commitment::class, 'commitment_id');
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class, 'accrual_id');
+    }
+
+    /**
+     * Get the CurrentManagement that owns the Accrual
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function currentManagement()
+    {
+        return $this->belongsTo(CurrentManagement::class, 'current_management');
     }
 
     public function user()

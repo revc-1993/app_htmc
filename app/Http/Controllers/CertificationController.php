@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\Modules;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\BudgetLine;
@@ -14,6 +15,7 @@ use App\Services\CertificationService;
 use App\Models\Certification;
 use App\Http\Requests\StoreCertificationRequest;
 use App\Http\Requests\UpdateCertificationRequest;
+use App\Models\CurrentManagement;
 use App\Models\CustomRole;
 
 class CertificationController extends Controller
@@ -23,22 +25,22 @@ class CertificationController extends Controller
     public function __construct(CertificationService $certificationService)
     {
         $this->middleware(
-            'permission:create_certification|show_certification|update_certification|delete_certification',
+            'permission:certification|create|show|update|delete',
             ['only' => ['index']]
         );
 
         $this->middleware(
-            'permission:create_certification',
+            'permission:create',
             ['only' => ['create', 'store']]
         );
 
         $this->middleware(
-            'permission:update_certification',
+            'permission:update',
             ['only' => ['edit', 'update']]
         );
 
         $this->middleware(
-            'permission:delete_certification',
+            'permission:delete',
             ['only' => ['destroy']]
         );
 
@@ -53,12 +55,12 @@ class CertificationController extends Controller
     public function index()
     {
         $certifications = $this->certificationService->getAllCertifications();
-        $departments = Department::all(['id', 'department']);
+        $departments = Department::all(['id', 'department', 'area']);
         $processTypes = ProcessType::all(['id', 'process_type']);
         $expenseTypes = ExpenseType::all(['id', 'expense_type']);
-        $budgetLines = BudgetLine::all(['id', 'budget_line']);
+        $budgetLines = BudgetLine::all(['id', 'budget_line', 'description']);
         $users = User::all(['id', 'name']);
-        $roles = CustomRole::allRoles();
+        $roles = CurrentManagement::allProfiles()->get();
         $recordStatuses = RecordStatus::all(['id', 'status']);
 
         return Inertia::render('Certifications/Index', compact(
@@ -73,7 +75,6 @@ class CertificationController extends Controller
         ));
     }
 
-
     /**
      * Show the form for creating a new resource.
      *
@@ -81,12 +82,12 @@ class CertificationController extends Controller
      */
     public function create()
     {
-        $departments = Department::all(['id', 'department']);
+        $departments = Department::all(['id', 'department', 'area']);
         $processTypes = ProcessType::all(['id', 'process_type']);
         $expenseTypes = ExpenseType::all(['id', 'expense_type']);
-        $budgetLines = BudgetLine::all(['id', 'budget_line']);
-        $users = User::analystRole()->get();
-        $roles = CustomRole::allRoles();
+        $budgetLines = BudgetLine::all(['id', 'budget_line', 'description']);
+        $users = User::role('certification_analyst_role')->get();
+        $roles = CurrentManagement::allProfiles()->get();
 
         return Inertia::render('Certifications/Create', compact(
             'departments',
@@ -119,6 +120,32 @@ class CertificationController extends Controller
         return to_route('certifications.index')->with(compact('message'));
     }
 
+    public function show($id)
+    {
+        $certification = $this->certificationService->getCertificationForEdit($id);
+        $departments = Department::all(['id', 'department', 'area']);
+        $processTypes = ProcessType::all(['id', 'process_type']);
+        $expenseTypes = ExpenseType::all(['id', 'expense_type']);
+        $budgetLines = BudgetLine::all(['id', 'budget_line', 'description']);
+        $users = User::role('certification_analyst_role')->get();
+        $roles = CurrentManagement::allProfiles()->get();
+        $recordStatuses = RecordStatus::getRecordStatus()->select('id', 'status')->get();
+
+        return response()->json(
+            compact(
+                'certification',
+                'departments',
+                'processTypes',
+                'expenseTypes',
+                'budgetLines',
+                'recordStatuses',
+                'users',
+                'roles'
+            ),
+            200
+        );
+    }
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -128,13 +155,14 @@ class CertificationController extends Controller
     public function edit($id)
     {
         $certification = $this->certificationService->getCertificationForEdit($id);
-        $departments = Department::all(['id', 'department']);
+        $departments = Department::all(['id', 'department', 'area']);
         $processTypes = ProcessType::all(['id', 'process_type']);
         $expenseTypes = ExpenseType::all(['id', 'expense_type']);
-        $budgetLines = BudgetLine::all(['id', 'budget_line']);
-        $recordStatuses = RecordStatus::all(['id', 'status']);
-        $users = User::analystRole()->get();
-        $roles = CustomRole::allRoles();
+        $budgetLines = BudgetLine::all(['id', 'budget_line', 'description']);
+        $users = User::role('certification_analyst_role')->get();
+        // dd($users);
+        $roles = CurrentManagement::allProfiles()->get();
+        $recordStatuses = RecordStatus::getRecordStatus()->select('id', 'status')->get();
 
         return Inertia::render('Certifications/Edit', compact(
             'certification',
@@ -159,6 +187,7 @@ class CertificationController extends Controller
     {
         $role = $this->certificationService->getRole();
         $adjustedRequest = $this->certificationService->adjustParams($request);
+        // dd($adjustedRequest);
         $this->certificationService->updateCertification($certification, $adjustedRequest);
 
         $message = [

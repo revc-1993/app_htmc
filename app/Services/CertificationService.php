@@ -5,24 +5,36 @@ namespace App\Services;
 use App\Models\Certification;
 use App\Http\Requests\StoreCertificationRequest;
 
+use App\Constants\ManagementRoles;
+use App\Constants\ManagementRecordStatus;
+use App\Models\CertificationBudgetLine;
+
 class CertificationService
 {
     public function getAllCertifications()
     {
         return Certification::with([
-            'user', 'department', 'processType', 'expenseType', 'budgetLine', 'recordStatus'
+            'user',
+            'currentManagement',
+            'department',
+            'processType',
+            'expenseType',
+            'certificationBudgetLines',
+            'recordStatus'
         ])
             ->filtered()
             ->get();
     }
 
-    public function getCertificationForEdit($id)
+    public function getCertificationForEdit(int $id)
     {
         return Certification::with([
-            'vendor' => function ($query) {
-                $query->select('id', 'nit', 'name');
+            'certificationBudgetLines' => function ($query) {
+                $query->select('id', 'certification_id', 'budget_line_id');
             }
-        ])->where('id', $id)->firstOrFail();
+        ])
+            ->where('id', $id)
+            ->firstOrFail();
     }
 
     public function createCertification(StoreCertificationRequest $request)
@@ -33,7 +45,31 @@ class CertificationService
 
     public function updateCertification(Certification $certification, array $adjustedRequest)
     {
+        // Certification
         $certification->update($adjustedRequest);
+
+        // CertificationBudgetLine
+        if (array_key_exists('budget_line_id', $adjustedRequest)) {
+            $requestBudgetLines = $adjustedRequest['budget_line_id'];
+            $budgetLines = [];
+            foreach ($requestBudgetLines as $budgetLine) {
+                $budgetLines[] = new CertificationBudgetLine([
+                    'certification_id' => $certification['id'],
+                    'budget_line_id' => $budgetLine,
+                ]);
+            }
+            $certification->certificationBudgetLines()->delete();
+            $certification->certificationBudgetLines()->saveMany($budgetLines);
+        }
+    }
+
+    private function getCertificationBalance($request)
+    {
+        if ($request['treasury_approved'] === "approved") {
+            return $request['certified_amount'];
+        }
+
+        return null;
     }
 
     public function adjustParams($request)
@@ -42,18 +78,19 @@ class CertificationService
 
         $currentManagement = $request['current_management'] ?? null;
 
+        // dd($currentManagement);
+
         // Agregar fecha dependiendo del estado actual de la certificación
         $dates = ['sec_cgf_date', 'assignment_date', 'cp_date', 'coord_cgf_date'];
         $adjustedRequest[$dates[$currentManagement - 1]] = now();
 
-        // Asignar saldo si el monto certificado no es nulo y el saldo no está definido
-        if (!isset($adjustedRequest['balance']) && isset($adjustedRequest['certified_amount'])) {
-            $adjustedRequest['balance'] = $adjustedRequest['certified_amount'];
-        }
-
         // Asignar la gestión siguiente dependiendo de la actual
+        // dd($adjustedRequest['current_management']);
         $adjustedRequest['current_management'] = $this->manageAssignment($request);
-        // dd($adjustedRequest);
+        // dd($adjustedRequest['current_management']);
+
+        // Asignar saldo si el monto certificado no es nulo y el saldo no está definido, y está aprobado. ó cero si no lo está
+        $adjustedRequest['balance'] = $this->getCertificationBalance($request);
 
         // Manejar el estado de la certificación
         $adjustedRequest['record_status_id'] = $this->manageRecordStatus($request);
@@ -72,8 +109,10 @@ class CertificationService
         if (
             !is_null($contractObject) && is_null($customerId)
             && is_null($recordStatusId) && is_null($treasuryApproved)
-        )
-            return 2;
+        ) {
+            // dd("PASA A CURRENT 2");
+            return ManagementRoles::SEC_JAPC;
+        }
 
         if (
             !is_null($contractObject) && !is_null($customerId)
@@ -81,38 +120,42 @@ class CertificationService
                 // 1. Estado de certificación vacío y Check de Coord. vacío
                 (is_null($recordStatusId) && is_null($treasuryApproved))
                 // 2. Estados antes de registrados (en revisión, devuelto); y con estado del Coord. "Returned"
-                || ($recordStatusId < 5
+                || ($recordStatusId < ManagementRecordStatus::REGISTERED
                     && (is_null($treasuryApproved) || $treasuryApproved === "returned"
                     )
                 )
                 // 3. Estado aprobado y aprobación "Returned"
                 || (
-                    ($recordStatusId > 5 || is_null($recordStatusId))
+                    ($recordStatusId > ManagementRecordStatus::REGISTERED || is_null($recordStatusId))
                     && $treasuryApproved === "returned"
                 )
                 // 4. Cuando estado es registrado, aprobación del Coord es "Returned" y gestión actual es Coord. 
-                || ($recordStatusId === 5 && $treasuryApproved === "returned" && $currentManagement === 4)
+                || ($recordStatusId === ManagementRecordStatus::REGISTERED && $treasuryApproved === "returned" && $currentManagement === ManagementRoles::COORD_CGF)
             )
-        )
-            return 3;
+        ) {
+            // dd("PASA A CURRENT 3");
+            return ManagementRoles::ANALYST;
+        }
 
         if (
             !is_null($contractObject) && !is_null($customerId)
             && (
                 // 1. Estado es registrado, y approved es nulo (primera vez)
-                ($recordStatusId === 5 && is_null($treasuryApproved))
+                ($recordStatusId === ManagementRecordStatus::REGISTERED && is_null($treasuryApproved))
                 // 2. Estado es aprobado o liquidado, y 
                 || (
-                    ($recordStatusId >= 5 || is_null($recordStatusId))
+                    ($recordStatusId >= ManagementRecordStatus::REGISTERED || is_null($recordStatusId))
                     && $treasuryApproved !== "returned"
                 )
                 // 3. Si estado es Registrado, gestión actual es 3 y aprobación coord previa es devuelto  
-                || ($recordStatusId === 5 && $treasuryApproved === "returned" && $currentManagement === 3)
+                || ($recordStatusId === ManagementRecordStatus::REGISTERED && $treasuryApproved === "returned" && $currentManagement === ManagementRoles::ANALYST)
                 // 4. Si estado es Devuelto, gestión actual es 3 y aprobación coord previa es aprobado o liquidado  
-                || ($recordStatusId === 4 && $treasuryApproved !== "returned" && $currentManagement === 3)
+                || ($recordStatusId === ManagementRecordStatus::RETURNED && $treasuryApproved !== "returned" && $currentManagement === ManagementRoles::ANALYST)
             )
-        )
-            return 4;
+        ) {
+            // dd("PASA A CURRENT 4");
+            return ManagementRoles::COORD_CGF;
+        }
 
         // Default
         // return $currentManagement;
@@ -126,35 +169,35 @@ class CertificationService
 
         if (
             // 1. Cuando previamente está aprobado
-            (($recordStatusId > 5 || is_null($recordStatusId)) && $treasuryApproved === "returned")
+            (($recordStatusId > ManagementRecordStatus::REGISTERED || is_null($recordStatusId)) && $treasuryApproved === "returned")
             // 2. 
-            || ($recordStatusId === 5 && $treasuryApproved === "returned" && $currentManagement === 4)
+            || ($recordStatusId === ManagementRecordStatus::REGISTERED && $treasuryApproved === "returned" && $currentManagement === ManagementRoles::COORD_CGF)
         ) {
-            return 4;
+            return ManagementRecordStatus::RETURNED;
         }
 
         if (
             // 1
-            (($recordStatusId >= 5 || is_null($recordStatusId)) && $treasuryApproved === "approved")
-            || ($recordStatusId === 4 && $treasuryApproved === "approved" && $currentManagement === 3)
+            (($recordStatusId >= ManagementRecordStatus::REGISTERED || is_null($recordStatusId)) && $treasuryApproved === "approved")
+            || ($recordStatusId === ManagementRecordStatus::RETURNED && $treasuryApproved === "approved" && $currentManagement === ManagementRoles::ANALYST)
         ) {
-            return 6;
+            return ManagementRecordStatus::APPROVED;
         }
 
         if (
             // 1
-            (($recordStatusId >= 5 || is_null($recordStatusId)) && $treasuryApproved === "canceled")
-            || ($recordStatusId === 4 && $treasuryApproved === "canceled" && $currentManagement === 3)
+            (($recordStatusId >= ManagementRecordStatus::REGISTERED || is_null($recordStatusId)) && $treasuryApproved === "canceled")
+            || ($recordStatusId === ManagementRecordStatus::RETURNED && $treasuryApproved === "canceled" && $currentManagement === ManagementRoles::ANALYST)
         ) {
-            return 7;
+            return ManagementRecordStatus::CANCELED;
         }
 
         if (
             // 1
-            (($recordStatusId >= 5 || is_null($recordStatusId)) && $treasuryApproved === "liquidated")
-            || ($recordStatusId === 4 && $treasuryApproved === "liquidated" && $currentManagement === 3)
+            (($recordStatusId >= ManagementRecordStatus::REGISTERED || is_null($recordStatusId)) && $treasuryApproved === "liquidated")
+            || ($recordStatusId === ManagementRecordStatus::RETURNED && $treasuryApproved === "liquidated" && $currentManagement === ManagementRoles::ANALYST)
         ) {
-            return 8;
+            return ManagementRecordStatus::LIQUIDATED;
         }
 
         return $recordStatusId;
@@ -170,6 +213,6 @@ class CertificationService
 
     function getRole()
     {
-        return auth()->user()->roles()->first()->id;
+        return auth()->user()->roles->first()->id;
     }
 }

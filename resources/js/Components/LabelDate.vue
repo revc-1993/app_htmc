@@ -32,14 +32,19 @@ const props = defineProps({
 // MANEJO DE FECHAS
 // --------------------------------------------
 const timeAgo = (date) => {
-    return dayjs(date).fromNow();
+    return dayjs(date).isValid() ? dayjs(date).fromNow() : "-";
 };
 
 const daysDifference = (startDate, endDate) => {
     const start = dayjs(startDate);
     const end = dayjs(endDate);
-    const differenceInDays = end.from(start, true); // Calcula la diferencia en días
-    return `${differenceInDays}`;
+
+    if (start.isValid() && end.isValid()) {
+        const differenceInDays = end.from(start, true); // Calcula la diferencia en días
+        return `${differenceInDays}`;
+    } else {
+        return "-";
+    }
 };
 </script>
 

@@ -2,20 +2,24 @@
 
 namespace App\FormRequestValidator\Commitment;
 
+use App\Constants\ManagementRoles;
+
 class CommitmentRoleValidatorFactory
 {
 
-    public static function make($roleId, $inputData): CommitmentRoleValidatorInterface
+    public static function make($roleId, $inputData, $currentRecordId): CommitmentRoleValidatorInterface
     {
         switch ($roleId) {
-            case 1:
+            case ManagementRoles::SEC_CGF:
                 return new SecCGFRoleValidator();
-            case 2:
+            case ManagementRoles::SEC_JAPC:
                 return new SecJAPCRoleValidator();
-            case 3:
-                return new AnalystRoleValidator($inputData);
-            case 4:
+            case ManagementRoles::ANALYST:
+                return new AnalystRoleValidator($inputData, $currentRecordId);
+            case ManagementRoles::COORD_CGF:
                 return new CoordCGFRoleValidator();
+            case ManagementRoles::ADMIN:
+                return new AdminRoleValidator($inputData, $currentRecordId);
                 // Agregar más casos para otros roles
             default:
                 throw new \InvalidArgumentException("Invalid role ID");

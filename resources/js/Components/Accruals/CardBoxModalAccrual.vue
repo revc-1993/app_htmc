@@ -4,6 +4,8 @@ import { router } from "@inertiajs/vue3";
 import CardBoxModal from "@/Components/CardBoxModal.vue";
 import FormAccrual from "@/Components/Accruals/FormAccrual.vue";
 
+import { OPERATIONS } from "@/Utils/constants";
+
 // ---------------------------------------------------------
 // PROPS
 // ---------------------------------------------------------
@@ -17,7 +19,7 @@ const props = defineProps({
     recordStatuses: Object,
     currentOperation: {
         type: [String, Number, Boolean],
-        default: 1,
+        default: OPERATIONS.CREATE,
     },
     elementProps: {
         type: Object,
@@ -30,16 +32,6 @@ const props = defineProps({
         default: null,
     },
 });
-
-// ---------------------------------------------------------
-// CONSTANTES
-// ---------------------------------------------------------
-const operations = {
-    create: 1,
-    show: 2,
-    update: 3,
-    delete: 4,
-};
 
 // ---------------------------------------------------------
 // EVENTOS DE MODAL: ABRIR Y CERRAR, CONFIRMAR O CANCELAR
@@ -56,7 +48,7 @@ const confirmCancel = (mode) => {
 const confirm = () => confirmCancel("confirm");
 
 // --------------------------------------------
-// COMMITMENTS.DELETE
+// ACCRUALS.DELETE
 // --------------------------------------------
 const destroy = () => {
     router.delete(`/accruals/${props.accrual.id}`, {
@@ -65,7 +57,7 @@ const destroy = () => {
 };
 
 const transaction = () => {
-    return props.currentOperation === operations.delete ? destroy() : "";
+    return props.currentOperation === OPERATIONS.DELETE ? destroy() : "";
 };
 </script>
 
@@ -74,19 +66,19 @@ const transaction = () => {
         v-model="value"
         :title="elementProps.label"
         :button="
-            props.currentOperation === operations.update
+            props.currentOperation === OPERATIONS.UPDATE
                 ? 'success'
                 : elementProps.color
         "
         :button-label="
-            props.currentOperation === operations.show
+            props.currentOperation === OPERATIONS.SHOW
                 ? 'Imprimir'
                 : elementProps.label
         "
         has-cancel
         @confirm="transaction"
     >
-        <template v-if="currentOperation !== operations.delete">
+        <template v-if="currentOperation !== OPERATIONS.DELETE">
             <FormAccrual
                 in-modal
                 :accrual="accrual"
@@ -96,8 +88,8 @@ const transaction = () => {
                 :current-operation="currentOperation"
                 :element-props="elementProps"
                 :with-button="
-                    currentOperation === operations.create ||
-                    currentOperation === operations.update
+                    currentOperation === OPERATIONS.CREATE ||
+                    currentOperation === OPERATIONS.UPDATE
                 "
             />
         </template>

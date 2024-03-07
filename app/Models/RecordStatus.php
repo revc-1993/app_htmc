@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Constants\ManagementRecordStatus;
+
 class RecordStatus extends Model
 {
     use HasFactory;
@@ -30,18 +32,11 @@ class RecordStatus extends Model
 
     public function scopeGetRecordStatus($query)
     {
-        $role = $this->getRole();
-
-        if ($role === 3) {
-            $operator = $role === 3 ? "<=" : ">";
-            $query->where('id', $operator, 5);
-        } else if ($role === 4) {
-            $query;
-        }
+        $query->where('record_statuses.id', '<=', ManagementRecordStatus::REGISTERED);
     }
 
     protected function getRole()
     {
-        return auth()->user()->roles()->first()->id;
+        return auth()->user()->roles->first()->id;
     }
 }

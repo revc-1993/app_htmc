@@ -1,5 +1,5 @@
 <script setup>
-import { mdiTextBoxMultipleOutline, mdiCheckBold } from "@mdi/js";
+import { mdiWallet, mdiCheckBold } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
 import LayoutAuthenticated from "@/Layouts/LayoutAuthenticated.vue";
 import SectionMain from "@/Components/SectionMain.vue";
@@ -21,7 +21,7 @@ const props = defineProps({
         <Head title="Devengados" />
         <SectionMain>
             <SectionTitleLineWithButton
-                :icon="mdiTextBoxMultipleOutline"
+                :icon="mdiWallet"
                 title="Devengados"
                 main
             />

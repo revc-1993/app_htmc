@@ -31,9 +31,6 @@ return new class extends Migration
             $table->string('japc_comments')->nullable();
 
             // ANALISTA DE CERTIFICACIÓN
-            $table->string('process_number')->nullable();
-            $table->unsignedBigInteger('vendor_id')->nullable();
-            $table->unsignedBigInteger('budget_line_id')->nullable();
             $table->float('certified_amount')->unsigned()->nullable();
             $table->float('balance')->unsigned()->nullable();
             $table->integer('certification_number')->nullable();
@@ -47,7 +44,7 @@ return new class extends Migration
             $table->string('coord_cgf_comments')->nullable();
 
             // CONTROL TOTAL
-            $table->integer('current_management')->default(2);
+            $table->unsignedBigInteger('current_management')->default(2);
             $table->unsignedBigInteger('record_status_id')->nullable();    // Estado de la certificación
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->softDeletes();
@@ -57,10 +54,9 @@ return new class extends Migration
             $table->foreign('customer_id')->references('id')->on('users');
             $table->foreign('process_type_id')->references('id')->on('process_types');
             $table->foreign('expense_type_id')->references('id')->on('expense_types');
-            $table->foreign('budget_line_id')->references('id')->on('budget_lines');
             $table->foreign('department_id')->references('id')->on('departments');
             $table->foreign('record_status_id')->references('id')->on('record_statuses');
-            $table->foreign('vendor_id')->references('id')->on('vendors');
+            $table->foreign('current_management')->references('id')->on('current_management');
         });
     }
 

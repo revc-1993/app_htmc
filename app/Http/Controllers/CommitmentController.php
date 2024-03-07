@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Inertia\Inertia;
+use App\Constants\Modules;
 use App\Models\Commitment;
 use App\Models\CustomRole;
 use App\Models\RecordStatus;
 use Illuminate\Http\Request;
+use App\Models\CurrentManagement;
+use App\Services\CommitmentService;
 use App\Http\Requests\StoreCommitmentRequest;
 use App\Http\Requests\UpdateCommitmentRequest;
-use App\Services\CommitmentService;
 
 class CommitmentController extends Controller
 {
@@ -19,22 +21,22 @@ class CommitmentController extends Controller
     public function __construct(CommitmentService $commitmentService)
     {
         $this->middleware(
-            'permission:create_commitment|show_commitment|update_commitment|delete_commitment',
+            'permission:commitment|create|show|update|delete',
             ['only' => ['index']]
         );
 
         $this->middleware(
-            'permission:create_commitment',
+            'permission:create',
             ['only' => ['create', 'store']]
         );
 
         $this->middleware(
-            'permission:update_commitment',
+            'permission:update',
             ['only' => ['edit', 'update']]
         );
 
         $this->middleware(
-            'permission:delete_commitment',
+            'permission:delete',
             ['only' => ['destroy']]
         );
 
@@ -49,8 +51,8 @@ class CommitmentController extends Controller
     public function index()
     {
         $commitments = $this->commitmentService->getAllCommitments();
-        $users = User::analystRole()->get();
-        $roles = CustomRole::allRoles();
+        $users = User::role('commitment_analyst_role')->get();
+        $roles = CurrentManagement::allProfiles()->get();
         $recordStatuses = RecordStatus::all(['id', 'status']);
 
         return Inertia::render('Commitments/Index', compact(
@@ -68,8 +70,8 @@ class CommitmentController extends Controller
      */
     public function create()
     {
-        $users = User::analystRole()->get();
-        $roles = CustomRole::allRoles();
+        $users = User::role('commitment_analyst_role')->get();
+        $roles = CurrentManagement::allProfiles()->get();
         $recordStatuses = RecordStatus::getRecordStatus()->get(['id', 'status']);
 
         return Inertia::render('Commitments/Create', compact(
@@ -110,8 +112,8 @@ class CommitmentController extends Controller
     public function edit(int $id)
     {
         $commitment = $this->commitmentService->getCommitmentForEdit($id);
-        $users = User::analystRole()->get();
-        $roles = CustomRole::allRoles();
+        $users = User::role('commitment_analyst_role')->get();
+        $roles = CurrentManagement::allProfiles()->get();
         $recordStatuses = RecordStatus::getRecordStatus()->get(['id', 'status']);
 
         return Inertia::render('Commitments/Edit', compact(

@@ -1,0 +1,201 @@
+<script setup>
+import { computed, ref, onMounted, onBeforeUnmount } from "vue";
+import { useMainStore } from "@/Stores/main";
+import FormControlIcon from "@/Components/FormControlIcon.vue";
+
+const props = defineProps({
+    name: {
+        type: String,
+        default: null,
+    },
+    id: {
+        type: String,
+        default: null,
+    },
+    autocomplete: {
+        type: String,
+        default: null,
+    },
+    placeholder: {
+        type: String,
+        default: null,
+    },
+    inputmode: {
+        type: String,
+        default: null,
+    },
+    icon: {
+        type: String,
+        default: null,
+    },
+    options: {
+        type: Array,
+        default: null,
+    },
+    type: {
+        type: String,
+        default: "text",
+    },
+    min: {
+        type: Number,
+        default: 0,
+    },
+    step: {
+        type: Number,
+        default: 0,
+    },
+    modelValue: {
+        type: [String, Number, Boolean, Array, Object],
+        default: "",
+    },
+    required: Boolean,
+    borderless: Boolean,
+    transparent: Boolean,
+    ctrlKFocus: Boolean,
+    hasErrors: Boolean,
+    disabled: Boolean || Object,
+    pattern: String,
+    small: {
+        type: Boolean,
+        default: false,
+    },
+    multiple: {
+        type: Boolean,
+        default: false,
+    },
+    multiOptions: {
+        type: Object,
+        default: {},
+    },
+});
+
+const emit = defineEmits(["update:modelValue", "setRef"]);
+
+const computedValue = computed({
+    get: () => props.modelValue,
+    set: (value) => {
+        emit("update:modelValue", value);
+    },
+});
+
+const inputElClass = computed(() => {
+    const base = [
+        "px-3 py-2 max-w-full rounded w-full",
+        props.disabled
+            ? "text-slate-800 dark:text-slate-300 border-slate-400"
+            : " border-slate-700 focus:ring-blue-600",
+        props.hasErrors
+            ? "border-red-700 focus:border-red-700 focus:ring-red-600 dark:focus:ring-red-600 placeholder-red-500"
+            : "border-gray-700",
+        "dark:placeholder-gray-400",
+        computedType.value === "textarea"
+            ? "h-24 resize-none"
+            : props.small
+            ? "h-10"
+            : "h-12",
+        props.borderless ? "border-0" : "border",
+        props.transparent ? "bg-transparent" : "bg-white dark:bg-slate-700",
+        "focus:outline-none focus:ring placeholder-slate-400",
+    ];
+
+    if (props.icon) {
+        base.push("pl-10");
+    }
+
+    return base;
+});
+
+const computedType = computed(() => (props.options ? "select" : props.type));
+
+const controlIconH = computed(() =>
+    props.type === "textarea" ? "h-full" : props.small ? "h-10" : "h-12"
+);
+
+const mainStore = useMainStore();
+
+const selectEl = ref(null);
+
+const textareaEl = ref(null);
+
+const inputEl = ref(null);
+
+onMounted(() => {
+    if (selectEl.value) {
+        emit("setRef", selectEl.value);
+    } else if (textareaEl.value) {
+        emit("setRef", textareaEl.value);
+    } else {
+        emit("setRef", inputEl.value);
+    }
+});
+
+if (props.ctrlKFocus) {
+    const fieldFocusHook = (e) => {
+        if (e.ctrlKey && e.key === "k") {
+            e.preventDefault();
+            inputEl.value.focus();
+        } else if (e.key === "Escape") {
+            inputEl.value.blur();
+        }
+    };
+
+    onMounted(() => {
+        if (!mainStore.isFieldFocusRegistered) {
+            window.addEventListener("keydown", fieldFocusHook);
+            mainStore.isFieldFocusRegistered = true;
+        } else {
+            // console.error('Duplicate field focus event')
+        }
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("keydown", fieldFocusHook);
+        mainStore.isFieldFocusRegistered = false;
+    });
+}
+</script>
+
+<template>
+    <div class="relative">
+        <v-select
+            :id="id"
+            v-model="computedValue"
+            :name="name"
+            :disabled="disabled"
+            :class="inputElClass"
+            class="select-style"
+            :options="options"
+            :reduce="(label) => label.id"
+            placeholder="Escoja una opción"
+            :get-option-label="(option) => option.label"
+            :multiple="multiple"
+            :multi-options="multiOptions"
+        >
+            <template #option="{ label, description }">
+                {{ label }} - {{ description }}
+            </template>
+        </v-select>
+        <FormControlIcon v-if="icon" :icon="icon" :h="controlIconH" />
+    </div>
+</template>
+<style>
+.select-style .vs__dropdown-toggle,
+.select-style .vs__dropdown-menu {
+    border: none;
+    text-overflow: clip;
+    white-space: nowrap;
+}
+
+.select-style .vs__search::placeholder {
+    color: rgb(107 114 128);
+    background: rgba(255, 255, 255, 0);
+}
+
+.select-style .vs__dropdown-toggle:disabled,
+.select-style .vs__dropdown-menu:disabled,
+.select-style .vs__search:disabled,
+.select-style .vs__search::placeholder:disabled {
+    color: rgb(148 163 184);
+    background: rgba(255, 255, 255, 0);
+}
+</style>

@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('budget_lines', function (Blueprint $table) {
             $table->id();
             $table->string("budget_line");
+            $table->string("description");
             $table->softDeletes();
             $table->timestamps();
         });

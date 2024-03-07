@@ -1,15 +1,16 @@
 <script setup>
+import { OPERATIONS, STEPS } from "@/Utils/constants";
 import { computed, ref } from "vue";
 
 const props = defineProps({
     operation: {
         type: [String, Number],
-        default: null,
+        default: OPERATIONS.CREATE,
     },
-    currentManagement: Number,
+    currentManagement: { Number, Object },
     modelValue: {
         type: [String, Number, Boolean, Object],
-        default: null,
+        default: STEPS.STEP_1,
     },
     steps: Array,
 });
@@ -30,7 +31,9 @@ const olClass = computed(() => {
         "text-gray-500",
     ];
     base.push(
-        props.steps?.length === 4
+        props.steps?.length === 5
+            ? "sm:grid-cols-5"
+            : props.steps?.length === 4
             ? "sm:grid-cols-4"
             : props.steps?.length === 3
             ? "sm:grid-cols-3"
@@ -133,13 +136,13 @@ const stepping = (step) => {
             <ol :class="olClass">
                 <li
                     v-for="step in steps"
-                    :key="step.id"
-                    :class="liClass(step.id)"
-                    :tabindex="tabindex(step.id)"
-                    @click.prevent="stepping(step.id)"
+                    :key="step.step"
+                    :class="liClass(step.step)"
+                    :tabindex="tabindex(step.step)"
+                    @click.prevent="stepping(step.step)"
                 >
                     <svg
-                        v-if="step.id === 1"
+                        v-if="step.step === 1"
                         class="h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -154,7 +157,7 @@ const stepping = (step) => {
                         />
                     </svg>
                     <svg
-                        v-else-if="step.id === 2"
+                        v-else-if="step.step === 2"
                         class="mr-2 h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -175,7 +178,7 @@ const stepping = (step) => {
                     </svg>
 
                     <svg
-                        v-else-if="step.id >= 3"
+                        v-else-if="step.step >= 3"
                         class="h-7 w-7 flex-shrink-0"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -191,9 +194,9 @@ const stepping = (step) => {
                     </svg>
                     <p class="leading-none">
                         <strong class="block font-medium">
-                            {{ step.id }}.
+                            {{ step.step }}.
                         </strong>
-                        <small class="mt-1"> {{ step.nickname }} </small>
+                        <small class="mt-1"> {{ step.name }} </small>
                     </p>
                 </li>
 

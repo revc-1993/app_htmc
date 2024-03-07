@@ -7,6 +7,8 @@ use App\FormRequestValidator\Certification\CertificationRoleValidatorFactory;
 
 class UpdateCertificationRequest extends FormRequest
 {
+    private $roleValidator;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -24,28 +26,23 @@ class UpdateCertificationRequest extends FormRequest
      */
     public function rules()
     {
-        $roleValidator = CertificationRoleValidatorFactory::make($this->getCurrentRole(), $this->input());
-        return $roleValidator->getRules();
+        $this->roleValidator = CertificationRoleValidatorFactory::make($this->getCurrentRole(), $this->input(), $this->route('certification.id'));
+        return $this->roleValidator->getRules();
     }
 
-    protected function getCurrentRole()
+    public function attributes()
     {
-        $role = auth()->user()->roles()->first()->id;
-        if ($role === 5)    $currentRole = $this->current_management;
-        else                $currentRole = $role;
-        return $currentRole;
+        return $this->roleValidator->getAttributes();
     }
 
     public function messages(): array
     {
-        return [
-            // 'name.required' => __('El campo nombre es obligatorio.'),
-            // 'name.string' => __('El campo nombre debe ser una cadena de texto.'),
-            // 'name.max' => __('El campo nombre no debe ser mayor a :max caracteres.'),
-            // 'name.unique' => __('El campo nombre ya está en uso.'),
-            // 'description.required' => __('El campo descripción es obligatorio.'),
-            // 'description.string' => __('El campo descripción debe ser una cadena de texto.'),
-            // 'description.max' => __('El campo descripción no debe ser mayor a :max caracteres.'),
-        ];
+        return $this->roleValidator->getMessages();
+    }
+
+    protected function getCurrentRole()
+    {
+        $role = auth()->user()->roles()->first()->step;
+        return $role;
     }
 }

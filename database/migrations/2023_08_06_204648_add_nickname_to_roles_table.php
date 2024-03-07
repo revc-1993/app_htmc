@@ -15,6 +15,7 @@ class AddNicknameToRolesTable extends Migration
     {
         Schema::table('roles', function (Blueprint $table) {
             $table->string('nickname')->nullable()->after('name');
+            $table->integer('step')->nullable()->after('nickname');
         });
     }
 

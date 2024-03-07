@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Constants\Modules;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -90,10 +92,8 @@ class User extends Authenticatable
         return $this->hasMany(Accrual::class, 'customer_id');
     }
 
-    public function scopeAnalystRole($query)
+    public function payments()
     {
-        $query->select('users.id', 'users.name')
-            ->join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
-            ->where('model_has_roles.role_id', '=', 3);
+        return $this->hasMany(Payment::class, 'customer_id');
     }
 }

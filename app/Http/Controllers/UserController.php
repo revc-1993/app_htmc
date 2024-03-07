@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Inertia\Inertia;
+use App\Models\CustomRole;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
@@ -21,8 +23,10 @@ class UserController extends Controller
     public function index()
     {
         return Inertia::render('Users/Index', [
-            'users' => User
-                ::with([
+            'users' => User::whereDoesntHave('roles', function ($query) {
+                $query->where('name', 'admin_role');
+            })
+                ->with([
                     'roles' => function ($query) {
                         $query->select('id', 'name');
                     },
@@ -38,7 +42,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        $roles = Role::pluck('name', 'name')->all();
+        $roles = Role::where('name', '!=', 'admin_role')
+            ->get(['id', 'name']);
+
         return Inertia::render('Users/Create', compact('roles'));
     }
 
@@ -50,18 +56,32 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        $input = $request->validated();
-        $input['password'] = Hash::make($input['password']);
+        $data = $request->validated();
+        $data['password'] = Hash::make($data['password']);
 
-        $user = User::create($input);
-        $user->assignRole($request->input('roles'));
+        $names = explode(" ", $data['name']);
+
+        if (count($names) > 1)
+            $names[0] = substr($names[0], 0, 1);
+        if (count($names) === 3)
+            $names[2] = substr($names[2], 0, 1);
+        if (count($names) >= 4) {
+            $names[1] = "";
+            $names[3] = substr($names[3], 0, 1);
+        }
+
+        $data['username'] = strtolower(implode("", $names));
+
+        $user = User::create($data);
+        $role = CustomRole::findByName($data['role']);
+        $user->assignRole($role);
 
         $message = [
             "response" => "Registro creado correctamente.",
             "operation" => 1,
         ];
 
-        return to_route('users.index')->with(compact('message'));
+        return to_route('superadmin.users.index')->with(compact('message'));
     }
 
     /**
@@ -83,13 +103,18 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        $user = User::all(['id', 'name', 'username', 'email'])
-            ->where('users.id', '=', $id)
-            ->first();
-        $roles = Role::pluck('name', 'name')->all();
-        $userRole = $user->roles->pluck('name', 'name')->all();
+        $user = User::where('id', $id)
+            ->with([
+                'roles' => function ($query) {
+                    $query->select('id', 'name')->first();
+                },
+            ])
+            ->first(['id', 'name', 'email', 'department']);
 
-        return Inertia::render('Users/Edit', compact('user', 'roles', 'userRole'));
+        $roles = Role::where('name', '!=', 'admin_role')
+            ->get(['id', 'name']);
+
+        return Inertia::render('Users/Edit', compact('user', 'roles'));
     }
 
     /**
@@ -101,26 +126,41 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        $input = $request->validated();
+        $data = $request->validated();
 
-        if (!empty($input['password'])) {
-            $input['password'] = Hash::make($input['password']);
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
         } else {
-            $input = Arr::except($input, array('password'));
+            $data = Arr::except($data, array('password'));
         }
 
-        $user->update($input);
+        $names = explode(" ", $data['name']);
+
+        if (count($names) > 1)
+            $names[0] = substr($names[0], 0, 1);
+        if (count($names) === 3)
+            $names[2] = substr($names[2], 0, 1);
+        if (count($names) >= 4) {
+            $names[1] = "";
+            $names[3] = substr($names[3], 0, 1);
+        }
+
+        $data['username'] = strtolower(implode("", $names));
+
+        // dd($data['role']);
+        $user->update($data);
         DB::table('model_has_roles')
             ->where('model_id', $user->id)
             ->delete();
-        $user->assignRole($request->input('roles'));
+        $role = CustomRole::findByName($data['role']);
+        $user->assignRole($role);
 
         $message = [
             "response" => "Registro modificado correctamente.",
             "operation" => 3,
         ];
 
-        return to_route('users.index')->with(compact('message'));
+        return to_route('superadmin.users.index')->with(compact('message'));
     }
 
     /**
@@ -137,6 +177,6 @@ class UserController extends Controller
             "response" => "Registro eliminado correctamente.",
             "operation" => 4,
         ];
-        return to_route('users.index')->with(compact('message'));
+        return to_route('superadmin.users.index')->with(compact('message'));
     }
 }

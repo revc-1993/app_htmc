@@ -1,11 +1,11 @@
 <script setup>
 import { mdiAccountMultiple, mdiBackspace } from "@mdi/js";
 import { Head } from "@inertiajs/vue3";
-import LayoutAuthenticated from "@/layouts/LayoutAuthenticated.vue";
-import SectionMain from "@/components/SectionMain.vue";
-import SectionTitleLineWithButton from "@/components/SectionTitleLineWithButton.vue";
-import FormUser from "@/components/users/FormUser.vue";
-import BaseButton from "@/components/BaseButton.vue";
+import LayoutAuthenticated from "@/Layouts/LayoutAuthenticated.vue";
+import SectionMain from "@/Components/SectionMain.vue";
+import SectionTitleLineWithButton from "@/Components/SectionTitleLineWithButton.vue";
+import FormUser from "@/Components/Users/FormUser.vue";
+import BaseButton from "@/Components/BaseButton.vue";
 
 // --------------------------------------------
 const props = defineProps({
@@ -27,7 +27,7 @@ const elementProps = {
                 main
             >
                 <BaseButton
-                    route-name="users.index"
+                    route-name="superadmin.users.index"
                     color="slate"
                     label="Regresar"
                     :icon="mdiBackspace"

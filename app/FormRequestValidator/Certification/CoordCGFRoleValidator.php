@@ -16,4 +16,18 @@ class CoordCGFRoleValidator implements CertificationRoleValidatorInterface
             'current_management' => ['nullable'],
         ];
     }
+
+    public function getAttributes(): array
+    {
+        return [
+            'treasury_approved' => "Estado Final de Expediente",
+            'returned_document_number' => "Nro. de Memorando",
+            'coord_cgf_comments' => "Observaciones",
+        ];
+    }
+
+    public function getMessages(): array
+    {
+        return [];
+    }
 }

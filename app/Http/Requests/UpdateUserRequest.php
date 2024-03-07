@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\User;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +28,13 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:' . User::class,
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                // Rule::unique(User::class)->ignore($this->user()->id),
+            ],
             'department' => 'required',
             'role' => 'required',
             'password' => ['confirmed', Rules\Password::defaults()],

@@ -3,20 +3,23 @@ import { computed, ref } from "vue";
 import {
     mdiEye,
     mdiPenPlus,
+    mdiMagnify,
     mdiTrashCan,
-    mdiFileExcel,
-    mdiFileDelimited,
     mdiUpdate,
+    mdiMenuDown,
+    mdiMenuUp,
 } from "@mdi/js";
 import TableCheckboxCell from "@/Components/TableCheckboxCell.vue";
-import BaseLevel from "@/Components/BaseLevel.vue";
+import BaseLevel from "@/components/BaseLevel.vue";
 import BaseButtons from "@/Components/BaseButtons.vue";
 import BaseButton from "@/Components/BaseButton.vue";
 import ExportButton from "@/Components/ExportButton.vue";
 import SpanState from "@/components/SpanState.vue";
 import CardBoxModalCertification from "@/Components/Certifications/CardBoxModalCertification.vue";
-import CardBox from "@/Components/CardBox.vue";
+import CardBox from "@/components/CardBox.vue";
+import FormControl from "@/components/FormControl.vue";
 import { usePage } from "@inertiajs/vue3";
+import BaseIcon from "@/components/BaseIcon.vue";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"; // Importa el complemento de fechas relativas
@@ -50,6 +53,12 @@ const certification = ref({});
 const isModalActive = ref(false);
 // Operación escogida para modal
 const currentOperation = ref("");
+// Para ordenar por un campo
+const orderBy = ref(null);
+// Indica asc o desc
+const orderDesc = ref(false);
+// Término de búsqueda
+const searchTerm = ref("");
 
 // Características de botones por operación
 const elementProps = {
@@ -134,6 +143,91 @@ const checked = (isChecked, certification) => {
 };
 
 // --------------------------------------------
+// METODOS DE ORDENACION POR COLUMNA
+// --------------------------------------------
+const handleSort = (column) => {
+    if (orderBy.value === column) {
+        // Si la misma columna está siendo ordenada, cambia el tipo de orden
+        orderDesc.value = !orderDesc.value;
+    } else {
+        // Si es una nueva columna, ordénala de forma ascendente
+        orderBy.value = column;
+        orderDesc.value = false;
+    }
+};
+
+const sortedCertifications = computed(() => {
+    if (orderBy.value) {
+        return itemsPaginated.value.slice().sort((a, b) => {
+            const columnA = getColumnValue(a, orderBy.value);
+            const columnB = getColumnValue(b, orderBy.value);
+
+            // Verifica si los valores son cadenas antes de comparar
+            if (typeof columnA === "string" && typeof columnB === "string") {
+                return orderDesc.value
+                    ? columnB.localeCompare(columnA)
+                    : columnA.localeCompare(columnB);
+            } else {
+                // Si no son cadenas, compara los valores directamente
+                return orderDesc.value ? columnB - columnA : columnA - columnB;
+            }
+        });
+    } else {
+        return itemsPaginated.value;
+    }
+});
+
+// Función para obtener el valor de una columna específica
+const getColumnValue = (item, column) => {
+    const columns = column.split("."); // Divide la cadena por puntos para manejar propiedades anidadas
+    let value = item;
+    for (const col of columns) {
+        if (value && value[col] !== undefined && value[col] !== null) {
+            value = value[col];
+        } else {
+            return ""; // Devuelve un valor predeterminado (cadena vacía) si la propiedad es nula o indefinida
+        }
+    }
+    return value;
+};
+
+// --------------------------------------------
+// FILTRAR
+// --------------------------------------------
+const filteredCertifications = computed(() => {
+    return sortedCertifications.value.filter((certification) => {
+        return (
+            (certification.contract_object &&
+                certification.contract_object
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (certification.department &&
+                certification.department.department
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (typeof certification.certification_number === "number" &&
+                certification.certification_number
+                    .toString()
+                    .includes(searchTerm.value)) ||
+            (certification.record_status &&
+                certification.record_status.status
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (certification.user &&
+                certification.user.username
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (certification.current_management &&
+                typeof certification.current_management.name === "string" &&
+                certification.current_management.name
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) || // Otras condiciones para las columnas relevantes
+            false
+        );
+    });
+});
+
+// --------------------------------------------
 // EMIT DE ALERTA
 // --------------------------------------------
 const emit = defineEmits(["alert"]);
@@ -165,9 +259,9 @@ const closeModal = (event) => {
 // PERMISOS
 // --------------------------------------------
 const hasPermissions = (permission) => {
-    return usePage().props.user.permissions.includes(permission);
+    const permissions = usePage().props.auth.user.permissions;
+    return permissions.find((element) => element === permission);
 };
-
 // --------------------------------------------
 // FECHAS
 // --------------------------------------------
@@ -183,14 +277,25 @@ const daysDifference = (startDate, endDate) => {
 };
 
 const manageDate = (certification) => {
-    const startDate = {
+    return {
         // 1: certification.sec_cgf_date,
         2: certification.sec_cgf_date,
         3: certification.assignment_date,
         4: certification.cp_date,
-    }[certification.current_management];
+    }[certification.current_management.step];
+};
 
-    return timeAgo(startDate);
+const handleTimeAgo = (date) => {
+    return timeAgo(date);
+};
+
+const dateIcon = (certification) => {
+    return {
+        // 1: certification.sec_cgf_date,
+        2: certification.sec_cgf_date,
+        3: certification.assignment_date,
+        4: certification.cp_date,
+    }[certification.current_management.step];
 };
 
 // --------------------------------------------
@@ -216,22 +321,22 @@ const formattedNumber = (number) => {
                 :data="certifications"
                 type="xls"
                 color="success"
-                :icon="mdiFileExcel"
                 :tooltip="'Exportar a Excel'"
             />
             <ExportButton
                 :data="certifications"
                 type="csv"
                 color="slate"
-                :icon="mdiFileDelimited"
                 :tooltip="'Exportar a CSV'"
             />
-            <!-- <FormControl
+            <FormControl
+                v-model="searchTerm"
                 placeholder="Buscar"
                 :icon="mdiMagnify"
                 ctrl-k-focus
+                small
                 class="px-1 py-1 text-sm"
-            /> -->
+            />
         </BaseButtons>
         <BaseButtons type="justify-end">
             <!-- BUTTON HACIA OTRA PAGINA -->
@@ -242,7 +347,7 @@ const formattedNumber = (number) => {
                 :tooltip="elementProps.create.tooltip"
                 route-name="certifications.create"
                 small
-                v-show="hasPermissions('create_certification')"
+                v-show="hasPermissions('create')"
             />
         </BaseButtons>
     </BaseLevel>
@@ -280,22 +385,168 @@ const formattedNumber = (number) => {
                 <tr>
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-show="checkable" class="text-center" />
-                    <th class="text-center">N.</th>
-                    <th class="text-center">Objeto de contrato</th>
-                    <th class="text-center">Area requirente</th>
-                    <th class="text-center">Estado</th>
-                    <th class="text-center">N. certif.</th>
-                    <th class="text-center">Monto</th>
-                    <th class="text-center">Saldo</th>
-                    <th class="text-center">Gestión actual</th>
-                    <th class="text-center">Asignado</th>
-                    <th class="text-center">Fecha</th>
+                    <th @click="handleSort('id')" class="text-center">
+                        N.
+                        <span v-if="orderBy === 'id'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('contract_object')"
+                        class="text-center"
+                    >
+                        Objeto de contrato
+                        <span v-if="orderBy === 'contract_object'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('department.department')"
+                        class="text-center"
+                    >
+                        Area requirente
+                        <span
+                            v-if="orderBy === 'department.department'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('record_status.status')"
+                        class="text-center"
+                    >
+                        Estado
+                        <span
+                            v-if="orderBy === 'record_status.status'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('certification_number')"
+                        class="text-center"
+                    >
+                        N. certif.
+                        <span
+                            v-if="orderBy === 'certification_number'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('certified_amount')"
+                        class="text-center"
+                    >
+                        Monto
+                        <span
+                            v-if="orderBy === 'certified_amount'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th @click="handleSort('balance')" class="text-center">
+                        Saldo
+                        <span v-if="orderBy === 'balance'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('current_management.step')"
+                        class="text-center"
+                    >
+                        Gestión actual
+                        <span
+                            v-if="orderBy === 'current_management.step'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('user.username')"
+                        class="text-center"
+                    >
+                        Asignado
+                        <span v-if="orderBy === 'user.username'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th @click="handleSort('sec_cgf_date')" class="text-center">
+                        Tiempo
+                        <span v-if="orderBy === 'sec_cgf_date'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <tr
-                    v-for="certification in itemsPaginated"
+                    v-for="certification in filteredCertifications"
                     :key="certification.id"
                     class="border-b border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
@@ -310,11 +561,21 @@ const formattedNumber = (number) => {
                         class="w-24 h-24 mx-auto lg:w-6 lg:h-6"
                     /> -->
                     </td>
-                    <td data-label="Objeto de contrato" class="text-left">
+                    <td
+                        data-label="Objeto de contrato"
+                        class="text-left capitalize"
+                    >
                         {{ certification.contract_object }}
                     </td>
-                    <td data-label="Area requirente" class="text-left">
-                        {{ certification.department.department }}
+                    <td
+                        data-label="Area requirente"
+                        class="text-left capitalize"
+                    >
+                        {{
+                            certification.department
+                                ? certification.department.department
+                                : "-"
+                        }}
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
                         <template v-if="certification.record_status">
@@ -323,66 +584,57 @@ const formattedNumber = (number) => {
                         <template v-else>-</template>
                     </td>
                     <td data-label="Nro. Certif." class="text-center">
-                        <template v-if="certification.certification_number">
-                            <strong>
-                                {{ certification.certification_number }}
-                            </strong>
-                        </template>
-                        <template v-else>-</template>
+                        <strong>
+                            {{ certification.certification_number || "-" }}
+                        </strong>
                     </td>
 
                     <td data-label="Monto" class="text-center">
-                        <template v-if="certification.certified_amount">
-                            <strong>
-                                {{
-                                    formattedNumber(
-                                        certification.certified_amount
-                                    )
-                                }}</strong
-                            >
-                        </template>
-                        <template v-else>-</template>
+                        <strong>
+                            {{
+                                formattedNumber(
+                                    certification.certified_amount
+                                ) || "-"
+                            }}</strong
+                        >
                     </td>
                     <td data-label="Saldo" class="text-center">
-                        <template v-if="certification.balance">
-                            <strong>
-                                {{
-                                    formattedNumber(certification.balance)
-                                }}</strong
-                            >
-                        </template>
-                        <template v-else>-</template>
+                        <strong>
+                            {{
+                                formattedNumber(certification.balance) || "-"
+                            }}</strong
+                        >
                     </td>
                     <td
                         data-label="Gestión actual"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
                         <strong>
-                            {{
-                                roles[certification.current_management - 1].id
-                            }}.
-                            {{
-                                roles[certification.current_management - 1]
-                                    .nickname
-                            }}
+                            {{ certification.current_management.id }}.
+                            {{ certification.current_management.name }}
                         </strong>
                     </td>
                     <td
                         data-label="Asignado a"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        <template v-if="certification.user">
-                            <strong>
-                                @{{ certification.user.username }}
-                            </strong>
-                        </template>
-                        <template v-else>-</template>
+                        <strong>
+                            {{
+                                certification.user
+                                    ? `@${certification.user.username}`
+                                    : "-"
+                            }}
+                        </strong>
                     </td>
                     <td
                         data-label="Tiempo"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400 text-xs text-bold"
                     >
-                        {{ manageDate(certification) }}
+                        <!-- <DateIcon
+                            v-if="certification"
+                            :certification="certification"
+                        /> -->
+                        {{ handleTimeAgo(manageDate(certification)) }}
                     </td>
                     <td
                         class="before:hidden lg:w-1 whitespace-nowrap text-center"
@@ -396,7 +648,7 @@ const formattedNumber = (number) => {
                                 :icon="elementProps.show.icon"
                                 :tooltip="elementProps.show.tooltip"
                                 small
-                                v-show="hasPermissions('show_certification')"
+                                v-show="hasPermissions('show')"
                                 @click="
                                     openModal(
                                         elementProps.show.tag,
@@ -409,7 +661,7 @@ const formattedNumber = (number) => {
                                 :icon="elementProps.update.icon"
                                 :tooltip="elementProps.update.tooltip"
                                 small
-                                v-show="hasPermissions('update_certification')"
+                                v-show="hasPermissions('update')"
                                 route-name="certifications.edit"
                                 :id="certification.id"
                             />
@@ -418,7 +670,7 @@ const formattedNumber = (number) => {
                                 :icon="elementProps.delete.icon"
                                 :tooltip="elementProps.delete.tooltip"
                                 small
-                                v-show="hasPermissions('delete_certification')"
+                                v-show="hasPermissions('delete')"
                                 @click="
                                     openModal(
                                         elementProps.delete.tag,

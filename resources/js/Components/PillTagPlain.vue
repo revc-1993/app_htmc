@@ -16,7 +16,7 @@ defineProps({
 
 <template>
     <div
-        class="inline-flex items-center capitalize leading-none"
+        class="inline-flex items-center leading-none"
         :class="[small ? 'text-xs' : 'text-sm']"
     >
         <BaseIcon
@@ -27,6 +27,6 @@ defineProps({
             :class="small ? 'mr-1' : 'mr-2'"
             :size="small ? 14 : null"
         />
-        <span>{{ label }}</span>
+        <span class="lowercase first-letter:capitalize">{{ label }}</span>
     </div>
 </template>

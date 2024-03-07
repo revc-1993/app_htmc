@@ -7,6 +7,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAccrualRequest extends FormRequest
 {
+    private $roleValidator;
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -24,15 +26,23 @@ class UpdateAccrualRequest extends FormRequest
      */
     public function rules()
     {
-        $roleValidator = AccrualRoleValidatorFactory::make($this->getCurrentRole(), $this->input());
-        return $roleValidator->getRules();
+        $this->roleValidator = AccrualRoleValidatorFactory::make($this->getCurrentRole(), $this->input(), $this->route('accrual.id'));
+        return $this->roleValidator->getRules();
+    }
+
+    public function attributes()
+    {
+        return $this->roleValidator->getAttributes();
+    }
+
+    public function messages()
+    {
+        return $this->roleValidator->getMessages();
     }
 
     protected function getCurrentRole()
     {
-        $role = auth()->user()->roles()->first()->id;
-        if ($role === 5)    $currentRole = $this->current_management;
-        else                $currentRole = $role;
-        return $currentRole;
+        $role = auth()->user()->roles->first()->step;
+        return $role;
     }
 }

@@ -15,12 +15,12 @@ class Vendor extends Model
     ];
 
     /**
-     * Get all of the Vendors for the Certification
+     * Get all of the Vendors for the Commitment
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function certifications()
+    public function commitments()
     {
-        return $this->hasMany(Certification::class, 'vendor_id');
+        return $this->hasMany(Commitment::class, 'vendor_id');
     }
 }

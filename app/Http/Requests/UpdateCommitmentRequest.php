@@ -8,6 +8,7 @@ use App\Models\Commitment;
 
 class UpdateCommitmentRequest extends FormRequest
 {
+    private $roleValidator;
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -25,15 +26,23 @@ class UpdateCommitmentRequest extends FormRequest
      */
     public function rules()
     {
-        $roleValidator = CommitmentRoleValidatorFactory::make($this->getCurrentRole(), $this->input());
-        return $roleValidator->getRules();
+        $this->roleValidator = CommitmentRoleValidatorFactory::make($this->getCurrentRole(), $this->input(), $this->route('commitment.id'));
+        return $this->roleValidator->getRules();
+    }
+
+    public function attributes()
+    {
+        return $this->roleValidator->getAttributes();
+    }
+
+    public function messages()
+    {
+        return $this->roleValidator->getMessages();
     }
 
     protected function getCurrentRole()
     {
-        $role = auth()->user()->roles()->first()->id;
-        if ($role === 5)    $currentRole = $this->current_management;
-        else                $currentRole = $role;
-        return $currentRole;
+        $role = auth()->user()->roles()->first()->step;
+        return $role;
     }
 }

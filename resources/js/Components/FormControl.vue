@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
-import { useMainStore } from "@/stores/main";
-import FormControlIcon from "@/components/FormControlIcon.vue";
+import { useMainStore } from "@/Stores/main";
+import FormControlIcon from "@/Components/FormControlIcon.vue";
 
 const props = defineProps({
     name: {
@@ -55,6 +55,18 @@ const props = defineProps({
     hasErrors: Boolean,
     disabled: Boolean || Object,
     pattern: String,
+    small: {
+        type: Boolean,
+        default: false,
+    },
+    multiple: {
+        type: Boolean,
+        default: false,
+    },
+    multiOptions: {
+        type: Object,
+        default: {},
+    },
 });
 
 const emit = defineEmits(["update:modelValue", "setRef"]);
@@ -76,7 +88,11 @@ const inputElClass = computed(() => {
             ? "border-red-700 focus:border-red-700 focus:ring-red-600 dark:focus:ring-red-600 placeholder-red-500"
             : "border-gray-700",
         "dark:placeholder-gray-400",
-        computedType.value === "textarea" ? "h-24 resize-none" : "h-12",
+        computedType.value === "textarea"
+            ? "h-24 resize-none"
+            : props.small
+            ? "h-10"
+            : "h-12",
         props.borderless ? "border-0" : "border",
         props.transparent ? "bg-transparent" : "bg-white dark:bg-slate-700",
         "focus:outline-none focus:ring placeholder-slate-400",
@@ -92,7 +108,7 @@ const inputElClass = computed(() => {
 const computedType = computed(() => (props.options ? "select" : props.type));
 
 const controlIconH = computed(() =>
-    props.type === "textarea" ? "h-full" : "h-12"
+    props.type === "textarea" ? "h-full" : props.small ? "h-10" : "h-12"
 );
 
 const mainStore = useMainStore();
@@ -153,6 +169,8 @@ if (props.ctrlKFocus) {
             :reduce="(label) => label.id"
             placeholder="Escoja una opción"
             label="label"
+            :multiple="multiple"
+            :multi-options="multiOptions"
         />
         <textarea
             v-else-if="computedType === 'textarea'"
@@ -188,14 +206,8 @@ if (props.ctrlKFocus) {
 .select-style .vs__dropdown-toggle,
 .select-style .vs__dropdown-menu {
     border: none;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
     white-space: nowrap;
-}
-
-.select-style .vs__search::placeholder {
-    color: rgb(107 114 128);
-    background: rgba(255, 255, 255, 0);
 }
 
 .select-style .vs__dropdown-toggle:disabled,

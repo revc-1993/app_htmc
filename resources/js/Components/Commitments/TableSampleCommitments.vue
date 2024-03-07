@@ -1,12 +1,13 @@
 <script setup>
 import { computed, ref } from "vue";
 import {
+    mdiMagnify,
     mdiEye,
     mdiPenPlus,
     mdiTrashCan,
     mdiUpdate,
-    mdiFileDelimited,
-    mdiFileExcel,
+    mdiMenuUp,
+    mdiMenuDown,
 } from "@mdi/js";
 import TableCheckboxCell from "@/Components/TableCheckboxCell.vue";
 import BaseLevel from "@/Components/BaseLevel.vue";
@@ -17,6 +18,8 @@ import SpanState from "@/components/SpanState.vue";
 import CardBoxModalCommitment from "@/Components/Commitments/CardBoxModalCommitment.vue";
 import CardBox from "@/Components/CardBox.vue";
 import { usePage } from "@inertiajs/vue3";
+import FormControl from "@/Components/FormControl.vue";
+import BaseIcon from "@/components/BaseIcon.vue";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime"; // Importa el complemento de fechas relativas
@@ -46,6 +49,12 @@ const commitment = ref({});
 const isModalActive = ref(false);
 // Operación escogida para modal
 const currentOperation = ref("");
+// Para ordenar por un campo
+const orderBy = ref(null);
+// Indica asc o desc
+const orderDesc = ref(false);
+// Término de búsqueda
+const searchTerm = ref("");
 
 // Características de botones por operación
 const elementProps = {
@@ -130,6 +139,107 @@ const checked = (isChecked, commitment) => {
 };
 
 // --------------------------------------------
+// METODOS DE ORDENACION POR COLUMNA
+// --------------------------------------------
+const handleSort = (column) => {
+    if (orderBy.value === column) {
+        // Si la misma columna está siendo ordenada, cambia el tipo de orden
+        orderDesc.value = !orderDesc.value;
+    } else {
+        // Si es una nueva columna, ordénala de forma ascendente
+        orderBy.value = column;
+        orderDesc.value = false;
+    }
+};
+
+const sortedCommitments = computed(() => {
+    if (orderBy.value) {
+        return itemsPaginated.value.slice().sort((a, b) => {
+            const columnA = getColumnValue(a, orderBy.value);
+            const columnB = getColumnValue(b, orderBy.value);
+
+            // Verifica si los valores son cadenas antes de comparar
+            if (typeof columnA === "string" && typeof columnB === "string") {
+                return orderDesc.value
+                    ? columnB.localeCompare(columnA)
+                    : columnA.localeCompare(columnB);
+            } else {
+                // Si no son cadenas, compara los valores directamente
+                return orderDesc.value ? columnB - columnA : columnA - columnB;
+            }
+        });
+    } else {
+        return itemsPaginated.value;
+    }
+});
+
+// Función para obtener el valor de una columna específica
+const getColumnValue = (item, column) => {
+    const columns = column.split("."); // Divide la cadena por puntos para manejar propiedades anidadas
+    let value = item;
+    for (const col of columns) {
+        if (value && value[col] !== undefined && value[col] !== null) {
+            value = value[col];
+        } else {
+            return ""; // Devuelve un valor predeterminado (cadena vacía) si la propiedad es nula o indefinida
+        }
+    }
+    return value;
+};
+
+// --------------------------------------------
+// FILTRAR
+// --------------------------------------------
+const filteredCommitments = computed(() => {
+    return sortedCommitments.value.filter((commitment) => {
+        return (
+            (commitment.certification &&
+                typeof commitment.certification.certification_number ===
+                    "number" &&
+                commitment.certification.certification_number
+                    .toString()
+                    .includes(searchTerm.value)) ||
+            (commitment.process_number &&
+                commitment.process_number
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (commitment.contract_administrator &&
+                commitment.contract_administrator.names
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (commitment.vendor &&
+                typeof commitment.vendor.name === "string" &&
+                commitment.vendor.name
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (commitment.record_status &&
+                commitment.record_status.status
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (typeof commitment.commitment_cur === "number" &&
+                commitment.commitment_cur
+                    .toString()
+                    .includes(searchTerm.value)) ||
+            (commitment.commitment_amount &&
+                typeof commitment.commitment_amount === "number" &&
+                commitment.commitment_amount
+                    .toString()
+                    .includes(searchTerm.value)) ||
+            (commitment.current_management &&
+                typeof commitment.current_management.name === "string" &&
+                commitment.current_management.name
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            (commitment.user &&
+                commitment.user.username
+                    .toLowerCase()
+                    .includes(searchTerm.value.toLowerCase())) ||
+            false
+        );
+    });
+});
+
+// --------------------------------------------
 // EMIT DE ALERTA
 // --------------------------------------------
 const emit = defineEmits(["alert"]);
@@ -161,7 +271,8 @@ const closeModal = (isconfirm) => {
 // PERMISOS
 // --------------------------------------------
 const hasPermissions = (permission) => {
-    return usePage().props.user.permissions.includes(permission);
+    const permissions = usePage().props.auth.user.permissions;
+    return permissions.find((element) => element === permission);
 };
 
 // --------------------------------------------
@@ -204,38 +315,24 @@ const formattedNumber = (number) => {
                 :data="commitments"
                 type="xls"
                 color="success"
-                :icon="mdiFileExcel"
                 :tooltip="'Exportar a Excel'"
             />
             <ExportButton
                 :data="commitments"
                 type="csv"
                 color="slate"
-                :icon="mdiFileDelimited"
                 :tooltip="'Exportar a CSV'"
             />
-            <!-- <FormControl
+            <FormControl
+                v-model="searchTerm"
                 placeholder="Buscar"
                 :icon="mdiMagnify"
                 ctrl-k-focus
+                small
                 class="px-1 py-1 text-sm"
-            /> -->
+            />
         </BaseButtons>
         <BaseButtons type="justify-end">
-            <!-- BUTTON CON CRUD MODAL -->
-            <!-- <BaseButton
-                :color="elementProps.create.color"
-                :icon="elementProps.create.icon"
-                :label="elementProps.create.label"
-                :tooltip="elementProps.create.tooltip"
-                @click="openModal(elementProps.create.tag)"
-                small
-                v-if="
-                    $page.props.user.permissions.includes(
-                        'create_certification'
-                    )
-                "
-            /> -->
             <!-- BUTTON HACIA OTRA PAGINA -->
             <BaseButton
                 :color="elementProps.create.color"
@@ -244,7 +341,7 @@ const formattedNumber = (number) => {
                 :tooltip="elementProps.create.tooltip"
                 route-name="commitments.create"
                 small
-                v-show="hasPermissions('create_commitment')"
+                v-show="hasPermissions('create')"
             />
         </BaseButtons>
     </BaseLevel>
@@ -278,22 +375,199 @@ const formattedNumber = (number) => {
                 <tr>
                     <!-- class="bg-gray-300 text-gray-600 uppercase text-sm leading-normal" -->
                     <th v-if="checkable" class="text-center" />
-                    <th class="text-center">N.</th>
-                    <th class="text-center">N. Certif.</th>
-                    <th class="text-center">Administrador de contrato</th>
-                    <th class="text-center">Estado</th>
-                    <th class="text-center">N. Compromiso</th>
-                    <th class="text-center">Monto comprometido</th>
-                    <th class="text-center">Saldo</th>
-                    <th class="text-center">Gestión actual</th>
-                    <th class="text-center">Asignado</th>
-                    <th class="text-center">Tiempo</th>
+                    <th @click="handleSort('id')" class="text-center">
+                        N.
+                        <span v-if="orderBy === 'id'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="
+                            handleSort('certification.certification_number')
+                        "
+                        class="text-center"
+                    >
+                        N. Certif.
+                        <span
+                            v-if="
+                                orderBy === 'certification.certification_number'
+                            "
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('process_number')"
+                        class="text-center"
+                    >
+                        Proceso
+                        <span v-if="orderBy === 'process_number'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('contract_administrator.names')"
+                        class="text-center"
+                    >
+                        Administrador de contrato
+                        <span
+                            v-if="orderBy === 'contract_administrator.names'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th @click="handleSort('vendor.name')" class="text-center">
+                        Proveedor
+                        <span v-if="orderBy === 'vendor.name'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('record_status.status')"
+                        class="text-center"
+                    >
+                        Estado
+                        <span
+                            v-if="orderBy === 'record_status.status'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('commitment_cur')"
+                        class="text-center"
+                    >
+                        N. Compr.
+                        <span v-if="orderBy === 'commitment_cur'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('commitment_amount')"
+                        class="text-center"
+                    >
+                        Monto comp.
+                        <span
+                            v-if="orderBy === 'commitment_amount'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th @click="handleSort('balance')" class="text-center">
+                        Saldo
+                        <span v-if="orderBy === 'balance'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('current_management.step')"
+                        class="text-center"
+                    >
+                        Gestión actual
+                        <span
+                            v-if="orderBy === 'current_management.step'"
+                            class="ml-1"
+                        >
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th
+                        @click="handleSort('user.username')"
+                        class="text-center"
+                    >
+                        Asignado
+                        <span v-if="orderBy === 'user.username'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
+                    <th @click="handleSort('sec_cgf_date')" class="text-center">
+                        Tiempo
+                        <span v-if="orderBy === 'sec_cgf_date'" class="ml-1">
+                            <BaseIcon
+                                :path="orderDesc ? mdiMenuUp : mdiMenuDown"
+                                h="h-4"
+                                w="w-4"
+                                class="mr-1"
+                                :size="14"
+                            />
+                        </span>
+                    </th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <tr
-                    v-for="commitment in itemsPaginated"
+                    v-for="commitment in filteredCommitments"
                     :key="commitment.id"
                     class="border-b border-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
@@ -309,16 +583,23 @@ const formattedNumber = (number) => {
                     /> -->
                     </td>
                     <td data-label="N. Certif." class="text-center">
-                        <template v-if="commitment.certification">
-                            {{ commitment.certification.certification_number }}
-                        </template>
-                        <template v-else>-</template>
+                        {{
+                            commitment.certification
+                                ? commitment.certification.certification_number
+                                : "-"
+                        }}
+                    </td>
+                    <td data-label="N. Proceso" class="text-center uppercase">
+                        {{ commitment.process_number || "-" }}
                     </td>
                     <td
                         data-label="Administrador de contrato"
-                        class="text-center"
+                        class="text-center capitalize"
                     >
-                        {{ commitment.contract_administrator }}
+                        {{ commitment.contract_administrator.names }}
+                    </td>
+                    <td data-label="Proveedor" class="text-center capitalize">
+                        {{ commitment.vendor ? commitment.vendor.name : "-" }}
                     </td>
                     <td data-label="Estado" class="py-3 px-6 text-center">
                         <template v-if="commitment.record_status">
@@ -327,34 +608,24 @@ const formattedNumber = (number) => {
                         <template v-else>-</template>
                     </td>
                     <td data-label="Nro. Comp." class="text-center">
-                        <template v-if="commitment.commitment_cur">
-                            <strong>
-                                {{ commitment.commitment_cur }}
-                            </strong>
-                        </template>
-                        <template v-else>-</template>
+                        <strong>
+                            {{ commitment.commitment_cur || "-" }}
+                        </strong>
                     </td>
                     <td data-label="Monto" class="text-center">
-                        <template v-if="commitment.commitment_amount">
-                            <strong>
-                                {{
-                                    formattedNumber(
-                                        commitment.commitment_amount
-                                    )
-                                }}</strong
-                            >
-                        </template>
-                        <template v-else>-</template>
+                        <strong>
+                            {{
+                                formattedNumber(commitment.commitment_amount) ||
+                                "-"
+                            }}</strong
+                        >
                     </td>
                     <td data-label="Saldo" class="text-center">
-                        <template v-if="commitment.balance">
-                            <strong>
-                                {{
-                                    formattedNumber(commitment.balance)
-                                }}</strong
-                            >
-                        </template>
-                        <template v-else>-</template>
+                        <strong>
+                            {{
+                                formattedNumber(commitment.balance) || "-"
+                            }}</strong
+                        >
                     </td>
 
                     <td
@@ -362,21 +633,21 @@ const formattedNumber = (number) => {
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
                         <strong>
-                            {{ roles[commitment.current_management - 1].id }}.
-                            {{
-                                roles[commitment.current_management - 1]
-                                    .nickname
-                            }}
+                            {{ commitment.current_management.id }}.
+                            {{ commitment.current_management.name }}
                         </strong>
                     </td>
                     <td
                         data-label="Asignado a"
                         class="text-center lg:w-1 whitespace-nowrap text-gray-500 dark:text-slate-400"
                     >
-                        <template v-if="commitment.user">
-                            <strong> @{{ commitment.user.username }} </strong>
-                        </template>
-                        <template v-else>-</template>
+                        <strong>
+                            {{
+                                commitment.user
+                                    ? `@${commitment.user.username}`
+                                    : "-"
+                            }}
+                        </strong>
                     </td>
                     <td
                         data-label="Tiempo"
@@ -396,7 +667,7 @@ const formattedNumber = (number) => {
                                 :color="elementProps.show.color"
                                 :icon="elementProps.show.icon"
                                 :tooltip="elementProps.show.tooltip"
-                                v-show="hasPermissions('show_commitment')"
+                                v-show="hasPermissions('show')"
                                 @click="
                                     openModal(elementProps.show.tag, commitment)
                                 "
@@ -407,7 +678,7 @@ const formattedNumber = (number) => {
                                 :icon="elementProps.update.icon"
                                 :tooltip="elementProps.update.tooltip"
                                 small
-                                v-show="hasPermissions('update_commitment')"
+                                v-show="hasPermissions('update')"
                                 route-name="commitments.edit"
                                 :id="commitment.id"
                             />
@@ -416,7 +687,7 @@ const formattedNumber = (number) => {
                                 :icon="elementProps.delete.icon"
                                 :tooltip="elementProps.delete.tooltip"
                                 small
-                                v-show="hasPermissions('delete_commitment')"
+                                v-show="hasPermissions('delete')"
                                 @click="
                                     openModal(
                                         elementProps.delete.tag,

@@ -20,4 +20,22 @@ class SecCGFRoleValidator implements CertificationRoleValidatorInterface
             'current_management' => ['nullable'],
         ];
     }
+
+    public function getAttributes(): array
+    {
+        return [
+            'certification_memo' => "Nro. de Memorando",
+            'content' => "Contenido de Expediente",
+            'contact_object' => "Objeto de Contrato",
+            'procces_type_id' => "Tipo de Proceso",
+            'expense_type_id' => "Tipo de Gasto",
+            'department_id' => "Area Requirente",
+            'sec_cgf_comments' => "Observaciones",
+        ];
+    }
+
+    public function getMessages(): array
+    {
+        return [];
+    }
 }

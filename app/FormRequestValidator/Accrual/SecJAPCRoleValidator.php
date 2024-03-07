@@ -15,4 +15,18 @@ class SecJAPCRoleValidator implements AccrualRoleValidatorInterface
             'japc_comments' => ['nullable'],
         ];
     }
+
+    public function getAttributes(): array
+    {
+        return [
+            'accrual_memo' => "Nro. Memorando",
+            'customer_id' => "Usuario",
+            'japc_comments' => "Observaciones",
+        ];
+    }
+
+    public function getMessages(): array
+    {
+        return [];
+    }
 }

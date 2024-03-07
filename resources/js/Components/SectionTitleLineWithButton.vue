@@ -2,7 +2,7 @@
 import { mdiCog } from "@mdi/js";
 import { useSlots, computed } from "vue";
 import BaseIcon from "@/components/BaseIcon.vue";
-import BaseButton from "@/components/BaseButton.vue";
+import BaseButton from "@/Components/BaseButton.vue";
 import IconRounded from "@/components/IconRounded.vue";
 
 defineProps({

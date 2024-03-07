@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Accrual;
+use App\Constants\Modules;
 use App\Models\CustomRole;
 use App\Models\RecordStatus;
 use App\Services\AccrualService;
+use App\Models\CurrentManagement;
 use App\Http\Requests\StoreAccrualRequest;
 use App\Http\Requests\UpdateAccrualRequest;
 
@@ -18,22 +20,22 @@ class AccrualController extends Controller
     public function __construct(AccrualService $accrualService)
     {
         $this->middleware(
-            'permission:create_accrual|show_accrual|update_accrual|delete_accrual',
+            'permission:accrual|create|show|update|delete',
             ['only' => ['index']]
         );
 
         $this->middleware(
-            'permission:create_accrual',
+            'permission:create',
             ['only' => ['create', 'store']]
         );
 
         $this->middleware(
-            'permission:update_accrual',
+            'permission:update',
             ['only' => ['edit', 'update']]
         );
 
         $this->middleware(
-            'permission:delete_accrual',
+            'permission:delete',
             ['only' => ['destroy']]
         );
 
@@ -49,8 +51,8 @@ class AccrualController extends Controller
     public function index()
     {
         $accruals = $this->accrualService->getAllAccruals();
-        $users = User::analystRole()->get();
-        $roles = CustomRole::allRoles();
+        $users = User::role('accrual_analyst_role')->get();
+        $roles = CurrentManagement::allProfiles()->get();
         $recordStatuses = RecordStatus::all(['id', 'status']);
 
         return Inertia::render('Accruals/Index', compact(
@@ -68,8 +70,8 @@ class AccrualController extends Controller
      */
     public function create()
     {
-        $users = User::analystRole()->get();
-        $roles = CustomRole::allRoles();
+        $users = User::role('accrual_analyst_role')->get();
+        $roles = CurrentManagement::allProfiles()->get();
         $recordStatuses = RecordStatus::getRecordStatus()->get(['id', 'status']);
 
         return Inertia::render('Accruals/Create', compact(
@@ -87,7 +89,8 @@ class AccrualController extends Controller
      */
     public function store(StoreAccrualRequest $request)
     {
-        $accrual = $this->accrualService->createAccrual($request);
+        $adjustedRequest = $this->accrualService->adjustParams($request);
+        $accrual = $this->accrualService->createAccrual($adjustedRequest);
 
         $message = [
             "response" => "Registro creado correctamente.",
@@ -109,8 +112,8 @@ class AccrualController extends Controller
     public function edit(int $id)
     {
         $accrual = $this->accrualService->getAccrualForEdit($id);
-        $users = User::analystRole()->get();
-        $roles = CustomRole::allRoles();
+        $users = User::role('accrual_analyst_role')->get();
+        $roles = CurrentManagement::allProfiles()->get();
         $recordStatuses = RecordStatus::getRecordStatus()->get(['id', 'status']);
 
         return Inertia::render('Accruals/Edit', compact(
